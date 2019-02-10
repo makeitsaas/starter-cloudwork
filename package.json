@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "commander": "^2.19.0",
     "fs": "0.0.1-security",
     "node-ansible": "^0.5.5"
   }
