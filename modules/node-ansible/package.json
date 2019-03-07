@@ -1,0 +1,64 @@
+{
+  "_from": "node-ansible",
+  "_id": "node-ansible@0.5.5",
+  "_inBundle": false,
+  "_integrity": "sha1-1S2C4OWl2W1n18oyUgwDXxoxj9I=",
+  "_location": "/node-ansible",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "node-ansible",
+    "name": "node-ansible",
+    "escapedName": "node-ansible",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/node-ansible/-/node-ansible-0.5.5.tgz",
+  "_shasum": "d52d82e0e5a5d96d67d7ca32520c035f1a318fd2",
+  "_spec": "node-ansible",
+  "_where": "/Users/Duwab/Development/Sources/makeitsaas/deployer",
+  "author": {
+    "name": "Shahar Kedar"
+  },
+  "bugs": {
+    "url": "https://github.com/shaharke/node-ansible/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "mock-spawn": "^0.2.6",
+    "q": "~1.0.0",
+    "underscore": "~1.5.2"
+  },
+  "deprecated": false,
+  "description": "Programmatic interface in Node.js for executing Ansible ad-hoc commands and playbooks",
+  "devDependencies": {
+    "chai": "~1.8.1",
+    "chai-as-promised": "~4.1.0",
+    "mocha": "~1.17.0",
+    "sinon": "~1.7.3",
+    "sinon-chai": "~2.4.0"
+  },
+  "homepage": "https://github.com/shaharke/node-ansible#readme",
+  "keywords": [
+    "ansible",
+    "api",
+    "programmatic"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "node-ansible",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/shaharke/node-ansible.git"
+  },
+  "scripts": {
+    "test": "mocha test/**/*.spec.js --reporter spec"
+  },
+  "version": "0.5.5"
+}
