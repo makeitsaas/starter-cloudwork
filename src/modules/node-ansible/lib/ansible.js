@@ -2,7 +2,6 @@ var exec = require('child_process');
 var _ = require('underscore');
 var inherits = require('util').inherits;
 var utils = require('./utils');
-var ansibleOutputParser = require('../../ansible-output-parser');
 var Q = require('q');
 var EventEmitter = require('events').EventEmitter;
 var slice = [].slice;
@@ -52,12 +51,12 @@ AbstractAnsibleCommand.prototype.exec = function(options) {
 
   child.on('close', function(code) {
     self.emit('close', code);
-    deferred.resolve({code: code, output: output, parsed: ansibleOutputParser(output)});
+    deferred.resolve({code: code, output: output});
   });
 
   child.on('exit', function(code) {
     if (code !== 0) {
-      deferred.reject({code: code, output: output, parsed: ansibleOutputParser(output)});
+      deferred.reject({code: code, output: output});
     }
   });
 

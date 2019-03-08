@@ -1,5 +1,7 @@
 const stepHeadPattern = /^([\w ]+) (\[(.+)\] )?\*\*\*+$/;
 const playRecapPattern = /^.+  +: +ok=(\d+)  +changed=(\d+)  +unreachable=(\d+)  +failed=(\d+) +$/;
+const stepStatusPattern = /^(\w+)\: \[.*\].*$/;  // ligne du début 'ok: [...] ...'
+const stepWithDataPattern = /^(\w+)\: +\[.*\] +\=\> +(\{.*\}) *$/;
 
 module.exports = function(output) {
   let lines = output.split(/\r?\n/),
@@ -29,14 +31,17 @@ module.exports = function(output) {
   steps.push(currentStep);
 
   steps.map(step => {
-    step.lines = reProcessLines(step.lines);
+    step.status = parseStepStatus(step.lines);
+    step.data = parseLinesData(step.lines);
     return step;
   })
 
   recap = findRecap(steps);
 
   return {
-    steps
+    success: !recap.unreachable && !recap.failed,
+    steps,
+    recap
   };
 }
 
@@ -66,22 +71,35 @@ function getStepLabel(headLine) {
   return headLine.replace(stepHeadPattern, '$3');
 }
 
-function reProcessLines(lines) {
-  return lines.map(line => {
-    if(playRecapPattern.test(line)) {
+function parseStepStatus(lines) {
+  let line = lines[0];
+  return line && stepStatusPattern.test(line) && line.replace(stepStatusPattern, '$1');
+}
+
+function parseLinesData(lines) {
+  if(lines.length) {
+    const content = lines.join(' ');
+    //console.log('content', content);
+    if(playRecapPattern.test(content)) {
       return {
-        'ok': parseInt(line.replace(playRecapPattern, '$1')),
-        'changed': parseInt(line.replace(playRecapPattern, '$2')),
-        'unreachable': parseInt(line.replace(playRecapPattern, '$3')),
-        'failed': parseInt(line.replace(playRecapPattern, '$4'))
+        'ok': parseInt(content.replace(playRecapPattern, '$1')),
+        'changed': parseInt(content.replace(playRecapPattern, '$2')),
+        'unreachable': parseInt(content.replace(playRecapPattern, '$3')),
+        'failed': parseInt(content.replace(playRecapPattern, '$4'))
       }
+    } else if(stepWithDataPattern.test(content)){
+        try {
+          let probablyJsonContent = content.replace(stepWithDataPattern, '$2');
+          return JSON.parse(probablyJsonContent);
+        } catch(e) {
+          console.log('could not parse content', content);
+        }
     }
-    return line;
-  })
+  }
 }
 
 function findRecap(steps) {
   let found = steps.filter(step => step.type==='PLAY RECAP')[0];
 
-  return found && found.lines[0];
+  return found && found.data;
 }
