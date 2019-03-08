@@ -1,0 +1,9 @@
+environments/*
+!environments/.gitkeep
+orders/*
+!orders/.gitkeep
+!orders/_specs/
+orders/_specs/*
+!orders/_specs/.gitkeep
+vaults/*
+!vaults/.gitkeep

@@ -1,4 +1,4 @@
-const ansibleClient = require('../ansible');
+const ansibleClient = require('../ansible-client');
 
 ansibleClient.exec('database-drop').then(info => {
   if(info.success) {

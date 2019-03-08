@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
-
+require('dotenv').config();
 var program = require('commander');
+
+console.log('process.env', process.env.VAULT_SECRET);
 
 program
   .version('0.1.0')
@@ -28,7 +27,7 @@ if(program.proxy) {
 }
 
 if(program.deploy) {
-  require('./src/operations/deploy')
+  require('./src/operations/repo-node-deploy')
 }
 
 if(program.database) {

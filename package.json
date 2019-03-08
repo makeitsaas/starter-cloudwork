@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "commander": "^2.19.0",
+    "dotenv": "^6.2.0",
     "fs": "0.0.1-security",
     "node-ansible": "^0.5.5"
   }
