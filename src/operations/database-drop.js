@@ -1,11 +1,11 @@
 const ansibleClient = require('../ansible-client');
 
 ansibleClient.exec('database-drop').then(info => {
-  if(info.success) {
-    console.log('do someting on success', info.recap);
-  } else {
-    console.log('recover what needed');
-  }
+    if (info.success) {
+        console.log('do someting on success', info.recap);
+    } else {
+        console.log('recover what needed');
+    }
 }).catch(e => {
-  console.error(e);
+    console.error(e);
 });

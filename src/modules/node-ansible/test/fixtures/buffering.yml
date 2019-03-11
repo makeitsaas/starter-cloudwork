@@ -4,7 +4,7 @@
 
 - hosts: local
   tasks:
-  - command: sleep 0.01 
+  - command: sleep 0.01
   - command: sleep 0.02
   - command: sleep 0.03
   - command: sleep 0.04

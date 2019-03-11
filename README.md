@@ -6,6 +6,7 @@ Prepares and runs complex ansible playbooks.
 ```
 npm run deploy
 npm run adhoc
+npm run environment:create -- --order-id=1
 ```
 
 ### Notes

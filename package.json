@@ -1,10 +1,16 @@
 {
   "name": "deployer",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Duwab/makeitsaas-deployer"
+  },
   "main": "index.js",
   "scripts": {
     "adhoc": "node adhoc.js",
+    "environment:update": "node command/environment-update.js",
+    "environment:delete": "node command/environment-delete.js",
     "deploy": "node deploy.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,6 +20,8 @@
     "commander": "^2.19.0",
     "dotenv": "^6.2.0",
     "fs": "0.0.1-security",
-    "node-ansible": "^0.5.5"
+    "jsonfile": "^5.0.0",
+    "node-ansible": "^0.5.5",
+    "yamljs": "^0.3.0"
   }
 }

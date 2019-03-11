@@ -1,4 +1,4 @@
 module.exports = {
-  AdHoc: require('./lib/ansible').AdHoc,
-  Playbook: require('./lib/ansible').Playbook
+    AdHoc: require('./lib/ansible').AdHoc,
+    Playbook: require('./lib/ansible').Playbook
 }

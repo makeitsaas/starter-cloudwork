@@ -1,5 +1,12 @@
 # Store
 
+**Pense bête :** Pour la fin, 
+* lister de manière explicite les commandes `ansible` + `npm run` et la configuration
+minimale pour éviter de se retrouver dans l'embarras
+* remonter directement les parties clés du script (déploiement d'un service, loop sur les services, listing du reste)
+* diagrammes de flux sur les processus clés
+
+
 This directory is supposed to be used by the application only. Don't add anything here.
 
 Because it contains highly sensitive information, database will be added later

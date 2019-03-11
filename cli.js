@@ -15,8 +15,7 @@ program
   .option('--app-iteration [iteration]', 'Generate config')
   .parse(process.argv);
 
-const appCode = program.appCode,
-      appIteration = program.appCode; // ???
+const appCode = program.appCode;
 
 if(program.service) {
   console.log('generate config file for service', program.service);
@@ -27,7 +26,7 @@ if(program.proxy) {
 }
 
 if(program.deploy) {
-  require('./src/operations/repo-node-deploy')
+  require('./src/operations/repo-node-update-sources')
 }
 
 if(program.database) {

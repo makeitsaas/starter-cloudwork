@@ -3,103 +3,103 @@ const playRecapPattern = /^.+  +: +ok=(\d+)  +changed=(\d+)  +unreachable=(\d+) 
 const stepStatusPattern = /^(\w+)\: \[.*\].*$/;  // ligne du début 'ok: [...] ...'
 const stepWithDataPattern = /^(\w+)\: +\[.*\] +\=\> +(\{.*\}) *$/;
 
-module.exports = function(output) {
-  let lines = output.split(/\r?\n/),
-      steps = [],
-      currentStep;
-  for(var i in lines) {
-    let line = lines[i];
-    if(isLineEmpty(line)) {
-      continue;
+module.exports = function (output) {
+    let lines = output.split(/\r?\n/),
+        steps = [],
+        currentStep;
+    for (var i in lines) {
+        let line = lines[i];
+        if (isLineEmpty(line)) {
+            continue;
+        }
+        if (isStepHead(line)) {
+            if (currentStep) {
+                steps.push(currentStep);
+            }
+            currentStep = {
+                type: getStepType(line),
+                label: getStepLabel(line),
+                lines: []
+            };
+        } else {
+            if (currentStep) {
+                currentStep.lines.push(line);
+            }
+        }
     }
-    if(isStepHead(line)) {
-      if (currentStep) {
-        steps.push(currentStep);
-      }
-      currentStep = {
-        type: getStepType(line),
-        label: getStepLabel(line),
-        lines: []
-      };
-    } else {
-      if(currentStep) {
-        currentStep.lines.push(line);
-      }
-    }
-  }
 
-  steps.push(currentStep);
+    steps.push(currentStep);
 
-  steps.map(step => {
-    step.status = parseStepStatus(step.lines);
-    step.data = parseLinesData(step.lines);
-    return step;
-  })
+    steps.map(step => {
+        step.status = parseStepStatus(step.lines);
+        step.data = parseLinesData(step.lines);
+        return step;
+    })
 
-  recap = findRecap(steps);
+    recap = findRecap(steps);
 
-  return {
-    success: !recap.unreachable && !recap.failed,
-    steps,
-    recap
-  };
+    return {
+        success: !recap.unreachable && !recap.failed,
+        steps,
+        recap
+    };
 }
 
 function isStepHead(line) {
-  return /\*\*\*$/.test(line);
+    return /\*\*\*$/.test(line);
 }
 
 function isRecognizedStepHead(line) {
-  return stepHeadPattern.test(line);
+    return stepHeadPattern.test(line);
 }
 
 function isLineEmpty(line) {
-  return !line || !line.length;
+    return !line || !line.length;
 }
 
 function getStepType(headLine) {
-  if(!isRecognizedStepHead(headLine)) {
-    return 'Unknown type';
-  }
-  return headLine.replace(stepHeadPattern, '$1');
+    if (!isRecognizedStepHead(headLine)) {
+        return 'Unknown type';
+    }
+    return headLine.replace(stepHeadPattern, '$1');
 }
 
 function getStepLabel(headLine) {
-  if(!isRecognizedStepHead(headLine)) {
-    return headLine;
-  }
-  return headLine.replace(stepHeadPattern, '$3');
+    if (!isRecognizedStepHead(headLine)) {
+        return headLine;
+    }
+    return headLine.replace(stepHeadPattern, '$3');
 }
 
 function parseStepStatus(lines) {
-  let line = lines[0];
-  return line && stepStatusPattern.test(line) && line.replace(stepStatusPattern, '$1');
+    let line = lines[0];
+    return line && stepStatusPattern.test(line) && line.replace(stepStatusPattern, '$1');
 }
 
 function parseLinesData(lines) {
-  if(lines.length) {
-    const content = lines.join(' ');
-    //console.log('content', content);
-    if(playRecapPattern.test(content)) {
-      return {
-        'ok': parseInt(content.replace(playRecapPattern, '$1')),
-        'changed': parseInt(content.replace(playRecapPattern, '$2')),
-        'unreachable': parseInt(content.replace(playRecapPattern, '$3')),
-        'failed': parseInt(content.replace(playRecapPattern, '$4'))
-      }
-    } else if(stepWithDataPattern.test(content)){
-        try {
-          let probablyJsonContent = content.replace(stepWithDataPattern, '$2');
-          return JSON.parse(probablyJsonContent);
-        } catch(e) {
-          console.log('could not parse content', content);
+    if (lines.length) {
+        const content = lines.join(' ');
+        //console.log('content', content);
+        if (playRecapPattern.test(content)) {
+            return {
+                'ok': parseInt(content.replace(playRecapPattern, '$1')),
+                'changed': parseInt(content.replace(playRecapPattern, '$2')),
+                'unreachable': parseInt(content.replace(playRecapPattern, '$3')),
+                'failed': parseInt(content.replace(playRecapPattern, '$4'))
+            }
+        } else if (stepWithDataPattern.test(content)) {
+            try {
+                let probablyJsonContent = content.replace(stepWithDataPattern, '$2');
+                return JSON.parse(probablyJsonContent);
+            } catch (e) {
+                console.log('could not parse content', content);
+            }
         }
     }
-  }
 }
 
 function findRecap(steps) {
-  let found = steps.filter(step => step.type==='PLAY RECAP')[0];
+    let found = steps.filter(step => step.type === 'PLAY RECAP')[0];
 
-  return found && found.data;
+    return found && found.data;
 }
