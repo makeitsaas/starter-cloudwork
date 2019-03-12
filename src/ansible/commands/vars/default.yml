@@ -1,0 +1,7 @@
+repo_url: https://github.com/Duwab/makeitsaas-microservice.git
+repo_directory: test_directory
+db_hostname: ip
+db_database: test_db
+db_username: test_user
+db_password: test_password
+service_port: 9999

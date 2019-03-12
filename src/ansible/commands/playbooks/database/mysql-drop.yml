@@ -1,0 +1,21 @@
+---
+- name: create temp directory
+  tempfile:
+    state: directory
+  register: tmp_config_dir
+- set_fact: tmp_drop_user="{{ tmp_config_dir.path }}/drop-user.sql"
+- name: write drop-user.sql in tmp directory
+  template:
+    src: templates/db-drop-user.sql.j2
+    dest: "{{ tmp_drop_user }}"
+- name: Drop user
+  mysql_db:
+    name: bobdata
+    state: import
+    target: "{{ tmp_drop_user }}"
+  become: yes
+- name: Drop database with name 'bobdata'
+  mysql_db:
+    name: bobdata
+    state: absent
+  become: yes

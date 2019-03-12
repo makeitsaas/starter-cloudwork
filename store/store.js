@@ -3,6 +3,7 @@
 const YAML = require('yamljs');
 const jsonFile = require('jsonfile');
 const fs = require('fs');
+
 module.exports = {
     getOrderSpecs: function(orderId) {
         try {
@@ -34,6 +35,6 @@ module.exports = {
         return path;
     },
     getOrderDirectoryPath: function(order) {
-        return `./store/orders/order-${order.getId()}`
+        return __dirname + `/orders/order-${order.getId()}`
     }
-}
+};

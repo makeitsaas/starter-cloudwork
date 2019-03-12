@@ -1,0 +1,21 @@
+---
+- name: check if sources exist
+  stat:
+    path: "/srv/services/{{ repo_directory }}"
+  register: git_directory
+- name: check if container exists
+  shell: docker ps --filter ancestor=auto-image/{{ repo_directory }} -aq
+  register: container_ids_to_remove
+- debug:
+    msg: "container_ids_to_remove={{container_ids_to_remove.stdout}}"
+# adapt if necessary
+#- name: Docker is present
+#  apt: name=docker.io state=present
+#  tags: [docker]
+#  become: yes
+#- name: Python-pip is present
+#  apt: name=python-pip state=present
+#  tags: [docker]
+#- name: Docker-py is present
+#  pip: name=docker-py version=0.4.0 state=present
+#  tags: [docker]

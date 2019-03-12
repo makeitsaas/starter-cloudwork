@@ -1,0 +1,40 @@
+---
+- import_tasks: checks.yml
+- name: clone repo
+  git:
+    repo: "{{ repo_url }}"
+    dest: "/srv/services/{{ repo_directory }}"
+    #separate_git_dir: /src/ansible-examples.git
+    #version: release-0.22
+  become: yes
+  when: git_directory.stat.exists == False
+- name: update repo
+  git:
+    repo: "{{ repo_url }}"
+    dest: "/srv/services/{{ repo_directory }}"
+    clone: no
+    force: true
+    #separate_git_dir: /src/ansible-examples.git
+    #version: release-0.22
+  become: yes
+  when: git_directory.stat.exists == True
+- name: setup .env file
+  template:
+    src: templates/env.j2
+    dest: "/srv/services/{{ repo_directory }}/.env"
+    mode: 0644
+  become: yes
+- name: build service image
+  docker_image:
+    name: "auto-image/{{ repo_directory }}"
+    path: "/srv/services/{{ repo_directory }}"
+    force: true
+- name: stop previous containers
+  command: "docker stop {{ container_ids_to_remove.stdout }}"
+  when: container_ids_to_remove.stdout != ''
+- name: remove previous containers
+  command: "docker rm {{ container_ids_to_remove.stdout }}"
+  when: container_ids_to_remove.stdout != ''
+- name: run image
+  command: "docker run -d -p {{ service_port }}:{{service_port}} --network=multi-host-network auto-image/{{ repo_directory }}"
+  #command: "docker run -d -p {{ service_port }}:3000 --network=multi-host-network auto-image/{{ repo_directory }}" -> env.j2 PORT is now dynamic

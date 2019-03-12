@@ -1,0 +1,26 @@
+---
+- import_tasks: checks.yml
+- name: clone repo
+  git:
+    repo: "{{ repo_url }}"
+    dest: "/srv/services/{{ repo_directory }}"
+    #separate_git_dir: /src/ansible-examples.git
+    #version: release-0.22
+  become: yes
+  when: git_directory.stat.exists == False
+- name: update repo
+  git:
+    repo: "{{ repo_url }}"
+    dest: "/srv/services/{{ repo_directory }}"
+    clone: no
+    force: true
+    #separate_git_dir: /src/ansible-examples.git
+    #version: release-0.22
+  become: yes
+  when: git_directory.stat.exists == True
+- name: setup .env file
+  template:
+    src: templates/env.j2
+    dest: "/srv/services/{{ repo_directory }}/.env"
+    mode: 0644
+  become: yes

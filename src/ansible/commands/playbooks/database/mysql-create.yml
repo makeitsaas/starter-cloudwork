@@ -1,0 +1,38 @@
+# variables set :
+# - tmp_config_dir => tmp directory
+# - tmp_create_user => path of sql file for "create user"
+# -
+---
+- name: create temp directory
+  tempfile:
+    state: directory
+  register: tmp_config_dir
+- set_fact: tmp_create_user="{{ tmp_config_dir.path }}/create-user.sql"
+- name: write create-user.sql in tmp directory
+  template:
+    src: templates/db-create-user.sql.j2
+    dest: "{{ tmp_create_user }}"
+- name: set remote config into variable
+  shell: cat "{{tmp_create_user}}"
+  register: the_remote_config
+- name: The remote config
+  become: true
+  debug: msg="{{ the_remote_config }}"
+- name: Create a new database with name 'bobdata'
+  mysql_db:
+    name: bobdata
+    state: present
+  become: yes
+- name: Create user
+  mysql_db:
+    name: bobdata
+    state: import
+    target: "{{ tmp_create_user }}"
+  become: yes
+
+
+# - name: check if rendered file exists
+#   stat:
+#   path: "{{ tmp_create_user }}"
+#   register: my_file_exists
+# - debug: msg="file exists => {{my_file_exists.stat.exists}}"

@@ -1,0 +1,7 @@
+---
+- hosts: computing
+  remote_user: ubuntu
+  tasks:
+  - set_fact: vars_file="default"
+    when: vars_file is undefined
+  - include_tasks: deploy-script.yml

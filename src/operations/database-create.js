@@ -1,4 +1,4 @@
-const ansibleClient = require('../ansible-client');
+const ansibleClient = require('../ansible/ansible-client');
 
 ansibleClient.exec('database-create').then(info => {
     if (info.success) {

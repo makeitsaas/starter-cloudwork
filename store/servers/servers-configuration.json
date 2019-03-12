@@ -1,0 +1,18 @@
+{
+  "proxy": {
+    "servers": [{
+      "ip": "ip"
+    }]
+  },
+  "computing": {
+    "servers": [{
+      "ip": "ip",
+      "ports": {}
+    }]
+  },
+  "daemons": {
+    "servers": [{
+      "ip": "ip"
+    }]
+  }
+}

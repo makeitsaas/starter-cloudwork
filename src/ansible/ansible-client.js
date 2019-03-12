@@ -2,11 +2,9 @@
 // load les configs + prépare le client Ansible (path des scripts, ...)
 //const Ansible = require('node-ansible'); -> not maintained + output parsed + detailed error
 
-const Ansible = require('./modules/node-ansible/index');
-const ansibleOutputParser = require('./modules/ansible-output-parser');
-const fs = require('fs');
+const Ansible = require('../modules/node-ansible/index');
+const ansibleOutputParser = require('../modules/ansible-output-parser/index');
 const keyPath = 'config/keys/server-key';
-var privateKey = fs.readFileSync(keyPath, 'utf8'); // check here if key exists => handle error
 
 var playbook = new Ansible.Playbook()
     .inventory('config/inventories/dev')
@@ -26,8 +24,7 @@ module.exports = {
             .exec();
         return promise.catch(e => e).then(function (stats) {
             console.log("\ncode :", stats.code, "\n"); // Exit code of the executed command
-            const parsed = ansibleOutputParser(stats.output);
-            return parsed;
+            return ansibleOutputParser(stats.output);
         });
     }
-}
+};

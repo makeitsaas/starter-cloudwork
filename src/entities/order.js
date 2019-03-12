@@ -1,4 +1,4 @@
-const store = require('../store/store');
+const store = require('../../store/store');
 
 function Order(id) {
     // procedure=create/update/delete, envConfig={domains, envId, services}
@@ -26,6 +26,9 @@ Order.prototype = {
         } catch (e) {
             return false;
         }
+    },
+    getDirectory: function() {
+        return store.getOrderDirectoryPath(this);
     },
     getId: function () {
         return this.get('id');
