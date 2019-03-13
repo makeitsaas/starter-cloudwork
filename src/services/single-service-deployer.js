@@ -20,7 +20,11 @@ const ansibleContextBuilder = require('../ansible/ansible-context-builder');
 const fs = require('fs');
 const Servers = require('../entities/servers');
 
-module.exports = function(orderDirectory, currentEnvironment, serviceDesired) {
+module.exports = function(orderDirectory, currentEnvironment, desiredService) {
+
+    const computingIP = Servers.getAvailableComputingHost();
+    const daemonsIP = Servers.getAvailableDbHost();
+    const serviceCode = `e${currentEnvironment.id}-s${desiredService.id}`;
 
     const directoryFn = async () => {
         return prepareTmpDirectory(orderDirectory);
@@ -28,18 +32,31 @@ module.exports = function(orderDirectory, currentEnvironment, serviceDesired) {
 
     const inventoryFn = async () => {
         return {
-            daemons: Servers.getAvailableDbHost(),
-            computing: Servers.getAvailableComputingHost()
+            daemons: daemonsIP,
+            computing: computingIP
         };
     };
 
     const varsFn = async () => {
-        return {
-            db_hostname: 'a',
-            db_database: 'b',
-            db_username: 'c',
-            db_password: 'd'
+        let vault = new Vault(serviceCode);
+        let newValues = {
+            repo_url: desiredService.repo_url,
+            repo_directory: serviceCode,
+            service_port: Servers.getAvailableComputingPort(computingIP),
+            db_hostname: daemonsIP,
+            db_database: 'auto_db_' + serviceCode.replace('-', '_'),
+            db_username: 'auto_user_' + serviceCode.replace('-', '_'),
+            db_password: 'password' // generate secure password
         };
+
+        for(let key in newValues) {
+            if(!vault[key]) {
+                vault[key] = newValues[key];
+            }
+        }
+        vault._persist();
+
+        return vault;
     };
 
     return new Promise((resolve, reject) => {
@@ -51,9 +68,8 @@ module.exports = function(orderDirectory, currentEnvironment, serviceDesired) {
             return ansibleContextBuilder(...args, 'database-drop');
         }).then(() => {
             setTimeout(() => {
-                log('mock service update', serviceDesired);
-                let vault = Vault.getVault(currentEnvironment._meta, serviceDesired);
-                log('vault for this service', vault);
+                log('mock service update', desiredService);
+                currentEnvironment._updateService(desiredService);
                 resolve(1);
             }, 100 + Math.random() * 100);
         });

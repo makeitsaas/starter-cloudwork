@@ -1,40 +1,44 @@
 const jsonFile = require('jsonfile');
 const servers = require('./servers');
+const YAML = require('yamljs');
 
 const secret = process.env.VAULT_SECRET ? process.env.VAULT_SECRET : 'undefined';
 const cryptoJSON = require('crypto-json');
 
-module.exports = {
-    getVault: function(environment, service) {
-        const vaultExists = false;
-        let vault, code = this.getCode(environment, service);
-        if(!vaultExists) {
-            vault = this.generateVault(code);
-            this.persist(code, vault);
-        } else {
-            this.recover(code);
-        }
+function Vault(code) {
+    this.code = code;
+    this.repo_url = undefined;
+    this.repo_directory = undefined;
+    this.service_port = undefined;
+    this.db_hostname = undefined;
+    this.db_database = undefined;
+    this.db_username = undefined;
+    this.db_password = undefined;
+    this._init();
+}
 
-        return vault;
+Vault.prototype = {
+    _init() {
+        try {
+            let persisted = this._recover();
+            for(let key in persisted) {
+                this[key] = persisted[key];
+            }
+        } catch(e) {
+            //does not exist yet, nothing to do
+        }
     },
-    generateVault: function(code) {
-        return {
-            //cryptKey: `${secret.slice(0, 4)}**************`,
-            hostname: servers.getAvailableDbHost(),
-            database: `auto_db_${code}`,
-            username: `auto_user_${code}`,
-            password: `password`,
-        };
+    _persist: function() {
+        let encrypted = cryptoJSON.encrypt(this, secret);
+        return jsonFile.writeFileSync(`./store/vaults/vault-${this.code}.secret`, encrypted, {spaces: 2});
     },
-    getCode: function(environment, service) {
-        return `e${environment.id}_s${service.id}`;
-    },
-    persist: function(code, vault) {
-        let encrypted = cryptoJSON.encrypt(vault, secret);
-        return jsonFile.writeFileSync(`./store/vaults/vault-${code}.secret`, encrypted, {spaces: 2});
-    },
-    recover: function(code) {
-        let encrypted = jsonFile.readFileSync(`./store/vaults/vault-${code}.secret`);
+    _recover: function() {
+        let encrypted = jsonFile.readFileSync(`./store/vaults/vault-${this.code}.secret`);
         return cryptoJSON.decrypt(encrypted, secret);
+    },
+    _toYAML: function() {
+        return YAML.stringify(JSON.parse(JSON.stringify(this)));
     }
 };
+
+module.exports = Vault;

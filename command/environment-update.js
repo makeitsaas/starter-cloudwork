@@ -4,6 +4,7 @@ const log = require('../src/modules/logger/logger')('environment-create');
 const Order = require('../src/entities/order');
 const singleServiceDeployerService = require('../src/services/single-service-deployer');
 const Environment = require('../src/entities/environment');
+const {Service} = require('../src/entities/service');
 
 program
     .option('--env-id <envId>')
@@ -20,9 +21,16 @@ let order = initOrder();
 let desiredConfiguration = loadOrderSpecifications(order);
 let currentEnvironment = retrieveCurrentEnvironmentState(desiredConfiguration.environmentId);
 let processingDirectory = prepareProcessingDirectory();
-let currentServices = currentEnvironment._meta.services || [];
+let currentServices = currentEnvironment.services;
 let newServices = desiredConfiguration.services;
 
+
+
+
+
+/**
+ * Main Process here
+ */
 enableMaintenanceMode()
     .then(() => {
         return loopOnServices(currentServices, newServices)
@@ -48,6 +56,13 @@ enableMaintenanceMode()
         return disableMaintenanceMode();
     });
 
+
+
+
+
+/**
+ * Utils
+ */
 function initOrder() {
     log('init');
     return new Order('000000000000001');
@@ -59,7 +74,7 @@ function loadOrderSpecifications(order) {
     order.loadSpecs();
     let specs = order.get('specs'),
         environmentId = specs.environment_id,
-        services = specs.services,
+        services = specs.services.map(s => new Service(s)),
         domains = specs.domains;
     log('specs found', specs);
 
@@ -120,8 +135,8 @@ function loopOnServices(servicesBefore, servicesAfter) {
 
 function tidyServices(servicesBefore, servicesAfter) {
     // n => new service | o => old service
-    let servicesToCreate = servicesAfter.filter(n => servicesBefore.filter(o => o.id === n.id).length === 0);
-    let servicesToUpdate = servicesAfter.filter(n => servicesBefore.filter(o => o.id === n.id).length > 0);
+    let servicesToCreate = servicesAfter.filter(n => !currentEnvironment._getService(n.id));
+    let servicesToUpdate = servicesAfter.filter(n => currentEnvironment._getService(n.id));
     let servicesToDelete = servicesBefore.filter(o => servicesAfter.filter(n => o.id === n.id).length === 0);
 
     return {
@@ -142,6 +157,7 @@ function updateService(service) {
 function updateProxy() {
     log('generate proxy routing configuration');
     log('touch proxy reload for this env');
+    currentEnvironment._setDomains(desiredConfiguration.domains);
 }
 
 function updateCertificates() {

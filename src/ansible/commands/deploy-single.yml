@@ -4,4 +4,7 @@
   tasks:
   - set_fact: vars_file="default"
     when: vars_file is undefined
-  - include_tasks: deploy-script.yml
+  - name: include variables
+    include_vars: vars/{{vars_file}}.yml
+  - import_tasks: playbooks/prerequisites/prerequisites.yml
+  - import_tasks: playbooks/deploy-single-service/deploy.yml

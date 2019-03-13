@@ -34,8 +34,8 @@ function writeVarsFile(execDirectory, vars) {
     let varsDir = execDirectory + '/vars',
         varsFile = varsDir + '/default.yml';
     fs.mkdirSync(varsDir);
-    console.log(YAML.stringify(vars));
-    fs.writeFileSync(varsFile, YAML.stringify(vars))
+    console.log(vars._toYAML());
+    fs.writeFileSync(varsFile, vars._toYAML())
 }
 
 function copyPlaybook(execDirectory, playbookName) {
