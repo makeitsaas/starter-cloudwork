@@ -2,7 +2,6 @@
 // inventory/varfile/playbook
 
 const fs = require('fs');
-const YAML = require('yamljs');
 
 module.exports = function(execDirectory, inventory, vars, playbookName) {
 
@@ -15,7 +14,14 @@ module.exports = function(execDirectory, inventory, vars, playbookName) {
     linkPlaybooksDirectory(execDirectory);
     linkTemplatesDirectory(execDirectory);
 
-    return {}
+    return {
+        getPath: function() {
+            return execDirectory;
+        },
+        writeLogs: function(logs) {
+            fs.writeFileSync(execDirectory + '/root-playbook.log', logs);
+        }
+    };
 };
 
 

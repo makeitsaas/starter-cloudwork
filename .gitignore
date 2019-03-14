@@ -2,5 +2,3 @@
 node_modules/
 config/keys/*
 !config/keys/.gitkeep
-config/inventories/*
-!config/inventories/example

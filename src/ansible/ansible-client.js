@@ -6,8 +6,8 @@ const Ansible = require('../modules/node-ansible/index');
 const ansibleOutputParser = require('../modules/ansible-output-parser/index');
 const keyPath = 'config/keys/server-key';
 
-var playbook = new Ansible.Playbook()
-    .inventory('config/inventories/dev')
+const playbook = new Ansible.Playbook()
+    //.inventory('config/inventories/dev')
     .privateKey(keyPath)
     .user('ubuntu');
 
@@ -18,13 +18,29 @@ playbook.on('stderr', function (data) {
     process.stdout.write('x');
 });
 
-module.exports = {
-    exec: function (playbookName, options) {
-        const promise = playbook.playbook(`../ansible/${playbookName}`)
+function AnsibleClient(context) {
+    this.context = context;
+}
+
+AnsibleClient.prototype = {
+    exec: function () {
+        const promise = playbook
+            .inventory(`${this.context.getPath()}/inventories/hosts`)
+            .playbook(`${this.context.getPath()}/root-playbook`)
             .exec();
-        return promise.catch(e => e).then(function (stats) {
+
+        return promise.catch(e => e).then((stats) => {
             console.log("\ncode :", stats.code, "\n"); // Exit code of the executed command
-            return ansibleOutputParser(stats.output);
+            this.context.writeLogs(stats.output);
+            const parsed = ansibleOutputParser(stats.output);
+            if(parsed.success) {
+                return parsed;
+            } else {
+                throw parsed;
+            }
         });
     }
 };
+
+
+module.exports =  AnsibleClient;

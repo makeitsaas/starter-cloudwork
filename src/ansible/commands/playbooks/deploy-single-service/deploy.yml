@@ -1,5 +1,7 @@
 ---
 - import_tasks: checks.yml
+- debug:
+    msg: "clone and update to : /srv/services/{{ repo_directory }}"
 - name: clone repo
   git:
     repo: "{{ repo_url }}"

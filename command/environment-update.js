@@ -1,26 +1,25 @@
 require('dotenv').config();
 const program = require('commander');
 const log = require('../src/modules/logger/logger')('environment-create');
-const Order = require('../src/entities/order');
+const {Order} = require('../src/entities/order');
 const singleServiceDeployerService = require('../src/services/single-service-deployer');
 const Environment = require('../src/entities/environment');
-const {Service} = require('../src/entities/service');
 
 program
-    .option('--env-id <envId>')
+    .option('--order-id <orderId>')
     .parse(process.argv);
 
-const envId = program.envId;
+const orderId = program.orderId;
 
-if(!envId) {
-    console.error('--env-id is required!');
+if(!orderId) {
+    console.error('--order-id is required!');
     process.exit(1);
 }
 
-let order = initOrder();
-let desiredConfiguration = loadOrderSpecifications(order);
+let order = new Order(orderId);
+let desiredConfiguration = order.exportSpecs();
+log('desiredConfiguration', desiredConfiguration);
 let currentEnvironment = retrieveCurrentEnvironmentState(desiredConfiguration.environmentId);
-let processingDirectory = prepareProcessingDirectory();
 let currentServices = currentEnvironment.services;
 let newServices = desiredConfiguration.services;
 
@@ -34,9 +33,12 @@ let newServices = desiredConfiguration.services;
 enableMaintenanceMode()
     .then(() => {
         return loopOnServices(currentServices, newServices)
-                .then(({created, updated, unchanged}) => log('services stats', {created, updated, unchanged}));
+            .then(({created, updated, unchanged}) => log('services stats', {created, updated, unchanged}));
     })
     .catch((e) => {
+        log('error', e);
+        order._onError(e);
+        throw e;
         // if service deployment error, then recover
         // databases recover : backup required before update
         // computing recover : checkout source at previous-deployment-commit (ou deploy in another directory => better)
@@ -53,6 +55,7 @@ enableMaintenanceMode()
     })
     .then(() => {
         // return to normal
+        order._onSuccess();
         return disableMaintenanceMode();
     });
 
@@ -63,23 +66,6 @@ enableMaintenanceMode()
 /**
  * Utils
  */
-function initOrder() {
-    log('init');
-    return new Order('000000000000001');
-}
-
-function loadOrderSpecifications(order) {
-    // How we want the environment to be set
-    log('load order specifications');
-    order.loadSpecs();
-    let specs = order.get('specs'),
-        environmentId = specs.environment_id,
-        services = specs.services.map(s => new Service(s)),
-        domains = specs.domains;
-    log('specs found', specs);
-
-    return {specs, environmentId, services, domains};
-}
 
 function retrieveCurrentEnvironmentState(environmentId) {
     // How the environment is currently set
@@ -87,18 +73,6 @@ function retrieveCurrentEnvironmentState(environmentId) {
     const currentEnvironment = new Environment(environmentId);
     log('currentEnvironment', currentEnvironment);
     return currentEnvironment;
-}
-
-function prepareProcessingDirectory() {
-    // Directory where we prepare var_files and will store logs
-    log('prepare order session (nothing for the moment)');
-    //log('                 => directory');
-    //log('                 => things to do (services sub-tasks)');
-    //log('                 => variables');
-    //log('                 => config files');
-    //log('prepare future environment state');    // in case there is an error, check it since the beginning
-
-    return {};
 }
 
 function enableMaintenanceMode() {
@@ -151,7 +125,7 @@ function createService(service) {
 }
 
 function updateService(service) {
-    return singleServiceDeployerService(order.getDirectory(), currentEnvironment, service);
+    return singleServiceDeployerService(order.getAbsoluteDirectory(), currentEnvironment, service);
 }
 
 function updateProxy() {
@@ -177,12 +151,10 @@ function deleteDeprecatedServices(servicesBefore, servicesAfter) {
 }
 
 function dropService(service) {
-    let promise = new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         setTimeout(() => {
             log('mock service delete', service);
             resolve(1);
         }, 100 + Math.random() * 100);
     });
-
-    return promise;
 }

@@ -14,12 +14,18 @@
  *
  */
 
+// NOTE : modeling shall reflect exactly the process.
+/*
+    On ne doit pas remplacer le service dans environment par un nouveau, mais manipuler dans un seul objet la mise à jour
+    => afin de pouvoir rapprocher directement ce qu'on est en train de faire, et en cas d'échec de connaître l'état du déploiement
+ */
+
 const Vault = require('../entities/vault');
 const log = require('../modules/logger/logger')('environment-create');
 const ansibleContextBuilder = require('../ansible/ansible-context-builder');
 const fs = require('fs');
 const Servers = require('../entities/servers');
-
+const AnsibleClient = require('../ansible/ansible-client');
 module.exports = function(orderDirectory, currentEnvironment, desiredService) {
 
     const computingIP = Servers.getAvailableComputingHost();
@@ -31,8 +37,10 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
     const serviceStateFn = async () => {
         // new service has previous state
         const previousService = currentEnvironment._getService(desiredService.id);
-        desiredService.deployStatus = previousService.deployStatus;
-        desiredService.databaseStatus = previousService.databaseStatus;
+        if(previousService) {
+            desiredService.deployStatus = previousService.deployStatus;
+            desiredService.databaseStatus = previousService.databaseStatus;
+        }
 
         return desiredService;
     };
@@ -51,7 +59,7 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
         let newValues = {
             repo_url: desiredService.repo_url,
             repo_directory: serviceCode,
-            service_port: Servers.getAvailableComputingPort(computingIP),
+            //service_port: Servers.getAvailableComputingPort(computingIP),
             db_hostname: daemonsIP,
             db_database: 'auto_db_' + serviceCode.replace('-', '_'),
             db_username: 'auto_user_' + serviceCode.replace('-', '_'),
@@ -63,6 +71,11 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
                 vault[key] = newValues[key];
             }
         }
+
+        if(!vault.service_port) {
+            vault.service_port = Servers.getAvailableComputingPort(computingIP, serviceCode);
+        }
+
         vault._persist();
 
         vars = vault;
@@ -78,7 +91,14 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
             log('do generateDb');
             let execDirectory = prepareTmpDirectory(orderDirectory);
             let context = ansibleContextBuilder(execDirectory, inventory, vars, 'database-create');
-            desiredService._setDatabaseReady();
+            let client = new AnsibleClient(context);
+            return client.exec().then(result => {
+                if(result.success) {
+                    desiredService._setDatabaseReady();
+                }
+
+                return result;
+            });
         }
     };
 
@@ -86,7 +106,16 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
         log('do deploySrc');
         let execDirectory = prepareTmpDirectory(orderDirectory);
         let context = ansibleContextBuilder(execDirectory, inventory, vars, 'deploy-single');
-        desiredService._setDeployReady();
+        let client = new AnsibleClient(context);
+
+        return client.exec().then(result => {
+            if(result.success) {
+                desiredService._setDeployReady();
+            }
+
+            return result;
+        });
+
     };
 
     const endMock = async () => {
