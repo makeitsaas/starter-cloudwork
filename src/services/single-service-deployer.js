@@ -26,15 +26,24 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
     const daemonsIP = Servers.getAvailableDbHost();
     const serviceCode = `e${currentEnvironment.id}-s${desiredService.id}`;
 
-    const directoryFn = async () => {
-        return prepareTmpDirectory(orderDirectory);
+    let inventory, vars;
+
+    const serviceStateFn = async () => {
+        // new service has previous state
+        const previousService = currentEnvironment._getService(desiredService.id);
+        desiredService.deployStatus = previousService.deployStatus;
+        desiredService.databaseStatus = previousService.databaseStatus;
+
+        return desiredService;
     };
 
     const inventoryFn = async () => {
-        return {
+        inventory = {
             daemons: daemonsIP,
             computing: computingIP
         };
+
+        return inventory;
     };
 
     const varsFn = async () => {
@@ -56,24 +65,46 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
         }
         vault._persist();
 
-        return vault;
+        vars = vault;
+
+        return vars;
     };
 
-    return new Promise((resolve, reject) => {
-        Promise.all([
-            directoryFn(),
+    const generateDb = async () => {
+        if(desiredService._isDatabaseReady()) {
+            log('do not generateDb');
+            return true;
+        } else {
+            log('do generateDb');
+            let execDirectory = prepareTmpDirectory(orderDirectory);
+            let context = ansibleContextBuilder(execDirectory, inventory, vars, 'database-create');
+            desiredService._setDatabaseReady();
+        }
+    };
+
+    const deploySrc = async () => {
+        log('do deploySrc');
+        let execDirectory = prepareTmpDirectory(orderDirectory);
+        let context = ansibleContextBuilder(execDirectory, inventory, vars, 'deploy-single');
+        desiredService._setDeployReady();
+    };
+
+    const endMock = async () => {
+        await timeout(100 + Math.random() * 100);
+        log('mock service update', desiredService);
+        currentEnvironment._updateService(desiredService);
+        return 1;
+    };
+
+    return Promise
+        .all([
+            serviceStateFn(),
             inventoryFn(),
             varsFn()
-        ]).then(args => {
-            return ansibleContextBuilder(...args, 'database-drop');
-        }).then(() => {
-            setTimeout(() => {
-                log('mock service update', desiredService);
-                currentEnvironment._updateService(desiredService);
-                resolve(1);
-            }, 100 + Math.random() * 100);
-        });
-    });
+        ])
+        .then(() => generateDb())
+        .then(() => deploySrc())
+        .then(() => endMock());
 };
 
 function prepareTmpDirectory(orderDirectory) {
@@ -95,4 +126,8 @@ function prepareTmpDirectory(orderDirectory) {
 
 function generatePlaybookPath(ansiblePath, i) {
     return ansiblePath + '/playbook-' + i;
+}
+
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
