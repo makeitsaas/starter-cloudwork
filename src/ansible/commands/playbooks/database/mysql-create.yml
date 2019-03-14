@@ -20,12 +20,12 @@
   debug: msg="{{ the_remote_config }}"
 - name: Create a new database with name 'bobdata'
   mysql_db:
-    name: bobdata
+    name: "{{ db_database }}"
     state: present
   become: yes
 - name: Create user
   mysql_db:
-    name: bobdata
+    name: "{{ db_database }}"
     state: import
     target: "{{ tmp_create_user }}"
   become: yes
