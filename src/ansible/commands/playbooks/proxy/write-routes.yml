@@ -1,0 +1,10 @@
+---
+- debug:
+    msg: "Write routes"
+- set_fact: route_config_path="/srv/proxy/config/routes/e{{ environment_id }}.yml"
+- name: write route file
+  template:
+      src: templates/proxy-route.yml.j2
+      dest: "{{ route_config_path }}"
+      mode: 0644
+#  become: true

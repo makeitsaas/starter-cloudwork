@@ -34,16 +34,16 @@ module.exports = function (output) {
         step.status = parseStepStatus(step.lines);
         step.data = parseLinesData(step.lines);
         return step;
-    })
+    });
 
-    recap = findRecap(steps);
+    let recap = findRecap(steps);
 
     return {
         success: !recap.unreachable && !recap.failed,
         steps,
         recap
     };
-}
+};
 
 function isStepHead(line) {
     return /\*\*\*$/.test(line);

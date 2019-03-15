@@ -2,8 +2,9 @@ require('dotenv').config();
 const program = require('commander');
 const log = require('../src/modules/logger/logger')('environment-create');
 const {Order} = require('../src/entities/order');
-const singleServiceDeployerService = require('../src/services/single-service-deployer');
 const Environment = require('../src/entities/environment');
+const singleServiceDeployerService = require('../src/services/single-service-deployer');
+const proxyRefreshService = require('../src/services/refresh-proxy');
 
 program
     .option('--order-id <orderId>')
@@ -32,21 +33,28 @@ let newServices = desiredConfiguration.services;
  */
 enableMaintenanceMode()
     .then(() => {
+        // update services 1 by 1
         return loopOnServices(currentServices, newServices)
-            .then(({created, updated, unchanged}) => log('services stats', {created, updated, unchanged}));
-    })
-    .catch((e) => {
-        log('error', e);
-        order._onError(e);
-        throw e;
-        // if service deployment error, then recover
-        // databases recover : backup required before update
-        // computing recover : checkout source at previous-deployment-commit (ou deploy in another directory => better)
+            .then(({created, updated, unchanged}) => log('services stats', {created, updated, unchanged}))
+            .catch((e) => {
+                log('loopOnServices error', e);
+                order._onError(e);
+                throw e;
+                // if service deployment error, then recover
+                // databases recover : backup required before update
+                // computing recover : checkout source at previous-deployment-commit (ou deploy in another directory => better)
+            });
     })
     .then(() => {
         // update main config
-        updateProxy();
-        updateCertificates();
+        return  Promise.resolve()
+            .then(() => updateProxy())
+            .then(() => updateCertificates())
+            .catch(e => {
+                log('main config update error', e);
+                order._onError(e);
+                throw e;
+            })
     })
     .then(() => {
         // clean environment
@@ -57,6 +65,9 @@ enableMaintenanceMode()
         // return to normal
         order._onSuccess();
         return disableMaintenanceMode();
+    })
+    .catch((e) => {
+        log('Not everything successful', e);
     });
 
 
@@ -132,6 +143,7 @@ function updateProxy() {
     log('generate proxy routing configuration');
     log('touch proxy reload for this env');
     currentEnvironment._setDomains(desiredConfiguration.domains);
+    return proxyRefreshService(order.getAbsoluteDirectory(), currentEnvironment);
 }
 
 function updateCertificates() {

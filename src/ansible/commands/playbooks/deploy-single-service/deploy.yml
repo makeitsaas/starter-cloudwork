@@ -1,28 +1,55 @@
 ---
 - import_tasks: checks.yml
+- set_fact: repo_absolute_path="/srv/services/{{ repo_directory }}"
+- set_fact: pm2_process_name="auto-{{ repo_directory }}"
 - debug:
-    msg: "clone and update to : /srv/services/{{ repo_directory }}"
+    msg: "clone and update to : {{repo_absolute_path}}"
 - name: clone repo
   git:
     repo: "{{ repo_url }}"
-    dest: "/srv/services/{{ repo_directory }}"
+    dest: "{{ repo_absolute_path }}"
     #separate_git_dir: /src/ansible-examples.git
     #version: release-0.22
-  become: yes
   when: git_directory.stat.exists == False
 - name: update repo
   git:
     repo: "{{ repo_url }}"
-    dest: "/srv/services/{{ repo_directory }}"
+    dest: "{{ repo_absolute_path }}"
     clone: no
     force: true
     #separate_git_dir: /src/ansible-examples.git
     #version: release-0.22
-  become: yes
   when: git_directory.stat.exists == True
-- name: setup .env file
+- name: write .env file
   template:
     src: templates/env.j2
-    dest: "/srv/services/{{ repo_directory }}/.env"
+    dest: "{{ repo_absolute_path }}/.env"
     mode: 0644
-  become: yes
+- name: write __start__.sh file
+  template:
+    src: templates/npm-start.sh
+    dest: "{{ repo_absolute_path }}/__start__.sh"
+    mode: 0644
+- name: Install framework packages based on PATH/framework/package.json
+  npm:
+    path: "{{ repo_absolute_path }}/framework"
+- name: Install service packages based on PATH/package.json
+  npm:
+    path: "{{ repo_absolute_path }}"
+- name: Check if process is already started
+  shell: pm2 pid {{pm2_process_name}}
+  register: pm2_already_started
+- debug:
+    msg: "pm2_process_name started => {{pm2_already_started.stdout != ''}}"
+- name: Delete process if already started
+  shell: pm2 delete {{pm2_process_name}}
+  args:
+    chdir: "{{ repo_absolute_path }}"
+  when: pm2_already_started.stdout != ''
+- name: Start process
+  shell: pm2 start __start__.sh --name "{{pm2_process_name}}"
+  #shell: pm2 start npm --name "{{pm2_process_name}}" -- start => pm2 doesnt recognize package version when starting this way
+  args:
+    chdir: "{{ repo_absolute_path }}"
+- name: Save pm2 configuration
+  shell: pm2 save

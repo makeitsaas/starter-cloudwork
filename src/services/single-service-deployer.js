@@ -30,7 +30,7 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
 
     const computingIP = Servers.getAvailableComputingHost();
     const daemonsIP = Servers.getAvailableDbHost();
-    const serviceCode = `e${currentEnvironment.id}-s${desiredService.id}`;
+    const serviceCode = currentEnvironment._getServiceInstanceCode(desiredService);
 
     let inventory, vars;
 
@@ -57,9 +57,10 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
     const varsFn = async () => {
         let vault = new Vault(serviceCode);
         let newValues = {
-            repo_url: desiredService.repo_url,
+            //repo_url: desiredService.repo_url,
             repo_directory: serviceCode,
             //service_port: Servers.getAvailableComputingPort(computingIP),
+            redis_hostname: daemonsIP,
             db_hostname: daemonsIP,
             db_database: 'auto_db_' + serviceCode.replace('-', '_'),
             db_username: 'auto_user_' + serviceCode.replace('-', '_'),
@@ -70,6 +71,10 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
             if(!vault[key]) {
                 vault[key] = newValues[key];
             }
+        }
+
+        if(desiredService.repo_url) {
+            vault.repo_url = desiredService.repo_url;
         }
 
         if(!vault.service_port) {
@@ -120,7 +125,7 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
 
     const endMock = async () => {
         await timeout(100 + Math.random() * 100);
-        log('mock service update', desiredService);
+        //log('mock service update', desiredService);
         currentEnvironment._updateService(desiredService);
         return 1;
     };

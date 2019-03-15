@@ -27,13 +27,18 @@ module.exports = function(execDirectory, inventory, vars, playbookName) {
 
 function writeInventoryFile(execDirectory, inventory) {
     let inventoryDir = execDirectory + '/inventories',
-        inventoryFile = inventoryDir + '/hosts';
-    fs.mkdirSync(inventoryDir);
-    fs.writeFileSync(inventoryFile, `[daemons]
-${inventory.daemons}
+        inventoryFile = inventoryDir + '/hosts',
+        inventoryFileContent = '';
 
-[computing]
-${inventory.computing}`);
+    for(let key in inventory) {
+        inventoryFileContent +=`
+[${key}]
+${inventory[key]}
+`
+    }
+
+    fs.mkdirSync(inventoryDir);
+    fs.writeFileSync(inventoryFile, inventoryFileContent);
 }
 
 function writeVarsFile(execDirectory, vars) {

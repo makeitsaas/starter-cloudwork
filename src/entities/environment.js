@@ -23,6 +23,9 @@ Environment.prototype = {
     _getService: function(serviceId) {
         return this.services.filter(service => service.id === serviceId)[0];
     },
+    _getServiceInstanceCode: function(service) {
+        return `e${this.id}-s${service.id}`
+    },
     _addService: function(service) {
         if(!this._getService(service.id)) {
             this.services.push(service);

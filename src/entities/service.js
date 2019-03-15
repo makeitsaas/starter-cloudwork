@@ -1,4 +1,3 @@
-
 const DATABASE_STATUSES = {
     'none': 'none',
     'pending': 'pending',

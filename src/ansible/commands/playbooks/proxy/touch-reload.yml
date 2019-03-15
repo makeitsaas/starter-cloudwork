@@ -1,0 +1,13 @@
+---
+- debug:
+    msg: "Touch reload"
+- set_fact: reload_file_path="/srv/proxy/config/reload/e{{ environment_id }}"
+- name: write route file
+  copy:
+    content: ""
+    dest: "{{reload_file_path}}"
+    force: no
+#    group: sys
+#    owner: root
+#    mode: 0555
+#  become: true
