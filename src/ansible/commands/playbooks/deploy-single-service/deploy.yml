@@ -20,6 +20,17 @@
     #separate_git_dir: /src/ansible-examples.git
     #version: release-0.22
   when: git_directory.stat.exists == True
+- name: Install service packages based on PATH/package.json
+  npm:
+    path: "{{ repo_absolute_path }}"
+- name: check if there is a development framework subdirectory
+  stat:
+    path: "/srv/services/{{ repo_directory }}/framework"
+  register: has_framework_directory
+- name: Install framework packages based on PATH/framework/package.json
+  npm:
+    path: "{{ repo_absolute_path }}/framework"
+  when: has_framework_directory.stat.exists == True
 - name: write .env file
   template:
     src: templates/env.j2
@@ -30,12 +41,6 @@
     src: templates/npm-start.sh
     dest: "{{ repo_absolute_path }}/__start__.sh"
     mode: 0644
-- name: Install framework packages based on PATH/framework/package.json
-  npm:
-    path: "{{ repo_absolute_path }}/framework"
-- name: Install service packages based on PATH/package.json
-  npm:
-    path: "{{ repo_absolute_path }}"
 - name: Check if process is already started
   shell: pm2 pid {{pm2_process_name}}
   register: pm2_already_started

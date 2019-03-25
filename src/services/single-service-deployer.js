@@ -58,6 +58,7 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
         let vault = new Vault(serviceCode);
         let newValues = {
             //repo_url: desiredService.repo_url,
+            environment_domain: currentEnvironment.domains[0],
             repo_directory: serviceCode,
             //service_port: Servers.getAvailableComputingPort(computingIP),
             redis_hostname: daemonsIP,

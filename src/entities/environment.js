@@ -14,6 +14,7 @@ Environment.prototype = {
         // load stored value if existing
         try {
             let stored = this._recover();
+            this.domains = stored.domains;
             this.services = stored.services.map(serviceObj => new Service(serviceObj));
         } catch(e) {
             // no saved configuration
