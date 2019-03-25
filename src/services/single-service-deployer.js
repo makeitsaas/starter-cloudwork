@@ -68,12 +68,12 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
             db_password: 'password' // generate secure password
         };
 
-        if(true) {
+        if(process.env.GITHUB_CLIENT_ID) {
             // NOTE : below the variables set by the user (above vars were established by the deployer)
-            let oauthClients = {
-                github_client_id: process.env.GITHUB_CLIENT_ID || '',
-                github_client_secret: process.env.GITHUB_CLIENT_SECRET || '',
-                github_callback_url: process.env.GITHUB_CALLBACK_URL || ''
+            const oauthClients = {
+                github_client_id: process.env.GITHUB_CLIENT_ID,
+                github_client_secret: process.env.GITHUB_CLIENT_SECRET,
+                github_callback_url: process.env.GITHUB_CALLBACK_URL
             };
 
             newValues = {
