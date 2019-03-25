@@ -68,6 +68,20 @@ module.exports = function(orderDirectory, currentEnvironment, desiredService) {
             db_password: 'password' // generate secure password
         };
 
+        if(true) {
+            // NOTE : below the variables set by the user (above vars were established by the deployer)
+            let oauthClients = {
+                github_client_id: process.env.GITHUB_CLIENT_ID || '',
+                github_client_secret: process.env.GITHUB_CLIENT_SECRET || '',
+                github_callback_url: process.env.GITHUB_CALLBACK_URL || ''
+            };
+
+            newValues = {
+                ...newValues,
+                ...oauthClients
+            }
+        }
+
         for(let key in newValues) {
             if(!vault[key]) {
                 vault[key] = newValues[key];
