@@ -23,14 +23,18 @@
 - name: Install service packages based on PATH/package.json
   npm:
     path: "{{ repo_absolute_path }}"
-- name: check if there is a development framework subdirectory
-  stat:
-    path: "/srv/services/{{ repo_directory }}/framework"
-  register: has_framework_directory
-- name: Install framework packages based on PATH/framework/package.json
+- name: Update service packages based on PATH/package.json
   npm:
-    path: "{{ repo_absolute_path }}/framework"
-  when: has_framework_directory.stat.exists == True
+    path: "{{ repo_absolute_path }}"
+    state: latest
+#- name: check if there is a development framework subdirectory
+#  stat:
+#    path: "/srv/services/{{ repo_directory }}/framework"
+#  register: has_framework_directory
+#- name: Install framework packages based on PATH/framework/package.json
+#  npm:
+#    path: "{{ repo_absolute_path }}/framework"
+#  when: has_framework_directory.stat.exists == True
 - name: write .env file
   template:
     src: templates/env.j2
