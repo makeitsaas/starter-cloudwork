@@ -10,12 +10,12 @@
     dest: "{{ tmp_drop_user }}"
 - name: Drop user
   mysql_db:
-    name: bobdata
+    name: "{{ db_database }}"
     state: import
     target: "{{ tmp_drop_user }}"
   become: yes
-- name: Drop database with name 'bobdata'
+- name: Drop database
   mysql_db:
-    name: bobdata
+    name: "{{ db_database }}"
     state: absent
   become: yes

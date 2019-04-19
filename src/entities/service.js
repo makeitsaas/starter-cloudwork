@@ -25,6 +25,9 @@ Service.prototype = {
     _setDeployReady: function() {
         this.deployStatus = DATABASE_STATUSES.ready;
     },
+    _hasDatabase: function() {
+        return this.databaseStatus !== DATABASE_STATUSES.none;
+    },
     _isDatabaseReady: function() {
         return this.databaseStatus === DATABASE_STATUSES.ready;
     },

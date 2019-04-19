@@ -82,7 +82,12 @@ function retrieveCurrentEnvironmentState(environmentId) {
     // How the environment is currently set
     log('retrieve current environment configuration');
     const currentEnvironment = new Environment(environmentId);
+
+    if(!currentEnvironment.domains.length) {   // quick fix to set a "default domain"
+        currentEnvironment._setDomains(desiredConfiguration.domains);
+    }
     log('currentEnvironment', currentEnvironment);
+
     return currentEnvironment;
 }
 

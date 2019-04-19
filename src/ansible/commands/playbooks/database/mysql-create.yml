@@ -18,7 +18,7 @@
 - name: The remote config
   become: true
   debug: msg="{{ the_remote_config }}"
-- name: Create a new database with name 'bobdata'
+- name: Create a new database
   mysql_db:
     name: "{{ db_database }}"
     state: present

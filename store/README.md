@@ -1,11 +1,9 @@
 # Store
 
-
 This directory is supposed to be used by the application only. Don't add anything here.
 
 Because it contains highly sensitive information, database will be added later
 if necessary (no performance limitation expected)
-
 
 ## Notes
 

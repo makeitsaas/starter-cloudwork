@@ -46,11 +46,12 @@ Order.prototype = {
         }
     },
     exportSpecs: function() {
-        let environmentId = this.specs.environment_id,
+        let action = this.specs.action,
+            environmentId = this.specs.environment_id,
             services = this.specs.services.map(s => new Service(s)),
             domains = this.specs.domains;
 
-        return {environmentId, services, domains};
+        return {action, environmentId, services, domains};
     },
     getAbsoluteDirectory: function() {
         return store.getStoreDirectory() + `/orders/order-${this.id}`;

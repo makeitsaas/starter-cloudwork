@@ -31,8 +31,6 @@ module.exports = {
             return false;
 
         let target = serverConfig[serverType].servers.filter(server => server.ip === ip)[0];
-        console.log('/!\\ /!\\ /!\\ /!\\ /!\\ /!\\ /!\\ /!\\', ip, port, target);
-        console.log('isPortavailable', ip, port, target);
 
         return target && !target.ports[port];
     },

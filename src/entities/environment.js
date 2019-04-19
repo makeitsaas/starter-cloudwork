@@ -3,6 +3,7 @@ const storageDir = './store/environments';
 const {Service} = require('./service');
 
 function Environment(id) {
+    console.log('environment id', id);
     this.id = id;
     this.services = [];
     this.domains = [];
@@ -48,6 +49,10 @@ Environment.prototype = {
         } else {
             this._addService(service);
         }
+    },
+    _removeService: function(serviceId) {
+        this.services = this.services.filter(s => s.id !== serviceId);
+        this._persist();
     },
     _setDomains: function(domains) {
         this.domains = domains;
