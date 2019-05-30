@@ -88,3 +88,12 @@ Need to remove double quotes (then careful about paths)
 ```
 return this.addParamValue(commandParams, '' + this.config[param] + '', flag);
 ```
+
+
+
+
+### V2 
+* **servlet :** receives order requests (http, queues)
+* **scheduler :** parses orders and rewrites it into a list of jobs
+* **runner :** executes jobs using ansible playbooks  
+* **repository :** persists configurations  

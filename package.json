@@ -12,17 +12,27 @@
     "environment:update": "node command/environment-update.js",
     "environment:delete": "node command/environment-delete.js",
     "deploy": "node deploy.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "tsc": "tsc",
+    "tsn": "ts-node -r tsconfig-paths/register app/app.ts ",
+    "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s ./app -o ./dist",
+    "prod": "node dist/app.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/dotenv": "^6.1.1",
     "commander": "^2.19.0",
     "crypto-json": "^2.0.2",
     "dotenv": "^6.2.0",
     "fs": "0.0.1-security",
     "jsonfile": "^5.0.0",
     "node-ansible": "^0.5.5",
+    "typescript": "^3.5.1",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "ts-node": "^8.2.0",
+    "tsconfig-paths": "^3.8.0",
+    "tscpaths": "0.0.9"
   }
 }
