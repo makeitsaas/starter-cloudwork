@@ -1,0 +1,6 @@
+tasks:
+  - allocate
+  - setup-vaults
+  - setup-databases
+  - setup-compute
+  - update-proxy

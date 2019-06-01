@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import * as yaml from 'js-yaml';
+import { Sequence, SequenceTask } from '@entities';
 
 
 @Entity()
@@ -12,7 +13,13 @@ export class Order {
     specs: string;
 
     @Column()
+    isValid: boolean = false;
+
+    @Column()
     environmentId: string = '';
+
+    @OneToMany(type => Sequence, sequence => sequence.order, { onDelete: 'CASCADE' })
+    sequences: Sequence[];
 
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;
@@ -21,8 +28,10 @@ export class Order {
     updatedAt: Date;
 
     constructor(specs?: string) { // maybe uuid + specs
-        if(specs)
+        if(specs) {
             this.specs = specs;
+            this.isValid = !!this.parseSpecs();
+        }
         if(!this.environmentId)
             this.environmentId = this.getEnvironmentId();
     }
@@ -40,11 +49,15 @@ export class Order {
     }
 
     private getParsedSpecs(): any {
+        return this.parseSpecs() || {};
+    }
+
+    private parseSpecs(): any {
         try {
-            return yaml.safeLoad(this.specs) || {};
+            return yaml.safeLoad(this.specs);
         } catch(e) {
             console.error('parse error', e);
-            return {};
+            return null;
         }
     }
 }

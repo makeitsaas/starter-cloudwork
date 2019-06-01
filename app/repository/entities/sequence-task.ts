@@ -6,14 +6,14 @@ export class SequenceTask {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Sequence, sequence => sequence.tasks)
+    @ManyToOne(type => Sequence, sequence => sequence.tasks, { onDelete: 'CASCADE' })
     sequence: Sequence;
 
     @Column()
     taskType: string;
 
     @Column('json')
-    parameters: string;
+    parameters: any;
 
     @Column()
     position: number;
@@ -24,6 +24,6 @@ export class SequenceTask {
     @Column()
     isOver: boolean = false;
 
-    @Column("text")
+    @Column({type: "text", nullable: true})
     error?: string;
 }

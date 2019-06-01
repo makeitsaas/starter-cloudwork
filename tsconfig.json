@@ -6,9 +6,10 @@
     "strict": true,
     "baseUrl": "./app",
     "moduleResolution": "node",
-    "strictPropertyInitialization": false, // test
+    "strictPropertyInitialization": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "noImplicitAny": true,
     "paths": {
       "@entities": [
         "repository/entities"
