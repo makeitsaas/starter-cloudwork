@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import * as yaml from 'js-yaml';
-import { Sequence, SequenceTask } from '@entities';
+import { Sequence } from '@entities';
 
 
 @Entity()

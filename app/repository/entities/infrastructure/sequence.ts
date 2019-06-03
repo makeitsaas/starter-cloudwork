@@ -1,7 +1,3 @@
-// mettre en place la séquence et les jobs
-// operations de bases pour situer le statut des jobs, lequel à traiter, puis mettre à jour
-// conversion order => sequence
-
 import {
     Entity,
     Column,
@@ -11,9 +7,9 @@ import {
     UpdateDateColumn,
     ManyToOne, EntityManager
 } from "typeorm";
-import { SequenceTask } from '@entities/sequence-task';
+import { SequenceTask } from '@entities';
 import { Order } from '@entities';
-import { ConfigReader } from '../../scheduler/lib/config-reader';
+import { ConfigReader } from '../../../scheduler/lib/config-reader';
 
 @Entity()
 export class Sequence {
@@ -65,10 +61,24 @@ export class Sequence {
     }
 
     saveDeep(em: EntityManager) {
+        // em only saves the first level entity, not sub-ones
+        // https://github.com/typeorm/typeorm/issues/1025
         return em.save(this).then(savedSeq => {
             return Promise.all([
                 ...this.tasks.map(task => em.save(task))
             ]).then(() => savedSeq);
+        });
+    }
+
+    getTasksInOrder() {
+        return this.tasks.sort((t1, t2) => {
+           if(t1.position < t2.position) {
+               return -1;
+           } else if(t1.position > t2.position) {
+               return 1;
+           } else {
+               return 0;
+           }
         });
     }
 }

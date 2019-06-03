@@ -2,6 +2,25 @@
 
 Prepares and runs complex ansible playbooks.
 
+NodeJS/TypeScript application :
+- Input : custom orders, under `.yml` format
+- Output : execution of custom ansible scripts
+
+## Getting Started
+
+### Installation
+
+**Prerequisites :**
+- some
+- things
+
+
+### Executing ansible scripts
+Via node, or without
+
+
+## How it works
+
 **What does it do ?**
 
 Basically executes deployment orders (setup environment, update environment, delete environment). 

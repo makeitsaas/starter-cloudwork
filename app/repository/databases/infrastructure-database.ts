@@ -1,6 +1,5 @@
 // import "reflect-metadata";
 import {createConnection} from "typeorm";
-import { Order, Sequence, SequenceTask } from '@entities';
 
 export const dbLoader = createConnection({
     type: "mysql",
@@ -10,13 +9,14 @@ export const dbLoader = createConnection({
     password: process.env.DEPLOY_DB_PASSWORD || "password",
     database: process.env.DEPLOY_DB_DATABASE || "deployer",
     entities: [
-        Sequence,
-        SequenceTask,
-        Order
+        __dirname + "/../entities/infrastructure/*.js",
+        __dirname + "/../entities/infrastructure/*.ts",
     ],
     synchronize: true,
     logging: false
 }).then(connection => {
     // here you can start to work with your entities
     return connection;
-}).catch(error => console.log(error));
+}).catch(error => {
+    throw error;
+});

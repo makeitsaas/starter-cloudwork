@@ -7,3 +7,17 @@ export class Scheduler {
         return o;
     }
 }
+
+
+
+/*
+const s = new Scheduler();
+const o = s.parseOrder(1);
+connection.transaction(transactionalEntityManager => {
+    let em = transactionalEntityManager;
+    return em.save(o).then(savedOrder => {
+        const seq = new Sequence(savedOrder);
+        return seq.saveDeep(em);
+    });
+});
+*/

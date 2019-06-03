@@ -1,4 +1,5 @@
 tasks:
+  - planify
   - allocate
   - setup-vaults
   - setup-databases

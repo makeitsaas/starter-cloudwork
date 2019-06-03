@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
-import { Sequence } from '@entities/sequence';
+import { Sequence } from '@entities';
 
 @Entity()
 export class SequenceTask {
