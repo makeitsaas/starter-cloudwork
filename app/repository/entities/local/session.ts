@@ -27,6 +27,7 @@ export class Session {
     async cleanup(): Promise<number> {
         if (this.cleanupDone)
             return -1;  // code -1 = pending cleanup
+        await this._loading;    // startup shall be over
         this.cleanupDone = true;
         let code = 0;
         try {

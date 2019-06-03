@@ -7,30 +7,44 @@ import { Session } from '@entities';
 import { SequenceRunner } from './scheduler/lib/sequence-runner';
 import { Sequence } from '@entities';
 
-const session = new Session();
-const runner = new SequenceRunner(session);
 
-runner.runSequence(28).then((seq: Sequence) => {
-    // console.log(seq);
-});
+export class App {
+    private readonly _session: Session;
 
-const exitHandler = () => {
-    session.cleanup().then(code => {
-        // code -1 : cleanup already in progress
-        if (code !== -1) {
-            process.exit(0);
-        }
-    });
-};
+    constructor() {
+        this._session = new Session();
+        this.initStdListeners();
+    }
 
-process.stdin.resume();
-//do something when app is closing
-process.on('exit', exitHandler.bind(null, {cleanup: true}));
+    runSequence(sequenceId: number): Promise<Sequence> {
+        const runner = new SequenceRunner(this._session);
 
-//catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit: true}));
+        return runner.runSequence(sequenceId);
+    }
 
-// catches "kill pid" (for example: nodemon restart)
-process.on('SIGUSR1', exitHandler.bind(null, {exit: true}));
-process.on('SIGUSR2', exitHandler.bind(null, {exit: true}));
+    exitHandler() {
+        this._session.cleanup().then(code => {
+            // code -1 : cleanup already in progress
+            if (code !== -1) {
+                process.exit(0);
+            }
+        });
+    }
 
+    initStdListeners() {
+        process.stdin.resume();
+        //do something when app is closing
+        process.on('exit', this.exitHandler.bind(this, {cleanup: true}));
+
+        //catches ctrl+c event
+        process.on('SIGINT', this.exitHandler.bind(this, {exit: true}));
+
+        // catches "kill pid" (for example: nodemon restart)
+        process.on('SIGUSR1', this.exitHandler.bind(this, {exit: true}));
+        process.on('SIGUSR2', this.exitHandler.bind(this, {exit: true}));
+    }
+
+    exit() {
+        this.exitHandler();
+    }
+}

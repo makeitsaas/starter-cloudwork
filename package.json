@@ -14,6 +14,7 @@
     "deploy": "node deploy.js",
     "tsc": "tsc",
     "tsn": "ts-node -r tsconfig-paths/register app/app.ts ",
+    "cli": "ts-node -r tsconfig-paths/register bin/cli.ts ",
     "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s ./app -o ./dist",
     "prod": "node dist/app.js"
   },
