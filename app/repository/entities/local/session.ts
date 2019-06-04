@@ -2,6 +2,7 @@ import { Connection, EntityManager, QueryRunner } from 'typeorm';
 import { dbLoader } from '../../databases/infrastructure-database';
 import { vaultDbLoader } from '../../databases/vaults-database';
 import { EnvironmentVault } from '@entities';
+import { InfrastructureModel } from '../../../scheduler/models/infrastructure.model';
 
 export class Session {
 
@@ -10,11 +11,13 @@ export class Session {
     private _vaultConnection: Connection;
     private _em: EntityManager;
     private _queryRunner: QueryRunner;
+    public infrastructure: InfrastructureModel;
 
     constructor() {
         this._loading = Promise.all([
             this.initConnection(),
-            this.initVaultConnection()
+            this.initVaultConnection(),
+            this.initInfrastructureModel()
         ]);
     }
 
@@ -76,6 +79,12 @@ export class Session {
             });
     }
 
+    /*
+     * ---------------
+     * Private methods
+     * ---------------
+     */
+
     private initConnection() {
         return dbLoader.then(async (connection: Connection) => {
             this._connection = connection;
@@ -93,5 +102,9 @@ export class Session {
             this._vaultConnection = connection;
             return connection;
         });
+    }
+
+    private initInfrastructureModel() {
+        this.infrastructure = new InfrastructureModel(this);
     }
 }

@@ -17,7 +17,7 @@ export class Sequence {
     id: number;
 
     @ManyToOne(type => Order, order => order.sequences, { onDelete: 'CASCADE' })
-    order: Order;
+    order: Promise<Order>;
 
     @Column()
     sequenceType: string;
@@ -47,7 +47,7 @@ export class Sequence {
     }
 
     fromOrder(order: Order) {
-        this.order = order;
+        this.order = Promise.resolve(order);
         this.sequenceType = 'environment-update';
 
         const blueprint = ConfigReader.sequenceBlueprint(this.sequenceType);
@@ -80,5 +80,18 @@ export class Sequence {
                return 0;
            }
         });
+    }
+
+    taskRequirement() {
+        // list all services required in order specifications
+        // list previous service deployments
+        // if a service is new, setup vault, register for allocation, database setup, compute setup
+        // if a service already exists and is still required, register for database and compute update
+        // if a service is no longer required, register for deletion (cleanup task)
+    }
+
+    taskProxy() {
+        // get config from order specs
+        // execute proxy ansible script
     }
 }

@@ -1,65 +1,108 @@
-// takes a Sequences, read it step by step and launches playbooks
+// A SequenceRunner coordinates macro-tasks
+// A SequenceOperator executes macro-tasks
+// A Sequence is a list of things to do/done (create/update/delete environment, ...)
 
-import { EnvironmentVault, Sequence, SequenceTask, Session } from '@entities';
+import { EnvironmentVault, Order, Sequence, SequenceTask, Session } from '@entities';
+import { SequenceOperator } from '@entities/local/sequence-operator';
 
 export class SequenceRunner {
-    readonly _session: Session;
+    readonly ready: Promise<any>;
+    private sequence: Sequence;
+    private order: Order;
+    private orderedTasks: SequenceTask[];
+    private vault: EnvironmentVault;
+    private operator: SequenceOperator;
 
-    constructor(session: Session) {
-        this._session = session
+    constructor(
+        readonly _session: Session,
+        readonly sequenceId: number
+    ) {
+        this.ready = this.prepareRunner();
     }
 
-    async runSequence(sequenceId: number) {
-        console.log(`run Sequence ${sequenceId}`);
-        const em = await this._session.em();
-        const seq = await em.getRepository(Sequence).findOneOrFail({where: {id: sequenceId}, relations: ['tasks']});
-        seq.isStarted = true;
-        await this._session.saveEntity(seq);
-        await this.testVault();
+    private async prepareRunner(): Promise<any> {
+        console.log(`prepare runner for Sequence ${this.sequenceId}`);
+        this.sequence = await this.retrieveSequence();
+        this.order = await this.sequence.order;
+        this.orderedTasks = this.sequence.getTasksInOrder();
+        this.vault = await this.getVault(this.order.environmentId);
+        this.operator = new SequenceOperator(this._session, this.order.environmentId, this.sequence, this.order, this.vault);
+        await this.operator.prepare();
+    }
 
-        const orderedTasks = seq.getTasksInOrder();
+    /*
+     * ---------------
+     * Public methods
+     * ---------------
+     */
 
-        for(let i in orderedTasks) {
-            await this.runSequenceTask(seq, orderedTasks[i]);
+    async runSequence(): Promise<Sequence> {
+        await this.ready;
+        await this.checkIfCanBeStartedOrFail();
+        await this.markAsStarted();
+
+        for(let i in this.orderedTasks) {
+            await this.runSequenceTask(this.orderedTasks[i]);
         }
 
-        seq.isOver = true;
-        await this._session.saveEntity(seq);
+        await this.markAsOver();
 
-        return seq;
+        return this.sequence;
     }
 
-    continueSequence() {
+    // continueSequence() {}
+    // reRunFromBeginning() {}
 
+    /*
+     * ---------------
+     * Private methods
+     * ---------------
+     */
+
+    private async checkIfCanBeStartedOrFail(): Promise<boolean> {
+        console.log('-> check if can start', true);
+        return true;
     }
 
-    reRunFromBeginning() {
-
+    private async markAsStarted() {
+        console.log('-> mark sequence as started');
+        this.sequence.isStarted = true;
+        await this._session.saveEntity(this.sequence);
     }
 
-    async runSequenceTask(sequence: Sequence, task: SequenceTask) {
+    private async markAsOver() {
+        console.log('-> mark sequence as over');
+        this.sequence.isOver = true;
+        await this._session.saveEntity(this.sequence);
+    }
+
+    private async retrieveSequence(): Promise<Sequence> {
+        const em = await this._session.em();
+        return await em.getRepository(Sequence).findOneOrFail({where: {id: this.sequenceId}, relations: ['tasks']});
+    }
+
+    private async runSequenceTask(task: SequenceTask) {
         if(!task.isOver) {
-            console.log(`run task (position: ${task.position}, type: ${task.taskType})`);
+            console.log(`---> run task (position: ${task.position}, type: ${task.taskType})`);
             task.isStarted = true;
             await this._session.saveEntity(task);
             await this.fakeDelay();
             task.isOver = true;
             await this._session.saveEntity(task);
         } else {
-            console.log(`task already done (position: ${task.position}, type: ${task.taskType})`);
+            console.log(`---> task already done (position: ${task.position}, type: ${task.taskType})`);
         }
     }
 
-    fakeDelay(): Promise<void> {
+    private async fakeDelay(): Promise<void> {
         return new Promise(resolve => setTimeout(() => resolve(), 1000));
     }
 
-    async testVault(): Promise<void> {
-        const vault: EnvironmentVault = await this._session.getVault('1');
-        console.log('vault id =', vault.id);
-        console.log('password', vault.getValue('password'));
-        vault.addValue('password', 'secret1234');
+    private async getVault(environmentUuid: string): Promise<EnvironmentVault> {
+        const vault: EnvironmentVault = await this._session.getVault(environmentUuid);
+        // vault.addValue('password', 'secret1234');
+        // await vault.save();
 
-        await vault.save();
+        return vault;
     }
 }

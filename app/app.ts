@@ -7,7 +7,6 @@ import { Session } from '@entities';
 import { SequenceRunner } from './scheduler/lib/sequence-runner';
 import { Sequence } from '@entities';
 
-
 export class App {
     private readonly _session: Session;
 
@@ -17,9 +16,9 @@ export class App {
     }
 
     runSequence(sequenceId: number): Promise<Sequence> {
-        const runner = new SequenceRunner(this._session);
+        const runner = new SequenceRunner(this._session, sequenceId);
 
-        return runner.runSequence(sequenceId);
+        return runner.runSequence();
     }
 
     exitHandler() {

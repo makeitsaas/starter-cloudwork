@@ -15,7 +15,7 @@ export class Order {
     @Column()
     isValid: boolean = false;
 
-    @Column()
+    @Column()   // rename to environmentUuid
     environmentId: string = '';
 
     @OneToMany(type => Sequence, sequence => sequence.order, { onDelete: 'CASCADE' })
@@ -45,6 +45,8 @@ export class Order {
     }
 
     getServices(): any[] {
+        // ok actuellement on a une liste de services specs, avec le path
+        // comment retourner ça pour qu'on distingue service, service deployment, path
         return this.getParsedSpecs().services
     }
 

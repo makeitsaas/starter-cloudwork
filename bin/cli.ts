@@ -9,6 +9,10 @@ program
 
 const app = new App();
 
+
+// maybe add below a script to prepare ansible folder
+// maybe add below a script to display operations that needs to be led
+
 if(program.sequence) {
     console.log('program.sequence =', program.sequence);
 
@@ -19,4 +23,3 @@ if(program.sequence) {
     console.log('nothing to do');
     app.exit();
 }
-

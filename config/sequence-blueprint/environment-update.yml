@@ -1,7 +1,9 @@
 tasks:
-  - planify
-  - allocate
-  - setup-vaults
-  - setup-databases
+  - requirements        # allocations, passwords, ...
+  - planify             # create sequence with exact tasks => are you sure ? Let's see when we get there
+  - allocate            # allocation tasks
+  - setup-vaults        # vault setup tasks
+  - setup-databases     # ...
   - setup-compute
   - update-proxy
+  - cleanup
