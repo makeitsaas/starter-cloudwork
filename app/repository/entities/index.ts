@@ -1,6 +1,9 @@
 // careful : export order matters (abstract classes are used by other classes => they shall be loaded before them)
 export * from './local/abstractSessionAwareEntity';
 export * from './local/session';
+export * from './local/sequence-operator';
+export * from './local/service-operator';
+export * from './local/service-specification';
 export * from './vault';
 export * from './infrastructure/order';
 export * from './infrastructure/sequence';

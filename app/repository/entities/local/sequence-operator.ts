@@ -1,13 +1,21 @@
-import { EnvironmentVault, Order, Sequence, Service, ServiceDeployment, Session } from '@entities';
+import {
+    EnvironmentVault,
+    Order,
+    Sequence,
+    Service,
+    ServiceDeployment, ServiceOperator,
+    ServiceSpecification,
+    Session
+} from '@entities';
 
 export class SequenceOperator {
     // primary check
-    requiredServices: Service[];    // all the services we shall have in the end
+    requiredServices: ServiceSpecification[];    // all the services we shall have in the end
     deployedServices: ServiceDeployment[];    // all the services that are currently deployed
 
-    servicesCreateDeployment: Service[];
-    servicesUpdateDeployment: Service[];
-    servicesDeleteDeployment: ServiceDeployment[];
+    servicesCreations: ServiceOperator[];
+    servicesUpdates: ServiceOperator[];
+    servicesDeletions: ServiceOperator[];
 
     constructor(
         readonly session: Session,
@@ -26,24 +34,49 @@ export class SequenceOperator {
 
     private async preCheckServices() {
         console.log(`there is ${this.requiredServices.length} services and already ${this.deployedServices.length} deployments`);
-        this.servicesCreateDeployment = this.requiredServices.filter(service => !this.isServiceDeployed(service));
-        this.servicesUpdateDeployment = this.requiredServices.filter(service => this.isServiceDeployed(service));
-        this.servicesDeleteDeployment = this.deployedServices.filter(deployment => this.isDeploymentStillRequired(deployment));
-        console.log(`> servicesCreateDeployment = ${this.servicesCreateDeployment.length}`);
-        console.log(`> servicesUpdateDeployment = ${this.servicesUpdateDeployment.length}`);
-        console.log(`> servicesDeleteDeployment = ${this.servicesDeleteDeployment.length}`);
+        const createList = this.requiredServices.filter(serviceSpec => !this.isServiceDeployed(serviceSpec));
+        this.servicesCreations = createList.map(serviceSpec => new ServiceOperator(
+            this.session,
+            'create',
+            serviceSpec,
+            undefined
+        ));
+
+        const updateList = this.requiredServices.filter(serviceSpec => this.isServiceDeployed(serviceSpec));
+        this.servicesUpdates = updateList.map(serviceSpec => new ServiceOperator(
+            this.session,
+            'update',
+            serviceSpec,
+            this.getServiceDeployment(serviceSpec.uuid)
+        ));
+
+        const deleteList = this.deployedServices.filter(deployment => this.isDeploymentStillRequired(deployment));
+        this.servicesDeletions = deleteList.map(deployment => new ServiceOperator(
+            this.session,
+            'delete',
+            undefined,
+            deployment
+        ));
+
+        console.log(`> servicesCreateDeployment = ${this.servicesCreations.length}`);
+        console.log(`> servicesUpdateDeployment = ${this.servicesUpdates.length}`);
+        console.log(`> servicesDeleteDeployment = ${this.servicesDeletions.length}`);
     }
 
-    private isServiceDeployed(service: Service) {
+    private isServiceDeployed(service: ServiceSpecification): boolean {
         console.log('is it deployed', service);
-        const match = this.deployedServices.filter(deployment => deployment.service.uuid = service.uuid);
-        return match.length > 0;
+        return !!this.getServiceDeployment(service.uuid);
     }
 
     private isDeploymentStillRequired(deployment: ServiceDeployment) {
         console.log('is it still required', deployment);
-        const match = this.requiredServices.filter(service => deployment.service.uuid = service.uuid);
+        const match = this.requiredServices.filter(service => deployment.service.uuid === service.uuid);
         return match.length > 0;
+    }
+
+    private getServiceDeployment(serviceUuid: string): ServiceDeployment|void {
+        const match = this.deployedServices.filter(deployment => deployment.service.uuid === serviceUuid);
+        return match[0];
     }
 
 }

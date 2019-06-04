@@ -1,13 +1,22 @@
-import { EnvironmentVault, Service, ServiceDeployment } from '@entities';
+import { EnvironmentVault, Service, ServiceDeployment, ServiceSpecification, Session } from '@entities';
 
 export class ServiceOperator {
     service: Service;
-    currentComputeDeployment: ServiceDeployment;
     currentDatabase: any;
 
-    constructor() {
-        //
+    constructor(
+        private session: Session,
+        private action: string,
+        private specification: ServiceSpecification|void,
+        private currentComputeDeployment: ServiceDeployment|void
+    ) {
     }
+
+    /*
+     * ---------------
+     *
+     * ---------------
+     */
 
     registerVaultValues(vault: EnvironmentVault) {
 

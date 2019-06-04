@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import * as yaml from 'js-yaml';
-import { Sequence } from '@entities';
+import { Sequence, ServiceSpecification } from '@entities';
 
 
 @Entity()
@@ -41,13 +41,13 @@ export class Order {
     }
 
     getDomains(): string[] {
-        return this.getParsedSpecs().domains;
+        return this.getParsedSpecs().domains || [];
     }
 
-    getServices(): any[] {
+    getServices(): ServiceSpecification[] {
         // ok actuellement on a une liste de services specs, avec le path
         // comment retourner ça pour qu'on distingue service, service deployment, path
-        return this.getParsedSpecs().services
+        return (this.getParsedSpecs().services || []).map((spec: any) => new ServiceSpecification(spec));
     }
 
     private getParsedSpecs(): any {
