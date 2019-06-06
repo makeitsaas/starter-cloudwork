@@ -26,4 +26,8 @@ export class SequenceTask {
 
     @Column({type: "text", nullable: true})
     error?: string;
+
+    hasPendingScript(): boolean {
+        return this.isStarted;
+    }
 }

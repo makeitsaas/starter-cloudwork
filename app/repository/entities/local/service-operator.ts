@@ -14,27 +14,57 @@ export class ServiceOperator {
 
     /*
      * ---------------
-     *
+     * Public methods
      * ---------------
      */
 
-    registerVaultValues(vault: EnvironmentVault) {
-
+    async allocate() {
+        if(this.specification) {
+            console.log(`get service by uuid=${this.specification.uuid}`);
+            console.log('create deployment if not exists');
+            console.log('assign servers and ports');
+        }
     }
 
-    runDatabaseScript() {
-
+    async registerVaultValues(vault: EnvironmentVault) {
+        if(this.specification) {
+            console.log(`register vault values for service(${this.specification.uuid})`);
+        }
     }
 
-    runComputeScript() {
-
+    async deploy() {
+        await this.runDatabaseScript();
+        await this.runComputeScript();
+        await this.runMigrationsScript();
     }
 
-    runMigrations() {
-
+    async cleanup() {
+        console.log('clean me');
     }
 
-    runCleanup() {
+    async dropDeployment() {
+        console.log('drop me');
+    }
 
+    /*
+     * ---------------
+     * Private methods
+     * ---------------
+     */
+
+    private async runDatabaseScript() {
+        console.log('database script');
+    }
+
+    private async runComputeScript() {
+        console.log('compute script');
+    }
+
+    private async runMigrationsScript() {
+        console.log('migration script');
+    }
+
+    private async runCleanupScript() {
+        console.log('cleanup script');
     }
 }

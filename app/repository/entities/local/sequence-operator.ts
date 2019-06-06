@@ -2,7 +2,6 @@ import {
     EnvironmentVault,
     Order,
     Sequence,
-    Service,
     ServiceDeployment, ServiceOperator,
     ServiceSpecification,
     Session
@@ -13,9 +12,8 @@ export class SequenceOperator {
     requiredServices: ServiceSpecification[];    // all the services we shall have in the end
     deployedServices: ServiceDeployment[];    // all the services that are currently deployed
 
-    servicesCreations: ServiceOperator[];
-    servicesUpdates: ServiceOperator[];
-    servicesDeletions: ServiceOperator[];
+    servicesToDeploy: ServiceOperator[];
+    servicesToDrop: ServiceOperator[];
 
     constructor(
         readonly session: Session,
@@ -32,40 +30,86 @@ export class SequenceOperator {
         await this.preCheckServices();
     }
 
+    /*
+     * ---------------
+     * Public methods
+     * ---------------
+     */
+
+    async launchAllocations() {
+        // create deployment with 'to do' status and assign servers and port
+        for(let i in this.servicesToDeploy) {
+            let operator = this.servicesToDeploy[i];
+            await operator.allocate();
+        }
+    }
+
+    async launchVaultsSetup() {
+        // configure required environment variables
+        for(let i in this.servicesToDeploy) {
+            let operator = this.servicesToDeploy[i];
+            await operator.registerVaultValues(this.vault);
+        }
+    }
+
+    async launchServicesSetup() {
+        console.log('compute scripts');
+        for(let i in this.servicesToDeploy) {
+            let operator = this.servicesToDeploy[i];
+            await operator.deploy();
+        }
+    }
+
+    async launchServicesDrop() {
+        console.log('drop scripts');
+    }
+
+    async launchProxyRefresh() {
+        console.log('proxy update scripts');
+    }
+
+    async launchProxyDrop() {
+        console.log('proxy drop scripts');
+    }
+
+    async launchCleanup() {
+        console.log('cleanup scripts');
+        for(let i in this.servicesToDeploy) {
+            let operator = this.servicesToDeploy[i];
+            await operator.cleanup();
+        }
+        for(let i in this.servicesToDrop) {
+            let operator = this.servicesToDrop[i];
+            await operator.dropDeployment();
+        }
+    }
+
+    /*
+     * ---------------
+     * Private methods
+     * ---------------
+     */
+
     private async preCheckServices() {
         console.log(`there is ${this.requiredServices.length} services and already ${this.deployedServices.length} deployments`);
-        const createList = this.requiredServices.filter(serviceSpec => !this.isServiceDeployed(serviceSpec));
-        this.servicesCreations = createList.map(serviceSpec => new ServiceOperator(
-            this.session,
-            'create',
-            serviceSpec,
-            undefined
-        ));
 
-        const updateList = this.requiredServices.filter(serviceSpec => this.isServiceDeployed(serviceSpec));
-        this.servicesUpdates = updateList.map(serviceSpec => new ServiceOperator(
+        this.servicesToDeploy = this.requiredServices.map(serviceSpec => new ServiceOperator(
             this.session,
             'update',
             serviceSpec,
             this.getServiceDeployment(serviceSpec.uuid)
         ));
 
-        const deleteList = this.deployedServices.filter(deployment => this.isDeploymentStillRequired(deployment));
-        this.servicesDeletions = deleteList.map(deployment => new ServiceOperator(
+        const deleteList = this.deployedServices.filter(deployment => !this.isDeploymentStillRequired(deployment));
+        this.servicesToDrop = deleteList.map(deployment => new ServiceOperator(
             this.session,
             'delete',
             undefined,
             deployment
         ));
 
-        console.log(`> servicesCreateDeployment = ${this.servicesCreations.length}`);
-        console.log(`> servicesUpdateDeployment = ${this.servicesUpdates.length}`);
-        console.log(`> servicesDeleteDeployment = ${this.servicesDeletions.length}`);
-    }
-
-    private isServiceDeployed(service: ServiceSpecification): boolean {
-        console.log('is it deployed', service);
-        return !!this.getServiceDeployment(service.uuid);
+        console.log(`> servicesToDeploy = ${this.servicesToDeploy.length}`);
+        console.log(`> servicesToDrop = ${this.servicesToDrop.length}`);
     }
 
     private isDeploymentStillRequired(deployment: ServiceDeployment) {

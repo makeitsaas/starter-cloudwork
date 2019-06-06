@@ -4,6 +4,7 @@
 
 import { EnvironmentVault, Order, Sequence, SequenceTask, Session } from '@entities';
 import { SequenceOperator } from '@entities/local/sequence-operator';
+import { FakeDelay } from '../../fake/fake-delay';
 
 export class SequenceRunner {
     readonly ready: Promise<any>;
@@ -50,8 +51,10 @@ export class SequenceRunner {
         return this.sequence;
     }
 
-    // continueSequence() {}
-    // reRunFromBeginning() {}
+    // async reRunFromBeginning() {
+    //     console.log('xxxx cleanup not implemented');
+    //     console.log('xxxx this.runSequence()');
+    // }
 
     /*
      * ---------------
@@ -83,19 +86,24 @@ export class SequenceRunner {
 
     private async runSequenceTask(task: SequenceTask) {
         if(!task.isOver) {
-            console.log(`---> run task (position: ${task.position}, type: ${task.taskType})`);
-            task.isStarted = true;
-            await this._session.saveEntity(task);
-            await this.fakeDelay();
-            task.isOver = true;
-            await this._session.saveEntity(task);
+
+            if(task.hasPendingScript()) {
+                throw new Error(`task(${task.id}) has pending script`);
+            }
+
+            console.log(`----> run task (position: ${task.position}, type: ${task.taskType})`);
+            // task.isStarted = true;
+            // await this._session.saveEntity(task);
+
+            await this.runTaskOperations(task);
+
+            // task.isOver = true;
+            // await this._session.saveEntity(task);
+
+            await FakeDelay.wait();
         } else {
             console.log(`---> task already done (position: ${task.position}, type: ${task.taskType})`);
         }
-    }
-
-    private async fakeDelay(): Promise<void> {
-        return new Promise(resolve => setTimeout(() => resolve(), 1000));
     }
 
     private async getVault(environmentUuid: string): Promise<EnvironmentVault> {
@@ -104,5 +112,33 @@ export class SequenceRunner {
         // await vault.save();
 
         return vault;
+    }
+
+    private async runTaskOperations(task: SequenceTask) {
+        switch(task.taskType) {
+            case 'allocate':
+                await this.operator.launchAllocations();
+                break;
+            case 'setup-vaults':
+                await this.operator.launchVaultsSetup();
+                break;
+            case 'setup-compute':
+                await this.operator.launchServicesSetup();
+                break;
+            case 'drop-compute':
+                await this.operator.launchServicesDrop();
+                break;
+            case 'update-proxy':
+                await this.operator.launchProxyRefresh();
+                break;
+            case 'drop-proxy':
+                await this.operator.launchProxyDrop();
+                break;
+            case 'cleanup':
+                await this.operator.launchCleanup();
+                break;
+            default:
+                console.log('-----> nothing to do');
+        }
     }
 }

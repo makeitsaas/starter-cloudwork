@@ -18,7 +18,7 @@ export class Order {
     @Column()   // rename to environmentUuid
     environmentId: string = '';
 
-    @OneToMany(type => Sequence, sequence => sequence.order, { onDelete: 'CASCADE' })
+    @OneToMany(type => Sequence, sequence => sequence.order, {onDelete: 'CASCADE'})
     sequences: Sequence[];
 
     @CreateDateColumn({type: 'timestamp'})
@@ -28,11 +28,11 @@ export class Order {
     updatedAt: Date;
 
     constructor(specs?: string) { // maybe uuid + specs
-        if(specs) {
+        if (specs) {
             this.specs = specs;
             this.isValid = !!this.parseSpecs();
         }
-        if(!this.environmentId)
+        if (!this.environmentId)
             this.environmentId = this.getEnvironmentId();
     }
 
@@ -57,7 +57,7 @@ export class Order {
     private parseSpecs(): any {
         try {
             return yaml.safeLoad(this.specs);
-        } catch(e) {
+        } catch (e) {
             console.error('parse error', e);
             return null;
         }

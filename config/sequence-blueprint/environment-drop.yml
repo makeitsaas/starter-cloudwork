@@ -1,0 +1,3 @@
+tasks:
+  - drop-compute
+  - drop-proxy

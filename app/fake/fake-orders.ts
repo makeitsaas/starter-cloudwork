@@ -12,6 +12,12 @@ services:
     repo_url: 'https://github.com/Duwab/makeitsaas-manager-api'
 `;
 
+const order2 = `
+action: "drop"
+environment_id: "3"
+`;
+
 export const FakeOrders: {[id: number]: string} = {
-    1: order1
+    1: order1,
+    2: order2
 };

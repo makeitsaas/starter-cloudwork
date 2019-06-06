@@ -60,14 +60,19 @@ export class Sequence {
         });
     }
 
-    saveDeep(em: EntityManager) {
+    saveDeep(em: EntityManager): Promise<Sequence> {
         // em only saves the first level entity, not sub-ones
         // https://github.com/typeorm/typeorm/issues/1025
         return em.save(this).then(savedSeq => {
             return Promise.all([
-                ...this.tasks.map(task => em.save(task))
+                ...this.tasks.map(task => this.saveTask(em, task))
             ]).then(() => savedSeq);
         });
+    }
+
+    private saveTask(em: EntityManager, task: SequenceTask): Promise<SequenceTask> {
+        task.sequence = this;
+        return em.save(task);
     }
 
     getTasksInOrder() {

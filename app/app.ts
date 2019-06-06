@@ -3,9 +3,10 @@ import { config } from 'dotenv';
 config();   // run this before importing other modules
 
 import "reflect-metadata";
-import { Session } from '@entities';
+import { Order, Session } from '@entities';
 import { SequenceRunner } from './scheduler/lib/sequence-runner';
 import { Sequence } from '@entities';
+import { FakeOrders } from './fake/fake-orders';
 
 export class App {
     private readonly _session: Session;
@@ -15,10 +16,30 @@ export class App {
         this.initStdListeners();
     }
 
-    runSequence(sequenceId: number): Promise<Sequence> {
+    async createSequence(orderId: number): Promise<Sequence> {
+        const em = await this._session.em();
+
+        const o = new Order(FakeOrders[orderId]);
+        em.save(o);
+
+        const s = new Sequence(o);
+        return s.saveDeep(em);
+    }
+
+    async runSequence(sequenceId: number): Promise<Sequence> {
         const runner = new SequenceRunner(this._session, sequenceId);
 
-        return runner.runSequence();
+        return await runner.runSequence();
+    }
+
+    async dropEnvironment(environmentUuid: string): Promise<number> {
+        console.log('drop environment', environmentUuid);
+        console.log('create drop order');
+        console.log('create sequence for drop order');
+        console.log('run drop order');
+        console.log('data cleanup');
+
+        return 200;
     }
 
     exitHandler() {
