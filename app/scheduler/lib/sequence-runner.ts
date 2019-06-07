@@ -2,7 +2,7 @@
 // A SequenceOperator executes macro-tasks
 // A Sequence is a list of things to do/done (create/update/delete environment, ...)
 
-import { EnvironmentVault, Order, Sequence, SequenceTask, Session } from '@entities';
+import { Environment, EnvironmentVault, Order, Sequence, SequenceTask, Session } from '@entities';
 import { SequenceOperator } from '@entities/local/sequence-operator';
 import { FakeDelay } from '../../fake/fake-delay';
 
@@ -10,6 +10,7 @@ export class SequenceRunner {
     readonly ready: Promise<any>;
     private sequence: Sequence;
     private order: Order;
+    private environment: Environment;
     private orderedTasks: SequenceTask[];
     private vault: EnvironmentVault;
     private operator: SequenceOperator;
@@ -24,10 +25,11 @@ export class SequenceRunner {
     private async prepareRunner(): Promise<any> {
         console.log(`prepare runner for Sequence ${this.sequenceId}`);
         this.sequence = await this.retrieveSequence();
-        this.order = await this.sequence.order;
+        this.order = this.sequence.order;
+        this.environment = this.order.environment;
         this.orderedTasks = this.sequence.getTasksInOrder();
-        this.vault = await this.getVault(this.order.environmentId);
-        this.operator = new SequenceOperator(this._session, this.order.environmentId, this.sequence, this.order, this.vault);
+        this.vault = await this.getVault(this.environment.uuid);
+        this.operator = new SequenceOperator(this._session, this.environment, this.sequence, this.order, this.vault);
         await this.operator.prepare();
     }
 
@@ -42,7 +44,7 @@ export class SequenceRunner {
         await this.checkIfCanBeStartedOrFail();
         await this.markAsStarted();
 
-        for(let i in this.orderedTasks) {
+        for (let i in this.orderedTasks) {
             await this.runSequenceTask(this.orderedTasks[i]);
         }
 
@@ -85,9 +87,9 @@ export class SequenceRunner {
     }
 
     private async runSequenceTask(task: SequenceTask) {
-        if(!task.isOver) {
+        if (!task.isOver) {
 
-            if(task.hasPendingScript()) {
+            if (task.hasPendingScript()) {
                 throw new Error(`task(${task.id}) has pending script`);
             }
 
@@ -115,7 +117,7 @@ export class SequenceRunner {
     }
 
     private async runTaskOperations(task: SequenceTask) {
-        switch(task.taskType) {
+        switch (task.taskType) {
             case 'allocate':
                 await this.operator.launchAllocations();
                 break;

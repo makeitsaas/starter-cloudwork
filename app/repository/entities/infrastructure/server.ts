@@ -7,9 +7,15 @@ export class Server {
     id: number;
 
     @Column()
-    status: string;
+    status: 'starting'|'running'|'stopped'|'unhealthy' = 'starting';
 
-    @OneToMany(type => ServerPort, port => port.server, { onDelete: 'CASCADE' })
+    @Column()
+    type: 'computing'|'devkit' = 'computing';
+
+    @Column()
+    ip: string;
+
+    @OneToMany(type => ServerPort, port => port.server, {onDelete: 'CASCADE'})
     ports: ServerPort[];
 
     @CreateDateColumn({type: 'timestamp'})

@@ -1,6 +1,14 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+    Column,
+    CreateDateColumn,
+    Entity, EntityManager, JoinColumn, JoinTable,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from 'typeorm';
 import * as yaml from 'js-yaml';
-import { Sequence, ServiceSpecification } from '@entities';
+import { Environment, Sequence, ServiceSpecification } from '@entities';
 
 
 @Entity()
@@ -15,8 +23,9 @@ export class Order {
     @Column()
     isValid: boolean = false;
 
-    @Column()   // rename to environmentUuid
-    environmentId: string = '';
+    @ManyToOne(type => Environment, env => env.orders, { cascade: true, eager: true })
+    @JoinColumn()
+    environment: Environment;
 
     @OneToMany(type => Sequence, sequence => sequence.order, {onDelete: 'CASCADE'})
     sequences: Sequence[];
@@ -31,12 +40,15 @@ export class Order {
         if (specs) {
             this.specs = specs;
             this.isValid = !!this.parseSpecs();
+            if(this.isValid) {
+                const env = new Environment();
+                env.uuid = this.getEnvironmentUuid();
+                this.environment = env;
+            }
         }
-        if (!this.environmentId)
-            this.environmentId = this.getEnvironmentId();
     }
 
-    getEnvironmentId() {
+    getEnvironmentUuid() {
         return this.getParsedSpecs().environment_id || this.getParsedSpecs().environmentId || '';
     }
 
@@ -48,6 +60,11 @@ export class Order {
         // ok actuellement on a une liste de services specs, avec le path
         // comment retourner ça pour qu'on distingue service, service deployment, path
         return (this.getParsedSpecs().services || []).map((spec: any) => new ServiceSpecification(spec));
+    }
+
+    async saveDeep(em: EntityManager): Promise<Order> {
+        await em.save(this.environment);
+        return await em.save(this);
     }
 
     private getParsedSpecs(): any {

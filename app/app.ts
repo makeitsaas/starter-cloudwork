@@ -20,10 +20,10 @@ export class App {
         const em = await this._session.em();
 
         const o = new Order(FakeOrders[orderId]);
-        em.save(o);
+        await o.saveDeep(em);
 
         const s = new Sequence(o);
-        return s.saveDeep(em);
+        return await s.saveDeep(em);
     }
 
     async runSequence(sequenceId: number): Promise<Sequence> {

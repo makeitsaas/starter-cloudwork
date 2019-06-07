@@ -16,8 +16,8 @@ export class Sequence {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Order, order => order.sequences, { onDelete: 'CASCADE' })
-    order: Promise<Order>;
+    @ManyToOne(type => Order, order => order.sequences, { cascade: true, eager: true })
+    order: Order;
 
     @Column()
     sequenceType: string;
@@ -47,7 +47,7 @@ export class Sequence {
     }
 
     fromOrder(order: Order) {
-        this.order = Promise.resolve(order);
+        this.order = order;
         this.sequenceType = 'environment-update';
 
         const blueprint = ConfigReader.sequenceBlueprint(this.sequenceType);

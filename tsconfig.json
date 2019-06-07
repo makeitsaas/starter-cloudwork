@@ -11,6 +11,9 @@
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "paths": {
+      "@errors": [
+        "scheduler/errors"
+      ],
       "@entities": [
         "repository/entities"
       ],

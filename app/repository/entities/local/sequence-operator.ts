@@ -1,4 +1,5 @@
 import {
+    Environment,
     EnvironmentVault,
     Order,
     Sequence,
@@ -17,7 +18,7 @@ export class SequenceOperator {
 
     constructor(
         readonly session: Session,
-        readonly environmentUuid: string,
+        readonly environment: Environment,
         private sequence: Sequence,
         private order: Order,
         private vault: EnvironmentVault
@@ -26,7 +27,7 @@ export class SequenceOperator {
 
     async prepare() {
         this.requiredServices = this.order.getServices();
-        this.deployedServices = await this.session.infrastructure.getDeployedServices(this.environmentUuid);
+        this.deployedServices = await this.session.infrastructure.getDeployedServices(this.environment);
         await this.preCheckServices();
     }
 
@@ -38,7 +39,7 @@ export class SequenceOperator {
 
     async launchAllocations() {
         // create deployment with 'to do' status and assign servers and port
-        for(let i in this.servicesToDeploy) {
+        for (let i in this.servicesToDeploy) {
             let operator = this.servicesToDeploy[i];
             await operator.allocate();
         }
@@ -46,7 +47,7 @@ export class SequenceOperator {
 
     async launchVaultsSetup() {
         // configure required environment variables
-        for(let i in this.servicesToDeploy) {
+        for (let i in this.servicesToDeploy) {
             let operator = this.servicesToDeploy[i];
             await operator.registerVaultValues(this.vault);
         }
@@ -54,7 +55,7 @@ export class SequenceOperator {
 
     async launchServicesSetup() {
         console.log('compute scripts');
-        for(let i in this.servicesToDeploy) {
+        for (let i in this.servicesToDeploy) {
             let operator = this.servicesToDeploy[i];
             await operator.deploy();
         }
@@ -74,11 +75,11 @@ export class SequenceOperator {
 
     async launchCleanup() {
         console.log('cleanup scripts');
-        for(let i in this.servicesToDeploy) {
+        for (let i in this.servicesToDeploy) {
             let operator = this.servicesToDeploy[i];
             await operator.cleanup();
         }
-        for(let i in this.servicesToDrop) {
+        for (let i in this.servicesToDrop) {
             let operator = this.servicesToDrop[i];
             await operator.dropDeployment();
         }
@@ -95,6 +96,7 @@ export class SequenceOperator {
 
         this.servicesToDeploy = this.requiredServices.map(serviceSpec => new ServiceOperator(
             this.session,
+            this.environment,
             'update',
             serviceSpec,
             this.getServiceDeployment(serviceSpec.uuid)
@@ -103,6 +105,7 @@ export class SequenceOperator {
         const deleteList = this.deployedServices.filter(deployment => !this.isDeploymentStillRequired(deployment));
         this.servicesToDrop = deleteList.map(deployment => new ServiceOperator(
             this.session,
+            this.environment,
             'delete',
             undefined,
             deployment
@@ -118,7 +121,7 @@ export class SequenceOperator {
         return match.length > 0;
     }
 
-    private getServiceDeployment(serviceUuid: string): ServiceDeployment|void {
+    private getServiceDeployment(serviceUuid: string): ServiceDeployment | void {
         const match = this.deployedServices.filter(deployment => deployment.service.uuid === serviceUuid);
         return match[0];
     }

@@ -18,7 +18,7 @@ export class EnvironmentVault extends AbstractSessionAwareEntity {
     encryptedVault: any = {};
 
     @Column()
-    environmentId: string = '';
+    environmentUuid: string = '';
 
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;

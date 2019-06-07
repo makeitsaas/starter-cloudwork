@@ -9,6 +9,9 @@ export class ServerPort {
     @Column()
     status: string = 'busy';    // available, to release
 
+    @Column()
+    port: number;
+
     @ManyToOne(type => Server, server => server.ports, { onDelete: 'CASCADE' })
     server: Server;
 

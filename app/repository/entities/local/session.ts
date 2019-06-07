@@ -3,6 +3,7 @@ import { dbLoader } from '../../databases/infrastructure-database';
 import { vaultDbLoader } from '../../databases/vaults-database';
 import { EnvironmentVault } from '@entities';
 import { InfrastructureModel } from '../../../scheduler/models/infrastructure.model';
+import { ServiceModel } from '../../../scheduler/models/service.model';
 
 export class Session {
 
@@ -10,6 +11,7 @@ export class Session {
     private _connection: Connection;
     private _vaultConnection: Connection;
     private _em: EntityManager;
+    private _emTransactional: EntityManager;
     private _queryRunner: QueryRunner;
     public infrastructure: InfrastructureModel;
 
@@ -57,19 +59,19 @@ export class Session {
 
     getEntityManager(): Promise<EntityManager> {
         return this._loading.then(() => {
-            return this._em;
+            return this._emTransactional;
         });
     }
 
-    getVault(environmentId: string): Promise<EnvironmentVault> {
+    getVault(environmentUuid: string): Promise<EnvironmentVault> {
         return this._vaultConnection
             .manager
             .getRepository(EnvironmentVault)
-            .findOne({where: {environment_id: environmentId}})
+            .findOne({where: {environmentUuid: environmentUuid}})
             .then(vault => {
                 if(!vault) {
                     vault = new EnvironmentVault();
-                    vault.environmentId = environmentId;
+                    vault.environmentUuid = environmentUuid;
                 }
 
                 vault.assignSession(this);
@@ -77,6 +79,14 @@ export class Session {
 
                 return vault;
             });
+    }
+
+    async load(InjectionClass: any): Promise<any> {
+        if(InjectionClass === ServiceModel) {
+            return new InjectionClass(this);
+        } else {
+            throw new Error('Dependency injection not set for this class');
+        }
     }
 
     /*
@@ -88,10 +98,11 @@ export class Session {
     private initConnection() {
         return dbLoader.then(async (connection: Connection) => {
             this._connection = connection;
+            this._em = this._connection.manager;
             this._queryRunner = this._connection.createQueryRunner();
             await this._queryRunner.connect();
             await this._queryRunner.startTransaction();
-            this._em = this._queryRunner.manager;
+            this._emTransactional = this._queryRunner.manager;
 
             return this._em;
         })

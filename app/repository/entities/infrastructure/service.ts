@@ -5,9 +5,6 @@ export class Service {
     @PrimaryColumn()
     uuid: string;
 
-    @Column()
-    repositoryUrl: string;
-
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;
 
