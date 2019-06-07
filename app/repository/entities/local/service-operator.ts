@@ -48,9 +48,21 @@ export class ServiceOperator {
     }
 
     async registerVaultValues(vault: EnvironmentVault) {
-        if(this.specification) {
-            console.log(`register vault values for service(${this.specification.uuid})`);
+        let getters = this.vaultFieldsRequirementsGetters(vault);
+
+        for(let key in getters) {
+            let vaultValue = vault.getValue(key);
+
+            if(!vaultValue) {
+                const value = await getters[key]();
+                console.log('vault add value', key, value);
+                vault.addValue(key, value);
+            } else {
+                console.log('vault value already exists', vaultValue);
+            }
         }
+
+        await vault.save();
     }
 
     async deploy() {
@@ -106,5 +118,41 @@ export class ServiceOperator {
 
     private async runCleanupScript() {
         console.log('cleanup script');
+    }
+
+    private vaultFieldsRequirementsGetters(vault: EnvironmentVault): {[id: string]: () => Promise<string>} {
+        return {
+            "DB_DATABASE": this.generateDatabaseName,
+            "DB_USERNAME": this.generateDatabaseUserName,
+            "DB_PASSWORD": this.passwordGenerator(),
+            // "GITHUB_CLIENT_ID": this.getGithubSecret('client_id'),
+            // "GITHUB_CLIENT_SECRET": this.getGithubSecret('client_secret'),
+            // "GITHUB_CALLBACK_URL": this.getGithubSecret('callback_url'),
+        };
+    }
+
+    private generateDatabaseName(): Promise<string> {
+        return Promise.resolve(`db_d${this.deployment.id}`)
+    }
+
+    private generateDatabaseUserName(): Promise<string> {
+        return Promise.resolve(`user_d${this.deployment.id}`);
+    }
+
+    private passwordGenerator(size: number|undefined = undefined): () => Promise<string> {
+        return () => {
+            return this.generatePassword(size);
+        };
+    }
+
+    private generatePassword(size: number = 24): Promise<string> {
+        const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-)(+[]!?&";
+        let password = "";
+
+        for(let i = 0; i < size; i++) {
+            password += characters[Math.floor(Math.random() * characters.length)];
+        }
+
+        return Promise.resolve(password);
     }
 }
