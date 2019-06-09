@@ -1,0 +1,10 @@
+---
+- hosts: proxy
+  remote_user: ubuntu
+  tasks:
+  - set_fact: vars_file="default"
+    when: vars_file is undefined
+  - name: include variables
+    include_vars: vars/{{vars_file}}.yml
+  - import_tasks: playbooks/proxy/write-routes.yml
+  - import_tasks: playbooks/proxy/touch-reload.yml

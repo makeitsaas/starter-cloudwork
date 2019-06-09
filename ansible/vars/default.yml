@@ -1,0 +1,9 @@
+environment_domain: <environment-dns>
+repo_url: https://github.com/repo/url.git
+repo_directory: <service-directory>
+redis_hostname: <redis-hostname>
+db_hostname: <database-hostname>
+db_database: <database-name>
+db_username: <database-username>
+db_password: <database-password>
+service_port: 9999

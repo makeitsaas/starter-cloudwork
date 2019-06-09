@@ -1,0 +1,2 @@
+CREATE USER '{{ db_username }}'@'%' IDENTIFIED BY '{{ db_password }}';
+GRANT ALL PRIVILEGES ON `{{ db_database }}`.* to '{{ db_username }}'@'%';

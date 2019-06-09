@@ -2,4 +2,6 @@
 node_modules/
 config/keys/*
 !config/keys/.gitkeep
+tmp/*
+!tmp/.gitkeep
 dist/*

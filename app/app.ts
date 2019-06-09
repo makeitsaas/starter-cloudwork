@@ -3,10 +3,11 @@ import { config } from 'dotenv';
 config();   // run this before importing other modules
 
 import "reflect-metadata";
-import { Order, Session } from '@entities';
+import { Environment, Order, Session } from '@entities';
 import { SequenceRunner } from './scheduler/lib/sequence-runner';
 import { Sequence } from '@entities';
 import { FakeOrders } from './fake/fake-orders';
+import { DeployerAnsible } from '../ansible/deployer-ansible';
 
 export class App {
     private readonly _session: Session;
@@ -40,6 +41,17 @@ export class App {
         console.log('data cleanup');
 
         return 200;
+    }
+
+    async loadAndRunPlaybook(environmentUuid: string, interactive: boolean = false) {
+        const em = await this._session.em();
+        const env = await em.getRepository(Environment).findOneOrFail(environmentUuid);
+
+        const deployer = new DeployerAnsible(interactive);
+
+        const playbook = await deployer.preparePlaybook(env, 'database-create');
+
+        return playbook.execute();
     }
 
     exitHandler() {

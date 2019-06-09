@@ -1,0 +1,15 @@
+---
+- name: Retrieve list of mysql databases
+  command: >
+    mysql
+    --execute="SHOW DATABASES;"
+  become: true
+  register: select_mysql_databases
+- debug: msg="{{ select_mysql_databases }}"
+- name: Retrieve list of mysql users
+  command: >
+    mysql
+    --execute="SELECT User FROM mysql.user;"
+  become: true
+  register: select_mysql_users
+- debug: msg="{{ select_mysql_users }}"

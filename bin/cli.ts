@@ -1,9 +1,13 @@
 import { App } from '../app/app';
 
 import * as program from 'commander';
+import * as inquirer from 'inquirer';
+import { Question } from 'inquirer';
+
 
 program
     .version('0.1.0')
+    .option('-i, --interactive', 'Creates a sequence from order')
     .option('--order [orderId]', 'Creates a sequence from order')
     .option('--sequence [sequenceId]', 'Runs a sequence')
     .option('--environment [environmentId]', 'Environment Id')
@@ -12,14 +16,17 @@ program
 
 const app = new App();
 
-
-// maybe add below a script to prepare ansible folder
 // maybe add below a script to display operations that needs to be led
 
-if (program.drop) {
+if (program.interactive) {
+    console.log('interactive');
+    app.loadAndRunPlaybook('3').then(() => {
+        app.exit();
+    })
+} else if (program.drop) {
     const environmentUuid = program.environment;
 
-    if(!environmentUuid) {
+    if (!environmentUuid) {
         console.error("You shall specify environment id");
     } else {
         app.dropEnvironment(environmentUuid).then(() => {

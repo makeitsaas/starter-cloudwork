@@ -1,0 +1,10 @@
+hosts:
+{% for domainName in hosts %}
+    - {{domainName}}
+{% endfor %}
+services:
+{% for service in services %}
+    - path: {{service.path}}
+      host: {{service.host}}
+      port: {{service.port}}
+{% endfor %}
