@@ -4,6 +4,7 @@ import {
     AnsibleVarsInterface
 } from './modules/ansible-execution-client/ansible-execution-client';
 import { CliHelper } from '../app/scheduler/lib/cli-helper';
+import { ConfigReader, SinglePlaybookConfig } from '../app/scheduler/lib/config-reader';
 
 export class Playbook {
 
@@ -11,6 +12,7 @@ export class Playbook {
     private executionClient: AnsibleExecutionClient;
     private vars: AnsibleVarsInterface;
     private inventory: AnsibleInventoryInterface;
+    private playbookConfig: SinglePlaybookConfig
 
     constructor(
         private name: string,
@@ -19,6 +21,7 @@ export class Playbook {
         private deployment?: ServiceDeployment,
         private interactive: boolean = false
     ) {
+        this.playbookConfig = ConfigReader.playbooks.getConfig(this.name);
         this.ready = Promise.all([
             this.loadVars(),
             this.loadInventory()
@@ -53,7 +56,8 @@ export class Playbook {
 
     private async loadVars(): Promise<AnsibleVarsInterface> {
         // get expected values, either from vault or ask user ! ! !
-        const required = this.getRequiredValues();
+        const required = this.getRequiredVariablesNames();
+        console.log('required', required);
         const lastInteractiveValues = await this.getLastInteractiveValues();
         const vars: AnsibleVarsInterface = {};
 
@@ -103,18 +107,21 @@ export class Playbook {
         return {};
     }
 
-    private getRequiredValues(): string[] {
-        return [
-            'environment_domain',
-            'repo_url',
-            'repo_directory',
-            'redis_hostname',
-            'db_hostname',
-            'db_database',
-            'db_username',
-            'db_password',
-            'service_port'
-        ]
+    private getRequiredVariablesNames(): string[] {
+        return this.playbookConfig.variables
+            .filter(variable => variable.required)
+            .map(variable => variable.key);
+        // return [
+        //     'environment_domain',
+        //     'repo_url',
+        //     'repo_directory',
+        //     'redis_hostname',
+        //     'db_hostname',
+        //     'db_database',
+        //     'db_username',
+        //     'db_password',
+        //     'service_port'
+        // ]
     }
 
     private async getLastInteractiveValues(): Promise<AnsibleVarsInterface> {

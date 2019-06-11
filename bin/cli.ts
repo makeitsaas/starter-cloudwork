@@ -1,10 +1,9 @@
 import { App } from '../app/app';
 
 import * as program from 'commander';
-import * as inquirer from 'inquirer';
-import { Question } from 'inquirer';
 import { Playbook } from '../ansible/deployer-ansible';
 import { CliHelper } from '../app/scheduler/lib/cli-helper';
+import { ConfigReader } from '../app/scheduler/lib/config-reader';
 
 
 program
@@ -24,16 +23,15 @@ const app = new App();
 // maybe add below a script to display operations that needs to be led
 
 if (program.ansible) {
-    console.log('interactive');
     const getPlaybookReference = async (): Promise<string> => {
         if (program.playbook) {
             return program.playbook;
         } else {
-            return await CliHelper.askInteractively('playbook');
+            return await CliHelper.askList(ConfigReader.playbooks.getKeys());
         }
     };
     Promise.resolve(getPlaybookReference())
-        .then(playbookReference => {
+        .then((playbookReference: string) => {
             return app.loadServicePlaybook(playbookReference, '6', program.interactive)
                 .then(async (playbook: Playbook) => {
                     if (program.execute) {

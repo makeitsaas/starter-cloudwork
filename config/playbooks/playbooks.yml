@@ -1,0 +1,26 @@
+database-create:
+  inputs:
+    - environment
+    - service-deployment
+  variables:
+    - key: db_hostname
+      required: true
+    - key: db_database
+      required: true
+    - key: db_username
+      required: true
+    - key: db_password
+      required: true
+database-drop:
+  inputs:
+    - environment
+    - service-deployment
+  variables:
+    - key: db_hostname
+      required: true
+    - key: db_database
+      required: true
+    - key: db_username
+      required: true
+    - key: db_password
+      required: true

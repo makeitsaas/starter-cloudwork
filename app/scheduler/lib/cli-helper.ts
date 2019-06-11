@@ -3,7 +3,7 @@ import { Question } from 'inquirer';
 
 export const CliHelper = {
     async askInteractively(message: string): Promise<string> {
-        const inputName = 'some-name';
+        const inputName = 'value';
         const question: Question = {
             type: 'input',
             name: inputName,
@@ -12,7 +12,20 @@ export const CliHelper = {
 
         return inquirer.prompt([question])
             .then(answers => {
-                console.log('you said', answers);
+                return answers[inputName];
+            });
+    },
+    async askList(choices: (string|{name:string,value:any})[]): Promise<string> {
+        const inputName = 'playbook';
+        const question: Question = {
+            type: 'list',
+            name: inputName,
+            message: 'Choose your playbook',
+            choices
+        };
+
+        return inquirer.prompt([question])
+            .then(answers => {
                 return answers[inputName];
             });
     }
