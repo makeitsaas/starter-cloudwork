@@ -19,10 +19,10 @@ export class DatabaseAllocation {
     type: string = 'devkit';
 
     @ManyToOne(type => Server, { cascade: true, nullable: true, eager: true })
-    server?: Server;
+    server?: Promise<Server>;
 
     @ManyToOne(type => Server, { cascade: true, nullable: true, eager: true })
-    bastion?: Server;
+    bastion?: Promise<Server>;
 
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;

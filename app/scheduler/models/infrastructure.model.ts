@@ -33,8 +33,8 @@ export class InfrastructureModel {
         const server = await this.getDevDatabaseServer();
         const allocation = new DatabaseAllocation();
 
-        allocation.server = server;
-        allocation.bastion = server;
+        allocation.server = Promise.resolve(server);
+        allocation.bastion = Promise.resolve(server);
 
         await this.session.saveEntity(allocation);
 
@@ -76,7 +76,7 @@ export class InfrastructureModel {
             throw new NoPortAvailableOnServer();
         }
 
-        allocatePort.server = server;
+        allocatePort.server = Promise.resolve(server);
 
         await this.session.saveEntity(allocatePort);
 

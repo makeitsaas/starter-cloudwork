@@ -33,12 +33,15 @@ export class EnvironmentVault extends AbstractSessionAwareEntity {
     }
 
     getValue(key: string) {
-        return this.getValues()[key];
+        const upKey = key.toUpperCase();
+        const lowKey = key.toLocaleLowerCase();
+        return this.getValues()[lowKey] || this.getValues()[upKey] || this.getValues()[key];
     }
 
     addValue(key: string, value: any) {
-        let values = this.getValues();
-        values[key] = value;
+        let values = this.getValues(),
+            lowKey = key.toLocaleLowerCase();
+        values[lowKey] = value;
         this.encryptedVault = cryptoJSON.encrypt(values, secret);
     }
 }

@@ -3,14 +3,14 @@ import { config } from 'dotenv';
 config();   // run this before importing other modules
 
 import "reflect-metadata";
-import { Environment, Order, Session } from '@entities';
+import { Environment, Order, Service, ServiceDeployment, Session } from '@entities';
 import { SequenceRunner } from './scheduler/lib/sequence-runner';
 import { Sequence } from '@entities';
 import { FakeOrders } from './fake/fake-orders';
-import { DeployerAnsible } from '../ansible/deployer-ansible';
+import { DeployerAnsible, Playbook } from '../ansible/deployer-ansible';
 
 export class App {
-    private readonly _session: Session;
+    readonly _session: Session;
 
     constructor() {
         this._session = new Session();
@@ -43,15 +43,23 @@ export class App {
         return 200;
     }
 
-    async loadAndRunPlaybook(environmentUuid: string, interactive: boolean = false) {
+    async loadPlaybook(playbookReference: string, environmentUuid: string, interactive: boolean = false): Promise<Playbook> {
         const em = await this._session.em();
         const env = await em.getRepository(Environment).findOneOrFail(environmentUuid);
 
-        const deployer = new DeployerAnsible(interactive);
+        const deployer = new DeployerAnsible(this._session, interactive);
 
-        const playbook = await deployer.preparePlaybook(env, 'database-create');
+        return await deployer.preparePlaybook('database-create', env);
+    }
 
-        return playbook.execute();
+    async loadServicePlaybook(playbookReference: string, serviceUuid: string, interactive: boolean = false): Promise<Playbook> {
+        const em = await this._session.em();
+        const service = await em.getRepository(Service).findOneOrFail(serviceUuid);
+        const deployment = await em.getRepository(ServiceDeployment).findOneOrFail({where: {service}});
+
+        const deployer = new DeployerAnsible(this._session, interactive);
+
+        return await deployer.preparePlaybook(playbookReference, deployment.environment, deployment);
     }
 
     exitHandler() {

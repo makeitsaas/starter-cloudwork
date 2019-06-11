@@ -13,7 +13,7 @@ export class ServerPort {
     port: number;
 
     @ManyToOne(type => Server, server => server.ports, { onDelete: 'CASCADE' })
-    server: Server;
+    server: Promise<Server>;
 
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;

@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+const YAML = require('yamljs');
 
 const ansiblePLaybookRelativePath = '../../playbooks';
 const ansibleTemplatesRelativePath = '../../templates';
@@ -44,6 +45,10 @@ export class AnsibleExecutionClient {
         return this.ready;
     }
 
+    public getDirectory(): string {
+        return this.executionAbsoluteDirectory;
+    }
+
     /*
      * ---------------
      * Private methods
@@ -51,7 +56,16 @@ export class AnsibleExecutionClient {
      */
 
     private async getExecutionDirectory() {
-        this.executionAbsoluteDirectory = await Promise.resolve(`${__dirname}/${tmpDirectoryRelativePath}/playbook-execution-1`);
+        const basePath = `${__dirname}/${tmpDirectoryRelativePath}`;
+        let i = 1;
+        let available = false;
+        const generatePath = (i:number) => {
+            return `${basePath}/playbook-execution-${i}`;
+        };
+        while(!available) {
+            this.executionAbsoluteDirectory = generatePath(i++);
+            available = this.isFolderAvailable(this.executionAbsoluteDirectory);
+        }
         fs.mkdirSync(this.executionAbsoluteDirectory);
     }
 
@@ -62,7 +76,7 @@ export class AnsibleExecutionClient {
 
         for(let key in this.inventory) {
             inventoryFileContent +=`[${key}]\n`;
-            inventoryFileContent +=`${this.inventory[key]}\n`;
+            inventoryFileContent +=`${this.inventory[key]}\n\n`;
         }
 
         fs.mkdirSync(inventoryDir);
@@ -90,6 +104,14 @@ export class AnsibleExecutionClient {
     }
 
     private getVarsYAML(): string {
-        return "";
+        return YAML.stringify(this.vars);
+    }
+
+    private isFolderAvailable(path: string): boolean {
+        try {
+            return !fs.existsSync(path);
+        } catch(err) {
+            return true;
+        }
     }
 }

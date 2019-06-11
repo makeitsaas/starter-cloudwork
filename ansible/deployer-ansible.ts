@@ -1,4 +1,4 @@
-import { Environment, EnvironmentVault } from '@entities';
+import { Environment, EnvironmentVault, Service, ServiceDeployment, Session } from '@entities';
 import {
     AnsibleExecutionClient, AnsibleInventoryInterface,
     AnsibleVarsInterface
@@ -13,29 +13,54 @@ export class Playbook {
     private inventory: AnsibleInventoryInterface;
 
     constructor(
-        private environment: Environment,
         private name: string,
-        private interactive: boolean
+        private environment: Environment,
+        private vault: EnvironmentVault,
+        private deployment?: ServiceDeployment,
+        private interactive: boolean = false
     ) {
         this.ready = Promise.all([
             this.loadVars(),
             this.loadInventory()
-        ]).then(() => {
+        ]).then(async () => {
             this.executionClient = new AnsibleExecutionClient(this.vars, this.inventory, this.name);
+            await this.executionClient.prepare();
         })
     }
 
-    async loadVars(): Promise<AnsibleVarsInterface> {
+
+    /*
+     * ---------------
+     * Public methods
+     * ---------------
+     */
+
+    async getDirectory(): Promise<string> {
+        await this.ready;
+        return this.executionClient.getDirectory();
+    }
+
+    async execute() {
+        await this.ready;
+        console.log('we can execute now');
+    }
+
+    /*
+     * ---------------
+     * Private methods
+     * ---------------
+     */
+
+    private async loadVars(): Promise<AnsibleVarsInterface> {
         // get expected values, either from vault or ask user ! ! !
-        const vault = await this.getVault();
         const required = this.getRequiredValues();
         const lastInteractiveValues = await this.getLastInteractiveValues();
         const vars: AnsibleVarsInterface = {};
 
         for (let i in required) {
             let key = required[i];
-            if (vault.getValue(key)) {
-                vars[key] = vault.getValue(key);
+            if (this.vault.getValue(key)) {
+                vars[key] = this.vault.getValue(key);
             } else if (this.interactive) {
                 if (lastInteractiveValues && lastInteractiveValues[key]) {
                     vars[key] = lastInteractiveValues[key];
@@ -52,18 +77,33 @@ export class Playbook {
         return vars;
     }
 
-    async loadInventory(): Promise<AnsibleInventoryInterface> {
-        // get expected values
-        // get from vault, and if missing, ask user ! ! !
+    private async loadInventory(): Promise<AnsibleInventoryInterface> {
         this.inventory = {};
+
+        if(this.deployment && this.deployment.service) {
+            if(
+                this.deployment.computingAllocation
+                && this.deployment.computingAllocation.allocatedPort
+            ) {
+                this.inventory.computing = (await this.deployment.computingAllocation.allocatedPort.server).ip;
+            }
+            if(this.deployment.databaseAllocation) {
+                let server = await this.deployment.databaseAllocation.server;
+                if(server) {
+                    this.inventory.database = server.ip;
+                }
+            }
+        }
+
+        const proxy = await this.environment.proxy;
+        if(proxy) {
+            this.inventory.proxy = proxy.ip;
+        }
+
         return {};
     }
 
-    async getVault(): Promise<EnvironmentVault> {
-        return new EnvironmentVault();
-    }
-
-    getRequiredValues(): string[] {
+    private getRequiredValues(): string[] {
         return [
             'environment_domain',
             'repo_url',
@@ -77,31 +117,24 @@ export class Playbook {
         ]
     }
 
-    async getLastInteractiveValues(): Promise<AnsibleVarsInterface> {
+    private async getLastInteractiveValues(): Promise<AnsibleVarsInterface> {
         return {};
     }
 
-    async saveInteractiveValue(key: string, value: string) {
+    private async saveInteractiveValue(key: string, value: string) {
         console.log('save', key, '=>', value);
-    }
-
-    async execute() {
-        await this.ready;
-        await this.executionClient.prepare();
-        console.log('we can execute now');
     }
 }
 
 export class DeployerAnsible {
-
-    constructor(private interactive: boolean) {
+    constructor(private session: Session, private interactive: boolean) {
     }
 
-    async preparePlaybook(environment: Environment, playbookReference: string): Promise<Playbook> {
-        return new Playbook(environment, playbookReference, this.interactive);
-    }
+    async preparePlaybook(playbookReference: string, environment: Environment, deployment?: ServiceDeployment): Promise<Playbook> {
+        const vault = await this.session.getVault(environment.uuid);
+        const playbook = new Playbook(playbookReference, environment, vault, deployment, this.interactive);
+        await playbook.ready;
 
-    async executePlaybook(playbook: Playbook) {
-        return playbook.execute();
+        return playbook;
     }
 }
