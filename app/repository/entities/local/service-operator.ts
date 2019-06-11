@@ -48,13 +48,14 @@ export class ServiceOperator {
     }
 
     async registerVaultValues(vault: EnvironmentVault) {
+        await this.ready;
         let getters = this.vaultFieldsRequirementsGetters(vault);
 
         for(let key in getters) {
             let vaultValue = vault.getValue(key);
 
             if(!vaultValue) {
-                const value = await getters[key]();
+                const value = await getters[key].apply(this);
                 console.log('vault add value', key, value);
                 vault.addValue(key, value);
             } else {
@@ -132,6 +133,7 @@ export class ServiceOperator {
     }
 
     private generateDatabaseName(): Promise<string> {
+        console.log('this.deployment', this.deployment);
         return Promise.resolve(`db_d${this.deployment.id}`)
     }
 

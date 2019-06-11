@@ -1,12 +1,12 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { AbstractSessionAwareEntity } from '@entities';
-// import { AbstractSessionAwareEntity } from '@entities';
 const secret = process.env.VAULT_SECRET;
-const cryptoJSON = require('crypto-json');
 
 if(!secret) {
     throw new Error('VAULT_SECRET shall be defined');
 }
+
+const encryptor = require('simple-encryptor')(secret);
 
 @Entity()
 export class EnvironmentVault extends AbstractSessionAwareEntity {
@@ -29,7 +29,7 @@ export class EnvironmentVault extends AbstractSessionAwareEntity {
     getValues(): {[k: string]: any} {
         if(!this.encryptedVault)
             this.encryptedVault = {};
-        return cryptoJSON.decrypt(this.encryptedVault, secret);
+        return encryptor.decrypt(this.encryptedVault) || {};
     }
 
     getValue(key: string) {
@@ -42,6 +42,6 @@ export class EnvironmentVault extends AbstractSessionAwareEntity {
         let values = this.getValues(),
             lowKey = key.toLocaleLowerCase();
         values[lowKey] = value;
-        this.encryptedVault = cryptoJSON.encrypt(values, secret);
+        this.encryptedVault = encryptor.encrypt(values);
     }
 }
