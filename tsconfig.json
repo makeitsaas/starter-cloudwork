@@ -11,6 +11,9 @@
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "paths": {
+      "@models": [
+        "scheduler/models"
+      ],
       "@errors": [
         "scheduler/errors"
       ],

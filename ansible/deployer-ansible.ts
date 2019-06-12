@@ -1,10 +1,11 @@
-import { Environment, EnvironmentVault, Service, ServiceDeployment, Session } from '@entities';
+import { Environment, EnvironmentVault, ServiceDeployment, Session } from '@entities';
 import {
     AnsibleExecutionClient, AnsibleInventoryInterface,
     AnsibleVarsInterface
 } from './modules/ansible-execution-client/ansible-execution-client';
 import { CliHelper } from '../app/scheduler/lib/cli-helper';
 import { ConfigReader, SinglePlaybookConfig } from '../app/scheduler/lib/config-reader';
+import { VaultModel } from '@models';
 
 export class Playbook {
 
@@ -12,7 +13,7 @@ export class Playbook {
     private executionClient: AnsibleExecutionClient;
     private vars: AnsibleVarsInterface;
     private inventory: AnsibleInventoryInterface;
-    private playbookConfig: SinglePlaybookConfig
+    private playbookConfig: SinglePlaybookConfig;
 
     constructor(
         private name: string,
@@ -28,7 +29,7 @@ export class Playbook {
         ]).then(async () => {
             this.executionClient = new AnsibleExecutionClient(this.vars, this.inventory, this.name);
             await this.executionClient.prepare();
-        })
+        });
     }
 
 
@@ -111,17 +112,6 @@ export class Playbook {
         return this.playbookConfig.variables
             .filter(variable => variable.required)
             .map(variable => variable.key);
-        // return [
-        //     'environment_domain',
-        //     'repo_url',
-        //     'repo_directory',
-        //     'redis_hostname',
-        //     'db_hostname',
-        //     'db_database',
-        //     'db_username',
-        //     'db_password',
-        //     'service_port'
-        // ]
     }
 
     private async getLastInteractiveValues(): Promise<AnsibleVarsInterface> {
@@ -138,7 +128,7 @@ export class DeployerAnsible {
     }
 
     async preparePlaybook(playbookReference: string, environment: Environment, deployment?: ServiceDeployment): Promise<Playbook> {
-        const vault = await this.session.getVault(environment.uuid);
+        const vault = await VaultModel.getEnvironmentVault(environment.uuid);
         const playbook = new Playbook(playbookReference, environment, vault, deployment, this.interactive);
         await playbook.ready;
 

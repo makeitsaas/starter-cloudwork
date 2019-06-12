@@ -5,6 +5,7 @@
 import { Environment, EnvironmentVault, Order, Sequence, SequenceTask, Session } from '@entities';
 import { SequenceOperator } from '@entities/local/sequence-operator';
 import { FakeDelay } from '../../fake/fake-delay';
+import { VaultModel } from '@models';
 
 export class SequenceRunner {
     readonly ready: Promise<any>;
@@ -28,7 +29,7 @@ export class SequenceRunner {
         this.order = this.sequence.order;
         this.environment = this.order.environment;
         this.orderedTasks = this.sequence.getTasksInOrder();
-        this.vault = await this.getVault(this.environment.uuid);
+        this.vault = await VaultModel.getEnvironmentVault(this.environment.uuid);
         this.operator = new SequenceOperator(this._session, this.environment, this.sequence, this.order, this.vault);
         await this.operator.prepare();
     }
@@ -106,14 +107,6 @@ export class SequenceRunner {
         } else {
             console.log(`---> task already done (position: ${task.position}, type: ${task.taskType})`);
         }
-    }
-
-    private async getVault(environmentUuid: string): Promise<EnvironmentVault> {
-        const vault: EnvironmentVault = await this._session.getVault(environmentUuid);
-        // vault.addValue('password', 'secret1234');
-        // await vault.save();
-
-        return vault;
     }
 
     private async runTaskOperations(task: SequenceTask) {

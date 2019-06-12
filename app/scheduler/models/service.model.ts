@@ -1,4 +1,4 @@
-import { Environment, Service, ServiceDeployment, ServiceSpecification, Session } from '@entities';
+import { Environment, Service, ServiceDeployment, Session } from '@entities';
 
 export class ServiceModel {
 

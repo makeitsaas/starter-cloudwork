@@ -24,3 +24,32 @@ database-drop:
       required: true
     - key: db_password
       required: true
+computing-create:
+  inputs:
+    - environment
+    - service-deployment
+  variables:
+    - key: environment_domain
+      required: true
+    - key: repo_url
+      required: true
+    - key: repo_directory
+      required: true
+    - key: redis_hostname
+      required: true
+    - key: db_hostname
+      required: true
+    - key: db_database
+      required: true
+    - key: db_username
+      required: true
+    - key: db_password
+      required: true
+    - key: service_port
+      required: true
+proxy-reload:
+  inputs:
+    - environment
+#  variables:
+#    - key: environment_domain
+#      required: true

@@ -7,4 +7,4 @@
   - name: include variables
     include_vars: vars/{{vars_file}}.yml
   - import_tasks: playbooks/prerequisites/prerequisites.yml
-  - import_tasks: playbooks/deploy-single-service/deploy.yml
+  - import_tasks: playbooks/computing/deploy.yml

@@ -1,15 +1,14 @@
 import { Connection, EntityManager, QueryRunner } from 'typeorm';
 import { dbLoader } from '../../databases/infrastructure-database';
-import { vaultDbLoader } from '../../databases/vaults-database';
 import { EnvironmentVault } from '@entities';
 import { InfrastructureModel } from '../../../scheduler/models/infrastructure.model';
 import { ServiceModel } from '../../../scheduler/models/service.model';
+import { VaultModel } from '@models';
 
 export class Session {
 
     readonly _loading: Promise<any>;
     private _connection: Connection;
-    private _vaultConnection: Connection;
     private _em: EntityManager;
     private _emTransactional: EntityManager;
     private _queryRunner: QueryRunner;
@@ -18,7 +17,6 @@ export class Session {
     constructor() {
         this._loading = Promise.all([
             this.initConnection(),
-            this.initVaultConnection(),
             this.initInfrastructureModel()
         ]);
     }
@@ -63,23 +61,9 @@ export class Session {
         });
     }
 
-    getVault(environmentUuid: string): Promise<EnvironmentVault> {
-        return this._vaultConnection
-            .manager
-            .getRepository(EnvironmentVault)
-            .findOne({where: {environmentUuid: environmentUuid}})
-            .then(vault => {
-                if(!vault) {
-                    vault = new EnvironmentVault();
-                    vault.environmentUuid = environmentUuid;
-                }
-
-                vault.assignSession(this);
-                vault.assignEm(this._vaultConnection.manager);
-
-                return vault;
-            });
-    }
+    // getVault(environmentUuid: string): Promise<EnvironmentVault> {
+    //     return VaultModel.getEnvironmentVault(environmentUuid);
+    // }
 
     async load(InjectionClass: any): Promise<any> {
         if(InjectionClass === ServiceModel) {
@@ -106,13 +90,6 @@ export class Session {
 
             return this._em;
         })
-    }
-
-    private initVaultConnection() {
-        return vaultDbLoader.then(async (connection: Connection) => {
-            this._vaultConnection = connection;
-            return connection;
-        });
     }
 
     private initInfrastructureModel() {

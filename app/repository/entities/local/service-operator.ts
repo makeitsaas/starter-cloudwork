@@ -1,5 +1,6 @@
 import { Environment, EnvironmentVault, Service, ServiceDeployment, ServiceSpecification, Session } from '@entities';
 import { ServiceModel } from '../../../scheduler/models/service.model';
+import { VaultModel } from '@models';
 
 export class ServiceOperator {
     service: Service;
@@ -49,6 +50,9 @@ export class ServiceOperator {
 
     async registerVaultValues(vault: EnvironmentVault) {
         await this.ready;
+
+        VaultModel.getDeploymentVault();
+
         let getters = this.vaultFieldsRequirementsGetters(vault);
 
         for(let key in getters) {
@@ -107,6 +111,7 @@ export class ServiceOperator {
 
     private async runDatabaseScript() {
         console.log('database script');
+        await VaultModel.getDeploymentVault();
     }
 
     private async runComputeScript() {
