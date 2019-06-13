@@ -1,4 +1,4 @@
-import { Environment, EnvironmentVault, ServiceDeployment, Session } from '@entities';
+import { Environment, EnvironmentVault, ServiceDeployment, ServiceDeploymentVault, Session } from '@entities';
 import {
     AnsibleExecutionClient, AnsibleInventoryInterface,
     AnsibleVarsInterface
@@ -20,6 +20,7 @@ export class Playbook {
         private environment: Environment,
         private vault: EnvironmentVault,
         private deployment?: ServiceDeployment,
+        private deploymentVault?: ServiceDeploymentVault,
         private interactive: boolean = false
     ) {
         this.playbookConfig = ConfigReader.playbooks.getConfig(this.name);
@@ -58,14 +59,17 @@ export class Playbook {
     private async loadVars(): Promise<AnsibleVarsInterface> {
         // get expected values, either from vault or ask user ! ! !
         const required = this.getRequiredVariablesNames();
-        console.log('required', required);
+        // console.log('required', required);
         const lastInteractiveValues = await this.getLastInteractiveValues();
         const vars: AnsibleVarsInterface = {};
 
+        // console.log(this.deploymentVault && this.deploymentVault.getValues());
+
         for (let i in required) {
             let key = required[i];
-            if (this.vault.getValue(key)) {
-                vars[key] = this.vault.getValue(key);
+            let vaultValue = (this.deploymentVault && this.deploymentVault.getValue(key)) || this.vault.getValue(key);
+            if (vaultValue) {
+                vars[key] = vaultValue;
             } else if (this.interactive) {
                 if (lastInteractiveValues && lastInteractiveValues[key]) {
                     vars[key] = lastInteractiveValues[key];
@@ -128,8 +132,9 @@ export class DeployerAnsible {
     }
 
     async preparePlaybook(playbookReference: string, environment: Environment, deployment?: ServiceDeployment): Promise<Playbook> {
-        const vault = await VaultModel.getEnvironmentVault(environment.uuid);
-        const playbook = new Playbook(playbookReference, environment, vault, deployment, this.interactive);
+        const environmentVault = await VaultModel.getEnvironmentVault(environment.uuid);
+        const deploymentVault = deployment ? await VaultModel.getDeploymentVault(`${deployment.id}`) : undefined;
+        const playbook = new Playbook(playbookReference, environment, environmentVault, deployment, deploymentVault, this.interactive);
         await playbook.ready;
 
         return playbook;

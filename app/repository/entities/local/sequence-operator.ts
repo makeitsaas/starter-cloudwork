@@ -49,7 +49,7 @@ export class SequenceOperator {
         // configure required environment variables
         for (let i in this.servicesToDeploy) {
             let operator = this.servicesToDeploy[i];
-            await operator.registerVaultValues(this.vault);
+            await operator.registerVaultValues();
         }
     }
 
@@ -116,7 +116,7 @@ export class SequenceOperator {
     }
 
     private isDeploymentStillRequired(deployment: ServiceDeployment) {
-        console.log('is it still required', deployment);
+        // console.log('is it still required', deployment);
         const match = this.requiredServices.filter(service => deployment.service.uuid === service.uuid);
         return match.length > 0;
     }

@@ -1,4 +1,11 @@
-import { Environment, EnvironmentVault, Service, ServiceDeployment, ServiceSpecification, Session } from '@entities';
+import {
+    AbstractBaseVault,
+    Environment,
+    Service,
+    ServiceDeployment,
+    ServiceSpecification,
+    Session
+} from '@entities';
 import { ServiceModel } from '../../../scheduler/models/service.model';
 import { VaultModel } from '@models';
 
@@ -48,10 +55,10 @@ export class ServiceOperator {
 
     }
 
-    async registerVaultValues(vault: EnvironmentVault) {
+    async registerVaultValues(): Promise<any> {
         await this.ready;
 
-        VaultModel.getDeploymentVault();
+        const vault = await VaultModel.getDeploymentVault(`${this.deployment.id}`);
 
         let getters = this.vaultFieldsRequirementsGetters(vault);
 
@@ -111,7 +118,7 @@ export class ServiceOperator {
 
     private async runDatabaseScript() {
         console.log('database script');
-        await VaultModel.getDeploymentVault();
+        await VaultModel.getDeploymentVault(`${this.deployment.id}`);
     }
 
     private async runComputeScript() {
@@ -126,7 +133,7 @@ export class ServiceOperator {
         console.log('cleanup script');
     }
 
-    private vaultFieldsRequirementsGetters(vault: EnvironmentVault): {[id: string]: () => Promise<string>} {
+    private vaultFieldsRequirementsGetters(vault: AbstractBaseVault): {[id: string]: () => Promise<string>} {
         return {
             "DB_DATABASE": this.generateDatabaseName,
             "DB_USERNAME": this.generateDatabaseUserName,

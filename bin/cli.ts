@@ -23,16 +23,31 @@ const app = new App();
 // maybe add below a script to display operations that needs to be led
 
 if (program.ansible) {
+    let playbookReference: string;
+    let serviceUuid: string;
+
     const getPlaybookReference = async (): Promise<string> => {
         if (program.playbook) {
-            return program.playbook;
+            playbookReference = program.playbook;
         } else {
-            return await CliHelper.askList(ConfigReader.playbooks.getKeys());
+            playbookReference = await CliHelper.askList(ConfigReader.playbooks.getKeys());
         }
+
+        return playbookReference;
+    };
+    const getServiceUuid = async (): Promise<string> => {
+        if (program.service) {
+            serviceUuid = program.service;
+        } else {
+            serviceUuid = await CliHelper.askInteractively('Service uuid (6, 7, ...)');
+        }
+
+        return serviceUuid;
     };
     Promise.resolve(getPlaybookReference())
-        .then((playbookReference: string) => {
-            return app.loadServicePlaybook(playbookReference, '6', program.interactive)
+        .then(() => getServiceUuid())
+        .then(() => {
+            return app.loadServicePlaybook(playbookReference, serviceUuid, program.interactive)
                 .then(async (playbook: Playbook) => {
                     if (program.execute) {
                         await playbook.execute();

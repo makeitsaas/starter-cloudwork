@@ -87,7 +87,7 @@ export class AnsibleExecutionClient {
         let varsDir = this.executionAbsoluteDirectory + '/vars',
             varsFile = varsDir + '/default.yml';
         fs.mkdirSync(varsDir);
-        console.log(this.getVarsYAML());
+        // console.log(this.getVarsYAML());
         fs.writeFileSync(varsFile, this.getVarsYAML());
     }
 

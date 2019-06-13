@@ -1,9 +1,7 @@
 import { Connection, EntityManager, QueryRunner } from 'typeorm';
 import { dbLoader } from '../../databases/infrastructure-database';
-import { EnvironmentVault } from '@entities';
 import { InfrastructureModel } from '../../../scheduler/models/infrastructure.model';
 import { ServiceModel } from '../../../scheduler/models/service.model';
-import { VaultModel } from '@models';
 
 export class Session {
 
@@ -60,10 +58,6 @@ export class Session {
             return this._emTransactional;
         });
     }
-
-    // getVault(environmentUuid: string): Promise<EnvironmentVault> {
-    //     return VaultModel.getEnvironmentVault(environmentUuid);
-    // }
 
     async load(InjectionClass: any): Promise<any> {
         if(InjectionClass === ServiceModel) {
