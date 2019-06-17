@@ -6,8 +6,9 @@ const fs = require('fs');
 // I'm just converting that string, what could possibly go wrong?
 // const hack = yaml.load(untrusted_code) + '';
 
+const vaultTypesConfig = yaml.safeLoad(fs.readFileSync(`config/playbooks/vault-types-variables.yml`, 'utf8'));
 const playbooksConfig = yaml.safeLoad(fs.readFileSync(`config/playbooks/playbooks.yml`, 'utf8'));
-const playbooks = fs.readdirSync('ansible/playbooks');
+const playbooks = fs.readdirSync('ansible/playbooks');  // do someting to check if available playbooks match with config
 
 export const ConfigReader = {
     sequenceBlueprint: (action: string): any => {
@@ -21,6 +22,17 @@ export const ConfigReader = {
             if(!playbooksConfig[key])
                 throw new Error('No config for playbook');
             return playbooksConfig[key];
+        },
+        getVariableVaultType: (key: string): ('deployment'|'environment') => {
+            const environmentVaultVariables = vaultTypesConfig.environment;
+            const serviceDeploymentVaultVariables = vaultTypesConfig.deployment;
+            if(environmentVaultVariables.indexOf(key) !== -1) {
+                return 'environment';
+            } else if(serviceDeploymentVaultVariables.indexOf(key) !== -1) {
+                return 'deployment';
+            } else {
+                throw new Error('Variable has no assigned vault type');
+            }
         }
     }
 };

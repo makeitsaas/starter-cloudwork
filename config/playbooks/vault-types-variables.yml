@@ -1,0 +1,11 @@
+deployment:
+  - repo_url
+  - repo_directory
+  - redis_hostname
+  - db_hostname
+  - db_database
+  - db_username
+  - db_password
+  - service_port
+environment:
+  - environment_domain

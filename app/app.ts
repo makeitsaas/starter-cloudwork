@@ -7,7 +7,8 @@ import { Environment, Order, Service, ServiceDeployment, Session } from '@entiti
 import { SequenceRunner } from './scheduler/lib/sequence-runner';
 import { Sequence } from '@entities';
 import { FakeOrders } from './fake/fake-orders';
-import { DeployerAnsible, Playbook } from '../ansible/deployer-ansible';
+import { DeployerAnsible } from '../ansible/deployer-ansible';
+import { Playbook } from '../ansible/playbook';
 
 export class App {
     readonly _session: Session;

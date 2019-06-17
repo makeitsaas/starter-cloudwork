@@ -1,9 +1,9 @@
 import { App } from '../app/app';
 
 import * as program from 'commander';
-import { Playbook } from '../ansible/deployer-ansible';
 import { CliHelper } from '../app/scheduler/lib/cli-helper';
 import { ConfigReader } from '../app/scheduler/lib/config-reader';
+import { Playbook } from '../ansible/playbook';
 
 
 program

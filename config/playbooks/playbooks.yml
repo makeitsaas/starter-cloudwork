@@ -50,6 +50,6 @@ computing-create:
 proxy-reload:
   inputs:
     - environment
-#  variables:
-#    - key: environment_domain
-#      required: true
+  variables:
+    - key: environment_domain
+      required: true
