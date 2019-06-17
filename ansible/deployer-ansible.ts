@@ -1,4 +1,11 @@
-import { Environment, EnvironmentVault, ServiceDeployment, ServiceDeploymentVault, Session } from '@entities';
+import {
+    AbstractBaseVault,
+    Environment,
+    EnvironmentVault,
+    ServiceDeployment,
+    ServiceDeploymentVault,
+    Session
+} from '@entities';
 import {
     AnsibleExecutionClient, AnsibleInventoryInterface,
     AnsibleVarsInterface
@@ -59,25 +66,18 @@ export class Playbook {
     private async loadVars(): Promise<AnsibleVarsInterface> {
         // get expected values, either from vault or ask user ! ! !
         const required = this.getRequiredVariablesNames();
-        // console.log('required', required);
-        const lastInteractiveValues = await this.getLastInteractiveValues();
         const vars: AnsibleVarsInterface = {};
-
-        // console.log(this.deploymentVault && this.deploymentVault.getValues());
+        const vault = await this.getVault();
 
         for (let i in required) {
             let key = required[i];
-            let vaultValue = (this.deploymentVault && this.deploymentVault.getValue(key)) || this.vault.getValue(key);
+            let vaultValue = vault.getValue(key);
             if (vaultValue) {
                 vars[key] = vaultValue;
             } else if (this.interactive) {
-                if (lastInteractiveValues && lastInteractiveValues[key]) {
-                    vars[key] = lastInteractiveValues[key];
-                } else {
-                    let interactiveValue = await CliHelper.askInteractively(key);
-                    await this.saveInteractiveValue(key, interactiveValue);
-                    vars[key] = interactiveValue;
-                }
+                let interactiveValue = await CliHelper.askInteractively(key);
+                await this.saveInteractiveValue(key, interactiveValue);
+                vars[key] = interactiveValue;
             }
         }
 
@@ -118,12 +118,14 @@ export class Playbook {
             .map(variable => variable.key);
     }
 
-    private async getLastInteractiveValues(): Promise<AnsibleVarsInterface> {
-        return {};
+    private async saveInteractiveValue(key: string, value: string) {
+        const vault = await this.getVault();
+        vault.addValue(key, value);
+        await vault.save();
     }
 
-    private async saveInteractiveValue(key: string, value: string) {
-        console.log('save', key, '=>', value);
+    private async getVault(): Promise<AbstractBaseVault> {
+        return this.deploymentVault || this.vault;
     }
 }
 
