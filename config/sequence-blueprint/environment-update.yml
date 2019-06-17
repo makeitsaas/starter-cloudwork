@@ -1,6 +1,7 @@
 tasks:
   - requirements        # allocations, passwords, ...
   - planify             # create sequence with exact tasks => are you sure ? Let's see when we get there
+  - environment-configuration
   - allocate            # allocation tasks
   - setup-vaults        # vault setup tasks
   - setup-databases     # ...

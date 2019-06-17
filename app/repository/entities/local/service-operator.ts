@@ -43,13 +43,13 @@ export class ServiceOperator {
         console.log('assigning servers and ports');
 
         if(!this.deployment.computingAllocation) {
-            console.log(this.deployment);
-            this.deployment.computingAllocation = await this.session.infrastructure.allocateDevComputing();
+            this.deployment.computingAllocation = Promise.resolve(await this.session.infrastructure.allocateDevComputing());
             await this.session.saveEntity(this.deployment);
         }
 
-        if(!this.deployment.databaseAllocation) {
-            this.deployment.databaseAllocation = await this.session.infrastructure.allocateDevDatabase();
+        const databaseAllocation = await this.deployment.databaseAllocation;
+        if(!databaseAllocation) {
+            this.deployment.databaseAllocation = this.session.infrastructure.allocateDevDatabase(); // TODO : pareil
             await this.session.saveEntity(this.deployment);
         }
 
@@ -100,7 +100,7 @@ export class ServiceOperator {
     private async initService() {
         this.serviceModel = await this.session.load(ServiceModel);
         if(this.specification) {
-            this.service = await this.serviceModel.getOrCreateService(this.specification.uuid);
+            this.service = await this.serviceModel.getOrCreateService(this.specification.uuid, this.specification.repositoryUrl);
         } else if(this.currentComputeDeployment) {
             this.service = this.currentComputeDeployment.service;
         } else {
@@ -110,7 +110,10 @@ export class ServiceOperator {
 
     private async initDeployment() {
         if(!this.currentComputeDeployment) {
-            this.deployment = await this.serviceModel.getOrCreateServiceDeployment(this.service, this.environment);
+            if(!this.specification) {
+                throw new Error('Missing specifications');
+            }
+            this.deployment = await this.serviceModel.getOrCreateServiceDeployment(this.service, this.environment, this.specification);
         } else {
             this.deployment = this.currentComputeDeployment;
         }

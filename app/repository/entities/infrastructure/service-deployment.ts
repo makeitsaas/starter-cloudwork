@@ -29,11 +29,17 @@ export class ServiceDeployment {
     @ManyToOne(type => Environment, { eager: true })
     environment: Environment;
 
+    @Column()
+    path: string;
+
+    @Column({nullable: true})
+    repositoryVersion?: string;
+
     @ManyToOne(() => ComputingAllocation, {eager: true, nullable: true})
-    computingAllocation?: ComputingAllocation;
+    computingAllocation: Promise<ComputingAllocation>;
 
     @ManyToOne(() => DatabaseAllocation, {eager: true, nullable: true})
-    databaseAllocation?: DatabaseAllocation;
+    databaseAllocation: Promise<DatabaseAllocation>;
 
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;

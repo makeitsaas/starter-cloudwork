@@ -6,6 +6,12 @@ import { ConfigReader, SinglePlaybookConfig } from '../app/scheduler/lib/config-
 import { AbstractBaseVault, Environment, EnvironmentVault, ServiceDeployment, ServiceDeploymentVault } from '@entities';
 import { CliHelper } from '../app/scheduler/lib/cli-helper';
 
+export interface EnvironmentCommonVariablesInterface {
+    environment_id: string
+    hosts: string[]
+    services: any[]
+}
+
 export class Playbook {
 
     readonly ready: Promise<any>;
@@ -32,7 +38,6 @@ export class Playbook {
         });
     }
 
-
     /*
      * ---------------
      * Public methods
@@ -58,40 +63,46 @@ export class Playbook {
     private async loadVars(): Promise<AnsibleVarsInterface> {
         // get expected values, either from vault or ask user ! ! !
         const required = this.getRequiredVariablesNames();
-        const vars: AnsibleVarsInterface = {};
         console.log('vaults');
         console.log(this.deploymentVault && this.deploymentVault.getValues());
         console.log(this.vault.getValues());
+
+        const commonVars = await this.getCommonVariables();
+        const deploymentVars = await this.getDeploymentVariables();
+
+        this.vars = {
+            ...commonVars,
+            ...deploymentVars
+        };
 
         for (let i in required) {
             let key = required[i];
             let vaultValue = await this.getVaultVariable(key);
             if (vaultValue) {
-                vars[key] = vaultValue;
-            } else if (this.interactive) {
+                this.vars[key] = vaultValue;
+            } else if (!this.vars[key] && this.interactive) {
                 let interactiveValue = await CliHelper.askInteractively(key);
                 await this.saveInteractiveValue(key, interactiveValue);
-                vars[key] = interactiveValue;
+                this.vars[key] = interactiveValue;
             }
         }
 
-        this.vars = vars;
-
-        return vars;
+        return this.vars;
     }
 
     private async loadInventory(): Promise<AnsibleInventoryInterface> {
         this.inventory = {};
 
         if(this.deployment && this.deployment.service) {
-            if(
-                this.deployment.computingAllocation
-                && this.deployment.computingAllocation.allocatedPort
-            ) {
-                this.inventory.computing = (await this.deployment.computingAllocation.allocatedPort.server).ip;
+            const computingAllocation = await this.deployment.computingAllocation;
+            const port = await (computingAllocation && computingAllocation.allocatedPort);
+            if(port) {
+                this.inventory.computing = (await port.server).ip;
             }
-            if(this.deployment.databaseAllocation) {
-                let server = await this.deployment.databaseAllocation.server;
+
+            const databaseAllocation = await this.deployment.databaseAllocation;
+            if(databaseAllocation) {
+                let server = await databaseAllocation.server;
                 if(server) {
                     this.inventory.database = server.ip;
                 }
@@ -104,6 +115,41 @@ export class Playbook {
         }
 
         return {};
+    }
+
+    private async getCommonVariables(): Promise<EnvironmentCommonVariablesInterface> {
+        const deployments = await this.environment.deployments;
+        return {
+            environment_id: this.environment.uuid,
+            hosts: this.environment.configuration.domains,
+            services: await Promise.all(deployments.map(async deployment => {
+                const allocation = await deployment.computingAllocation;
+                const computePort = await (allocation && allocation.allocatedPort);
+                if(!computePort)
+                    throw new Error(`No compute allocation for deployment ${deployment.id}`);
+                const computeServer = await computePort.server;
+                return {
+                    path: deployment.path,
+                    repositoryVersion: deployment.repositoryVersion,
+                    port: computePort.port,
+                    host: computeServer.ip === this.inventory.proxy ? 'localhost' : computeServer.ip
+                };
+            }))
+        }
+    }
+
+    private async getDeploymentVariables() : Promise<any> {
+        const db = this.deployment && await this.deployment.databaseAllocation;
+        const dbServer = db && await db.server;
+        const computing = this.deployment && await this.deployment.computingAllocation;
+        const computingPort = computing && await computing.allocatedPort;
+        return this.deployment && {
+            repo_url: this.deployment.service.repositoryUrl,
+            db_hostname: dbServer && dbServer.ip,
+            service_port: computingPort && computingPort.port,
+            redis_hostname: dbServer && dbServer.ip,
+            repo_directory: `d${this.deployment.id}`
+        } || {};
     }
 
     private getRequiredVariablesNames(): string[] {

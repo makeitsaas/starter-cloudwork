@@ -10,7 +10,7 @@ export interface AnsibleInventoryInterface {
 }
 
 export interface AnsibleVarsInterface {
-    [id: string]: string|number;
+    [id: string]: string|number|any;
 }
 
 export class AnsibleExecutionClient {

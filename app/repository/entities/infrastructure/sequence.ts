@@ -11,6 +11,10 @@ import { SequenceTask } from '@entities';
 import { Order } from '@entities';
 import { ConfigReader } from '../../../scheduler/lib/config-reader';
 
+/**
+ * A sequence : a list of task. These shall be used to apply order specifications
+ */
+
 @Entity()
 export class Sequence {
     @PrimaryGeneratedColumn()

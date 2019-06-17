@@ -37,6 +37,14 @@ export class SequenceOperator {
      * ---------------
      */
 
+    async updateEnvironmentConfiguration() {
+        this.environment.configuration = {
+            domains: this.sequence.order.getDomains()
+        };
+        const em = await this.session.em();
+        await em.save(this.environment);
+    }
+
     async launchAllocations() {
         // create deployment with 'to do' status and assign servers and port
         for (let i in this.servicesToDeploy) {

@@ -6,5 +6,5 @@
     when: vars_file is undefined
   - name: include variables
     include_vars: vars/{{vars_file}}.yml
-  - import_tasks: playbooks/prerequisites/prerequisites.yml
-  - import_tasks: playbooks/computing/deploy.yml
+  - import_tasks: playbooks/parts/prerequisites/prerequisites.yml
+  - import_tasks: playbooks/parts/computing/deploy.yml

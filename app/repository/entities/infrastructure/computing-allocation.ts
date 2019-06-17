@@ -19,7 +19,7 @@ export class ComputingAllocation {
     type: string = 'server-port';    // available, to release
 
     @ManyToOne(type => ServerPort, {cascade: true, nullable: true, eager: true})
-    allocatedPort?: ServerPort;
+    allocatedPort: Promise<ServerPort>;
 
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;

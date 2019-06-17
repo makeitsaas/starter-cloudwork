@@ -22,7 +22,7 @@ export class InfrastructureModel {
     async allocateDevComputing(): Promise<ComputingAllocation> {
         const server = await this.getDevComputingServer();
         const allocation = new ComputingAllocation();
-        allocation.allocatedPort = await this.getAvailablePort(server);
+        allocation.allocatedPort = this.getAvailablePort(server);   // TODO : check if necessary to write Promise.resolve(await this.getAvailablePort(server))
 
         await this.session.saveEntity(allocation);
 

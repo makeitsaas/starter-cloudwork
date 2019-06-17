@@ -111,6 +111,9 @@ export class SequenceRunner {
 
     private async runTaskOperations(task: SequenceTask) {
         switch (task.taskType) {
+            case 'environment-configuration':
+                await this.operator.updateEnvironmentConfiguration();
+                break;
             case 'allocate':
                 await this.operator.launchAllocations();
                 break;
