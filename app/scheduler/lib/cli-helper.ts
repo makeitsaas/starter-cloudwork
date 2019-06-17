@@ -28,5 +28,19 @@ export const CliHelper = {
             .then(answers => {
                 return answers[inputName];
             });
+    },
+    async askConfirmation(message: string, defaultValue: boolean = true): Promise<boolean> {
+        const inputName = 'confirmation';
+        const question: Question = {
+            type: 'confirm',
+            name: inputName,
+            message: `${message}:`,
+            default: defaultValue
+        };
+
+        return inquirer.prompt([question])
+            .then(answers => {
+                return answers[inputName];
+            });
     }
 };

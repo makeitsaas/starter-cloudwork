@@ -9,6 +9,7 @@ import { Sequence } from '@entities';
 import { FakeOrders } from './fake/fake-orders';
 import { DeployerAnsible } from '../ansible/deployer-ansible';
 import { Playbook } from '../ansible/playbook';
+import { CliHelper } from './scheduler/lib/cli-helper';
 
 export class App {
     readonly _session: Session;
@@ -60,7 +61,15 @@ export class App {
 
         const deployer = new DeployerAnsible(this._session, interactive);
 
-        return await deployer.preparePlaybook(playbookReference, deployment.environment, deployment);
+        const playbook = await deployer.preparePlaybook(playbookReference, deployment.environment, deployment);
+
+        const doExecute = await CliHelper.askConfirmation('Execute playbook ?', false);
+
+        if(doExecute) {
+            await playbook.execute();
+        }
+
+        return playbook;
     }
 
     exitHandler() {
