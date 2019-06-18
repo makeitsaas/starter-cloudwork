@@ -1,7 +1,0 @@
----
-- name: check if sources exist
-  stat:
-    path: "/srv/services/{{ repo_directory }}"
-  register: git_directory
-- debug:
-    msg: "Does git_directory exists => {{git_directory.stat.exists}}"
