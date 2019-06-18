@@ -4,7 +4,7 @@
 
 import { Environment, EnvironmentVault, Order, Sequence, SequenceTask } from '@entities';
 import { SequenceOperator } from '@operators';
-import { FakeDelay } from '../../fake/fake-delay';
+import { FakeDelay } from '@fake';
 import { VaultModel } from '@models';
 import { Session } from '@session';
 

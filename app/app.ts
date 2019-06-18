@@ -6,10 +6,10 @@ import "reflect-metadata";
 import { Environment, Order, Service, ServiceDeployment } from '@entities';
 import { Session } from '@session';
 import { Sequence } from '@entities';
-import { FakeOrders } from './fake/fake-orders';
 import { SequenceRunner } from '@operators';
 import { DeployerAnsible, Playbook } from '@ansible';
 import { CliHelper } from '@utils';
+import { FakeOrders } from '@fake';
 
 export class App {
     readonly _session: Session;

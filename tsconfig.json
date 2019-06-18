@@ -11,6 +11,9 @@
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "paths": {
+      "@fake": [
+        "../config/fake"
+      ],
       "@session": [
         "lib/session"
       ],
