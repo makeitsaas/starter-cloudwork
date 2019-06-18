@@ -51,7 +51,7 @@ export class App {
 
         const deployer = new DeployerAnsible(this._session, interactive);
 
-        return await deployer.preparePlaybook('database-create', env);
+        return await deployer.preparePlaybook(playbookReference, env);
     }
 
     async loadServicePlaybook(playbookReference: string, serviceUuid: string, interactive: boolean = false): Promise<Playbook> {

@@ -5,6 +5,7 @@ import {
 import { ConfigReader, SinglePlaybookConfig } from '../app/scheduler/lib/config-reader';
 import { AbstractBaseVault, Environment, EnvironmentVault, ServiceDeployment, ServiceDeploymentVault } from '@entities';
 import { CliHelper } from '../app/scheduler/lib/cli-helper';
+import { VaultModel } from '@models';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string
@@ -19,13 +20,13 @@ export class Playbook {
     private vars: AnsibleVarsInterface;
     private inventory: AnsibleInventoryInterface;
     private playbookConfig: SinglePlaybookConfig;
+    private vault: EnvironmentVault;
+    private deploymentVault?: ServiceDeploymentVault;
 
     constructor(
         private name: string,
         private environment: Environment,
-        private vault: EnvironmentVault,
         private deployment?: ServiceDeployment,
-        private deploymentVault?: ServiceDeploymentVault,
         private interactive: boolean = false
     ) {
         this.playbookConfig = ConfigReader.playbooks.getConfig(this.name);
@@ -51,7 +52,7 @@ export class Playbook {
 
     async execute() {
         await this.ready;
-        console.log('we can execute now');
+        console.log('execution start');
     }
 
     /*
@@ -63,10 +64,6 @@ export class Playbook {
     private async loadVars(): Promise<AnsibleVarsInterface> {
         // get expected values, either from vault or ask user ! ! !
         const required = this.getRequiredVariablesNames();
-        console.log('vaults');
-        console.log(this.deploymentVault && this.deploymentVault.getValues());
-        console.log(this.vault.getValues());
-
         const commonVars = await this.getCommonVariables();
         const deploymentVars = await this.getDeploymentVariables();
 
@@ -173,11 +170,17 @@ export class Playbook {
     private async getVault(key: string): Promise<AbstractBaseVault> {
         const type = ConfigReader.playbooks.getVariableVaultType(key);
         if(type === 'deployment') {
+            if(!this.deployment) {
+                throw new Error('Missing deployment');
+            }
             if(!this.deploymentVault) {
-                throw new Error('Missing deployment vault');
+                this.deploymentVault = await VaultModel.getDeploymentVault(`${this.deployment.id}`)
             }
             return this.deploymentVault;
         } else {
+            if(!this.vault) {
+                this.vault = await VaultModel.getEnvironmentVault(`${this.environment.uuid}`)
+            }
             return this.vault;
         }
     }

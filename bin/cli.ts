@@ -5,7 +5,6 @@ import { CliHelper } from '../app/scheduler/lib/cli-helper';
 import { ConfigReader } from '../app/scheduler/lib/config-reader';
 import { Playbook } from '../ansible/playbook';
 
-
 program
     .version('0.1.0')
     .option('--ansible', 'Prepare ansible playbook')
@@ -25,6 +24,7 @@ const app = new App();
 if (program.ansible) {
     let playbookReference: string;
     let serviceUuid: string;
+    let environmentUuid: string;
 
     const getPlaybookReference = async (): Promise<string> => {
         if (program.playbook) {
@@ -44,10 +44,22 @@ if (program.ansible) {
 
         return serviceUuid;
     };
+    const getEnvironmentUuid = async (): Promise<string> => {
+        if (program.environment) {
+            environmentUuid = program.service;
+        } else {
+            environmentUuid = await CliHelper.askInteractively('Environment uuid (3)');
+        }
+
+        return environmentUuid;
+    };
     Promise.resolve(getPlaybookReference())
-        .then(() => getServiceUuid())
+        .then(() => /proxy/.test(playbookReference) ? getEnvironmentUuid():getServiceUuid())
         .then(() => {
-            return app.loadServicePlaybook(playbookReference, serviceUuid, program.interactive)
+            const playbookPromise = /proxy/.test(playbookReference) ?
+                app.loadPlaybook(playbookReference, environmentUuid, program.interactive) :
+                app.loadServicePlaybook(playbookReference, serviceUuid, program.interactive);
+            return playbookPromise
                 .then(async (playbook: Playbook) => {
                     if (program.execute) {
                         await playbook.execute();
