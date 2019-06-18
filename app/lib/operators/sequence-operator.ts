@@ -3,10 +3,11 @@ import {
     EnvironmentVault,
     Order,
     Sequence,
-    ServiceDeployment, ServiceOperator,
-    ServiceSpecification,
-    Session
+    ServiceDeployment,
+    ServiceSpecification
 } from '@entities';
+import { Session } from '@session';
+import { ServiceOperator } from '@operators';
 
 export class SequenceOperator {
     // primary check

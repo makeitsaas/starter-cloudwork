@@ -1,5 +1,5 @@
-import { Session } from '@entities';
 import { EntityManager } from 'typeorm';
+import { Session } from '@session';
 
 export abstract class AbstractSessionAwareEntity {
     protected _session: Session;

@@ -1,7 +1,6 @@
 import { Connection, EntityManager, QueryRunner } from 'typeorm';
-import { dbLoader } from '../../databases/infrastructure-database';
-import { InfrastructureModel } from '../../../scheduler/models/infrastructure.model';
-import { ServiceModel } from '../../../scheduler/models/service.model';
+import { InfrastructureModel, ServiceModel } from '@models';
+import { dbLoader } from '@databases';
 
 export class Session {
 

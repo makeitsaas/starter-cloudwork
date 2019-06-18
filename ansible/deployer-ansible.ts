@@ -1,9 +1,9 @@
 import {
     Environment,
-    ServiceDeployment,
-    Session
+    ServiceDeployment
 } from '@entities';
-import { Playbook } from './playbook';
+import { Session } from '@session';
+import { Playbook } from '@ansible';
 
 export class DeployerAnsible {
     constructor(private session: Session, private interactive: boolean) {

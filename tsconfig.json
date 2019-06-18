@@ -11,11 +11,26 @@
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "paths": {
+      "@session": [
+        "lib/session"
+      ],
+      "@databases": [
+        "repository/databases"
+      ],
       "@models": [
-        "scheduler/models"
+        "lib/models"
       ],
       "@errors": [
-        "scheduler/errors"
+        "lib/errors"
+      ],
+      "@operators": [
+        "lib/operators"
+      ],
+      "@ansible": [
+        "../ansible"
+      ],
+      "@utils": [
+        "lib/utils"
       ],
       "@entities": [
         "repository/entities"

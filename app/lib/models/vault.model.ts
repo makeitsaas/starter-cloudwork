@@ -1,5 +1,5 @@
 // Here we have a singleton for vault database
-import { vaultDbLoader } from '../../repository/databases/vaults-database';
+import { vaultDbLoader } from '@databases';
 import { Connection } from 'typeorm';
 import { EnvironmentVault, ServiceDeploymentVault } from '@entities';
 

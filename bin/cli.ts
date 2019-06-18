@@ -1,9 +1,8 @@
 import { App } from '../app/app';
 
 import * as program from 'commander';
-import { CliHelper } from '../app/scheduler/lib/cli-helper';
-import { ConfigReader } from '../app/scheduler/lib/config-reader';
-import { Playbook } from '../ansible/playbook';
+import { CliHelper, ConfigReader } from '@utils';
+import { Playbook } from '@ansible';
 
 program
     .version('0.1.0')

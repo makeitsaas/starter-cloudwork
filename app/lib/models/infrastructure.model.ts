@@ -1,4 +1,5 @@
-import { Environment, Server, ServerPort, ServiceDeployment, Session } from '@entities';
+import { Environment, Server, ServerPort, ServiceDeployment } from '@entities';
+import { Session } from '@session';
 import { DatabaseAllocation } from '@entities/infrastructure/database-allocation';
 import { ComputingAllocation } from '@entities/infrastructure/computing-allocation';
 import { NoPortAvailableOnServer } from '@errors';

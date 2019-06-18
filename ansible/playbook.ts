@@ -2,10 +2,9 @@ import {
     AnsibleExecutionClient, AnsibleInventoryInterface,
     AnsibleVarsInterface
 } from './modules/ansible-execution-client/ansible-execution-client';
-import { ConfigReader, SinglePlaybookConfig } from '../app/scheduler/lib/config-reader';
 import { AbstractBaseVault, Environment, EnvironmentVault, ServiceDeployment, ServiceDeploymentVault } from '@entities';
-import { CliHelper } from '../app/scheduler/lib/cli-helper';
 import { VaultModel } from '@models';
+import { CliHelper, ConfigReader, SinglePlaybookConfig } from '@utils';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string

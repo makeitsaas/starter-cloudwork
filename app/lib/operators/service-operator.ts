@@ -3,11 +3,10 @@ import {
     Environment,
     Service,
     ServiceDeployment,
-    ServiceSpecification,
-    Session
+    ServiceSpecification
 } from '@entities';
-import { ServiceModel } from '../../../scheduler/models/service.model';
-import { VaultModel } from '@models';
+import { ServiceModel, VaultModel } from '@models';
+import { Session } from '@session';
 
 export class ServiceOperator {
     service: Service;

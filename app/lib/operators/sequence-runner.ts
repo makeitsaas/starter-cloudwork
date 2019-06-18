@@ -2,10 +2,11 @@
 // A SequenceOperator executes macro-tasks
 // A Sequence is a list of things to do/done (create/update/delete environment, ...)
 
-import { Environment, EnvironmentVault, Order, Sequence, SequenceTask, Session } from '@entities';
-import { SequenceOperator } from '@entities/local/sequence-operator';
+import { Environment, EnvironmentVault, Order, Sequence, SequenceTask } from '@entities';
+import { SequenceOperator } from '@operators';
 import { FakeDelay } from '../../fake/fake-delay';
 import { VaultModel } from '@models';
+import { Session } from '@session';
 
 export class SequenceRunner {
     readonly ready: Promise<any>;
