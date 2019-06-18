@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-const YAML = require('yamljs');
+const yaml = require("js-yaml");
 
 const ansiblePLaybookRelativePath = '../../playbooks';
 const ansibleTemplatesRelativePath = '../../templates';
@@ -104,7 +104,7 @@ export class AnsibleExecutionClient {
     }
 
     private getVarsYAML(): string {
-        return YAML.stringify(this.vars);
+        return yaml.dump(this.vars);
     }
 
     private isFolderAvailable(path: string): boolean {
