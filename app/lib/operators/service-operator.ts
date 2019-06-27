@@ -148,7 +148,7 @@ export class ServiceOperator {
 
     private generateDatabaseName(): Promise<string> {
         console.log('this.deployment', this.deployment);
-        return Promise.resolve(`db_d${this.deployment.id}`)
+        return Promise.resolve(`db_d${this.deployment.id}`);
     }
 
     private generateDatabaseUserName(): Promise<string> {

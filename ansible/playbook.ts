@@ -1,7 +1,7 @@
 import {
     AnsibleExecutionClient, AnsibleInventoryInterface,
     AnsibleVarsInterface
-} from './modules/ansible-execution-client/ansible-execution-client';
+} from '@custom-modules/ansible-execution-client';
 import { AbstractBaseVault, Environment, EnvironmentVault, ServiceDeployment, ServiceDeploymentVault } from '@entities';
 import { VaultModel } from '@models';
 import { CliHelper, ConfigReader, SinglePlaybookConfig } from '@utils';

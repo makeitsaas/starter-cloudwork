@@ -9,7 +9,7 @@ import {
 } from "typeorm";
 import { SequenceTask } from '@entities';
 import { Order } from '@entities';
-import { ConfigReader } from '../../../lib/utils/config-reader';
+import { ConfigReader } from '@utils';
 
 /**
  * A sequence : a list of task. These shall be used to apply order specifications

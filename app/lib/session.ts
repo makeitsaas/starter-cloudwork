@@ -1,6 +1,7 @@
 import { Connection, EntityManager, QueryRunner } from 'typeorm';
-import { InfrastructureModel, ServiceModel } from '@models';
+import { ServiceModel } from '@models';
 import { dbLoader } from '@databases';
+import { InfrastructureService } from '@services';
 
 export class Session {
 
@@ -9,7 +10,7 @@ export class Session {
     private _em: EntityManager;
     private _emTransactional: EntityManager;
     private _queryRunner: QueryRunner;
-    public infrastructure: InfrastructureModel;
+    public infrastructure: InfrastructureService;
 
     constructor() {
         this._loading = Promise.all([
@@ -86,6 +87,6 @@ export class Session {
     }
 
     private initInfrastructureModel() {
-        this.infrastructure = new InfrastructureModel(this);
+        this.infrastructure = new InfrastructureService(this);
     }
 }

@@ -3,9 +3,12 @@ import { App } from '../app/app';
 import * as program from 'commander';
 import { CliHelper, ConfigReader } from '@utils';
 import { Playbook } from '@ansible';
+import { DeployServiceTask } from '@custom-modules/workflows/steps/deploy-service.task';
+import { WorkflowExample } from '@custom-modules/workflows/workflows/workflow-example';
 
 program
     .version('0.1.0')
+    .option('--test', 'What your do for testing')
     .option('--ansible', 'Prepare ansible playbook')
     .option('--playbook [playbookName]', 'Specify ansible playbook name')
     .option('-X, --execute', 'Combined with --ansible, executes the freshly created playbook')
@@ -19,8 +22,19 @@ program
 const app = new App();
 
 // maybe add below a script to display operations that needs to be led
-
-if (program.ansible) {
+if (program.test) {
+    const wf = new WorkflowExample();
+    wf.build()
+        .then(() => wf.run())
+        .then(() => app.exit());
+} else if (program.test) {
+    console.log('test');
+    let task = new DeployServiceTask();
+    task.run().then(() => {
+        console.log('exit');
+        app.exit();
+    });
+} else if (program.ansible) {
     let playbookReference: string;
     let serviceUuid: string;
     let environmentUuid: string;
@@ -53,7 +67,7 @@ if (program.ansible) {
         return environmentUuid;
     };
     Promise.resolve(getPlaybookReference())
-        .then(() => /proxy/.test(playbookReference) ? getEnvironmentUuid():getServiceUuid())
+        .then(() => /proxy/.test(playbookReference) ? getEnvironmentUuid() : getServiceUuid())
         .then(() => {
             const playbookPromise = /proxy/.test(playbookReference) ?
                 app.loadPlaybook(playbookReference, environmentUuid, program.interactive) :

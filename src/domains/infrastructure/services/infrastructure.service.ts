@@ -1,10 +1,10 @@
 import { Environment, Server, ServerPort, ServiceDeployment } from '@entities';
 import { Session } from '@session';
-import { DatabaseAllocation } from '@entities/infrastructure/database-allocation';
-import { ComputingAllocation } from '@entities/infrastructure/computing-allocation';
+import { DatabaseAllocation } from '@entities';
+import { ComputingAllocation } from '@entities';
 import { NoPortAvailableOnServer } from '@errors';
 
-export class InfrastructureModel {
+export class InfrastructureService {
 
     constructor(readonly session: Session) {
     }

@@ -11,20 +11,31 @@
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "paths": {
+      "@custom-modules/*": [
+        "../ansible/modules/*",
+        "../ansible/modules/node-ansible/*",
+        "../ansible/modules/deployer-ansible-client/*",
+        "../ansible/modules/ansible-output-parser/*",
+        "../ansible/modules/ansible-execution-client/*",
+        "../src/shared/*"
+      ],
       "@fake": [
-        "../config/fake"
+        "../src/shared/fake"
       ],
       "@session": [
         "lib/session"
       ],
       "@databases": [
-        "repository/databases"
+        "../src/core/databases"
       ],
       "@models": [
         "lib/models"
       ],
+      "@services": [
+        "../src/core/alias/services"
+      ],
       "@errors": [
-        "lib/errors"
+        "../src/core/alias/errors"
       ],
       "@operators": [
         "lib/operators"
@@ -32,14 +43,14 @@
       "@ansible": [
         "../ansible"
       ],
+      "@core": [
+        "../src/core/index"
+      ],
       "@utils": [
-        "lib/utils"
+        "../src/shared/utils"
       ],
       "@entities": [
-        "repository/entities"
-      ],
-      "@entities/*": [
-        "repository/entities/*"
+        "../src/core/alias/entities"
       ]
     }
   }

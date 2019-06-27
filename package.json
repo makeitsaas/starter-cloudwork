@@ -8,10 +8,6 @@
   },
   "main": "index.js",
   "scripts": {
-    "adhoc": "node adhoc.js",
-    "environment:update": "node command/environment-update.js",
-    "environment:delete": "node command/environment-delete.js",
-    "deploy": "node deploy.js",
     "tsc": "tsc",
     "tsn": "ts-node -r tsconfig-paths/register app/app.ts ",
     "cli": "ts-node -r tsconfig-paths/register bin/cli.ts ",

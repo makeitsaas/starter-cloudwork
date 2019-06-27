@@ -1,5 +1,5 @@
-import { AbstractSessionAwareEntity } from '@entities';
-import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, EntityManager, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Session } from '@session';
 
 const secret = process.env.VAULT_SECRET;
 
@@ -9,7 +9,7 @@ if(!secret) {
 
 const encryptor = require('simple-encryptor')(secret);
 
-export abstract class AbstractBaseVault extends AbstractSessionAwareEntity {
+export abstract class AbstractBaseVault {
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -40,5 +40,24 @@ export abstract class AbstractBaseVault extends AbstractSessionAwareEntity {
             lowKey = key.toLocaleLowerCase();
         values[lowKey] = value;
         this.encryptedVault = encryptor.encrypt(values);
+    }
+
+
+    /**
+     * AbstractSessionAwareEntity Legacy => refactor to Value object
+     */
+    protected _session: Session;
+    protected _em: EntityManager;
+
+    assignSession(session: Session) {
+        this._session = session;
+    }
+
+    assignEm(em: EntityManager) {
+        this._em = em;
+    }
+
+    save(): Promise<any> {
+        return this._em.save(this);
     }
 }

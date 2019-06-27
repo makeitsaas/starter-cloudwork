@@ -7,10 +7,10 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from 'typeorm';
-import { Service } from '@entities/infrastructure/service';
+import { Service } from '@entities';
 import { Environment } from '@entities';
-import { ComputingAllocation } from '@entities/infrastructure/computing-allocation';
-import { DatabaseAllocation } from '@entities/infrastructure/database-allocation';
+import { ComputingAllocation } from '@entities';
+import { DatabaseAllocation } from '@entities';
 
 @Entity()
 export class ServiceDeployment {

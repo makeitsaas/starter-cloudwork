@@ -9,8 +9,8 @@ export const vaultDbLoader = createConnection({
     password: process.env.DEPLOY_DB_PASSWORD || "password",
     database: process.env.DEPLOY_DB_DATABASE || "deployer",
     entities: [
-        __dirname + "/../entities/vault/*.js",
-        __dirname + "/../entities/vault/*.ts",
+        __dirname + "/../../domains/vault/entities/*.js",
+        __dirname + "/../../domains/vault/entities/*.ts",
     ],
     synchronize: true,
     logging: false

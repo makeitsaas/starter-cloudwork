@@ -9,8 +9,10 @@ export const dbLoader = createConnection({
     password: process.env.DEPLOY_DB_PASSWORD || "password",
     database: process.env.DEPLOY_DB_DATABASE || "deployer",
     entities: [
-        __dirname + "/../entities/infrastructure/*.js",
-        __dirname + "/../entities/infrastructure/*.ts",
+        __dirname + "/../../domains/deployer/entities/*.js",
+        __dirname + "/../../domains/deployer/entities/*.ts",
+        __dirname + "/../../domains/infrastructure/entities/*.js",
+        __dirname + "/../../domains/infrastructure/entities/*.ts",
     ],
     synchronize: true,
     logging: false
