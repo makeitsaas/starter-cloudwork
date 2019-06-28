@@ -11,6 +11,7 @@ export class InfrastructureService {
 
     async getDeployedServices(environment: Environment): Promise<ServiceDeployment[]> {
         const em = await this.session.em();
+        // const repo = await Container.databases.main.em.getRepository(ServiceDeployment);
 
         return await em.getRepository(ServiceDeployment).find({
             where: {

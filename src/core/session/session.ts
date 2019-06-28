@@ -1,5 +1,5 @@
 import { Connection, EntityManager, QueryRunner } from 'typeorm';
-import { dbLoader } from '@databases';
+import { dbMainLoader } from '@databases';
 import { DeploymentService, InfrastructureService } from '@services';
 
 export class Session {
@@ -73,7 +73,7 @@ export class Session {
      */
 
     private initConnection() {
-        return dbLoader.then(async (connection: Connection) => {
+        return dbMainLoader.then(async (connection: Connection) => {
             this._connection = connection;
             this._em = this._connection.manager;
             this._queryRunner = this._connection.createQueryRunner();

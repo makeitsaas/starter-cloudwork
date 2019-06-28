@@ -22,6 +22,9 @@
       "@fake": [
         "../src/shared/fake"
       ],
+      "@decorators": [
+        "../src/core/alias/decorators"
+      ],
       "@session": [
         "../src/core/session/session"
       ],

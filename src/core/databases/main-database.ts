@@ -1,7 +1,7 @@
 // import "reflect-metadata";
 import { createConnection } from "typeorm";
 
-export const dbLoader = createConnection({
+export const dbMainLoader = createConnection({
     type: "mysql",
     host: process.env.DEPLOY_DB_HOSTNAME || 'localhost',
     port: 3306,

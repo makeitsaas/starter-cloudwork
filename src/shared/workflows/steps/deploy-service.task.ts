@@ -9,7 +9,7 @@ import { ExampleClassDecorator } from '../decorators/example-class-decorator';
 
 function myDecorator() {
     return function(target: any, key:string, descriptor: PropertyDescriptor) {
-        console.log('myDecorator called', target, key);
+        // console.log('myDecorator called', target, key);
         const method = descriptor.value;
 
         descriptor.value = async function(...args: any[]) {

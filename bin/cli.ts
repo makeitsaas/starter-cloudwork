@@ -1,11 +1,8 @@
-import { App } from '../app/app';
-
 import * as program from 'commander';
+import { App } from '../app/app';
 import { CliHelper, ConfigReader } from '@utils';
 import { Playbook } from '@ansible';
 import { DeployServiceTask } from '@custom-modules/workflows/steps/deploy-service.task';
-import { WorkflowExample } from '@custom-modules/workflows/workflows/workflow-example';
-import { WorkflowEsExample } from '@custom-modules/workflows/workflows/workflow-es-example';
 import { PipelineModule } from '../src/domains/pipeline/pipeline.module';
 
 program
