@@ -6,6 +6,7 @@ import { Playbook } from '@ansible';
 import { DeployServiceTask } from '@custom-modules/workflows/steps/deploy-service.task';
 import { WorkflowExample } from '@custom-modules/workflows/workflows/workflow-example';
 import { WorkflowEsExample } from '@custom-modules/workflows/workflows/workflow-es-example';
+import { PipelineModule } from '../src/domains/pipeline/pipeline.module';
 
 program
     .version('0.1.0')
@@ -24,11 +25,9 @@ const app = new App();
 
 // maybe add below a script to display operations that needs to be led
 if (program.test) {
-    const wf = new WorkflowExample();
-    const wfEs = WorkflowEsExample;
-    wf.build()
-        .then(() => wf.run())
-        .then(() => wfEs.run())
+    const pipelineModule = new PipelineModule();
+    pipelineModule
+        .runDemo()
         // .then(() => app.exit());
 } else if (program.test) {
     console.log('test');
