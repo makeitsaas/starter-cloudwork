@@ -1,7 +1,6 @@
 import { Connection, EntityManager, QueryRunner } from 'typeorm';
-import { ServiceModel } from '@models';
 import { dbLoader } from '@databases';
-import { InfrastructureService } from '@services';
+import { DeploymentService, InfrastructureService } from '@services';
 
 export class Session {
 
@@ -60,7 +59,7 @@ export class Session {
     }
 
     async load(InjectionClass: any): Promise<any> {
-        if(InjectionClass === ServiceModel) {
+        if(InjectionClass === DeploymentService) {
             return new InjectionClass(this);
         } else {
             throw new Error('Dependency injection not set for this class');

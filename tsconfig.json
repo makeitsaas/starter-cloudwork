@@ -28,9 +28,6 @@
       "@databases": [
         "../src/core/databases"
       ],
-      "@models": [
-        "lib/models"
-      ],
       "@services": [
         "../src/core/alias/services"
       ],

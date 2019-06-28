@@ -5,13 +5,12 @@ import {
     ServiceDeployment,
     ServiceSpecification
 } from '@entities';
-import { ServiceModel } from '@models';
 import { Session } from '@session';
-import { VaultService } from '@services';
+import { DeploymentService, VaultService } from '@services';
 
 export class ServiceOperator {
     service: Service;
-    serviceModel: ServiceModel;
+    serviceModel: DeploymentService;
     ready: Promise<any>;
     private deployment: ServiceDeployment;
 
@@ -98,7 +97,7 @@ export class ServiceOperator {
      */
 
     private async initService() {
-        this.serviceModel = await this.session.load(ServiceModel);
+        this.serviceModel = await this.session.load(DeploymentService);
         if(this.specification) {
             this.service = await this.serviceModel.getOrCreateService(this.specification.uuid, this.specification.repositoryUrl);
         } else if(this.currentComputeDeployment) {

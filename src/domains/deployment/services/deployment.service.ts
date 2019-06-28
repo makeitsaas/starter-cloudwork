@@ -1,7 +1,7 @@
 import { Environment, Service, ServiceDeployment, ServiceSpecification } from '@entities';
 import { Session } from '@session';
 
-export class ServiceModel {
+export class DeploymentService {
 
     constructor(readonly session: Session) {
 
