@@ -6,6 +6,13 @@ NodeJS/TypeScript application :
 - Input : custom orders, under `.yml` format
 - Output : execution of custom ansible scripts
 
+
+Domains reflected in this repository :
+* pipeline : handles business specifications (yml as input, workflow as output)
+* infrastructure : allocates all kind of resources
+* vault : keeps credentials safe (resources, environment, ...)
+* deployment : plans every environment and executes deployment tasks (using Ansible)
+
 ## Getting Started
 
 ### Installation
