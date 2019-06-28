@@ -1,5 +1,5 @@
 // import "reflect-metadata";
-import {createConnection} from "typeorm";
+import { createConnection } from "typeorm";
 
 export const dbLoader = createConnection({
     type: "mysql",
@@ -13,6 +13,8 @@ export const dbLoader = createConnection({
         __dirname + "/../../domains/deployer/entities/*.ts",
         __dirname + "/../../domains/infrastructure/entities/*.js",
         __dirname + "/../../domains/infrastructure/entities/*.ts",
+        __dirname + "/../../domains/pipeline/entities/*.js",
+        __dirname + "/../../domains/pipeline/entities/*.ts",
     ],
     synchronize: true,
     logging: false

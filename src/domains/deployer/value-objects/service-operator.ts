@@ -5,8 +5,9 @@ import {
     ServiceDeployment,
     ServiceSpecification
 } from '@entities';
-import { ServiceModel, VaultModel } from '@models';
+import { ServiceModel } from '@models';
 import { Session } from '@session';
+import { VaultService } from '@services';
 
 export class ServiceOperator {
     service: Service;
@@ -57,7 +58,7 @@ export class ServiceOperator {
     async registerVaultValues(): Promise<any> {
         await this.ready;
 
-        const vault = await VaultModel.getDeploymentVault(`${this.deployment.id}`);
+        const vault = await VaultService.getDeploymentVault(`${this.deployment.id}`);
 
         let getters = this.vaultFieldsRequirementsGetters(vault);
 
@@ -120,7 +121,7 @@ export class ServiceOperator {
 
     private async runDatabaseScript() {
         console.log('database script');
-        await VaultModel.getDeploymentVault(`${this.deployment.id}`);
+        await VaultService.getDeploymentVault(`${this.deployment.id}`);
     }
 
     private async runComputeScript() {

@@ -3,8 +3,8 @@ import {
     AnsibleVarsInterface
 } from '@custom-modules/ansible-execution-client';
 import { AbstractBaseVault, Environment, EnvironmentVault, ServiceDeployment, ServiceDeploymentVault } from '@entities';
-import { VaultModel } from '@models';
 import { CliHelper, ConfigReader, SinglePlaybookConfig } from '@utils';
+import { VaultService } from '../src/domains/vault/services/vault.service';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string
@@ -173,12 +173,12 @@ export class Playbook {
                 throw new Error('Missing deployment');
             }
             if(!this.deploymentVault) {
-                this.deploymentVault = await VaultModel.getDeploymentVault(`${this.deployment.id}`)
+                this.deploymentVault = await VaultService.getDeploymentVault(`${this.deployment.id}`)
             }
             return this.deploymentVault;
         } else {
             if(!this.vault) {
-                this.vault = await VaultModel.getEnvironmentVault(`${this.environment.uuid}`)
+                this.vault = await VaultService.getEnvironmentVault(`${this.environment.uuid}`)
             }
             return this.vault;
         }

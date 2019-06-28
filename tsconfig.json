@@ -38,7 +38,7 @@
         "../src/core/alias/errors"
       ],
       "@operators": [
-        "lib/operators"
+        "../src/core/alias/operators"
       ],
       "@ansible": [
         "../ansible"

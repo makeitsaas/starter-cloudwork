@@ -13,7 +13,7 @@ const environmentVaultRepository = dbManager.then(manager => manager.getReposito
 
 // ici on doit avoir en stock tous les vaults, histoire de ne retourner que ceux concernés
 
-export class VaultModel {
+export class VaultService {
     private static vaults: {
         deployment: { [uuid: string]: Promise<ServiceDeploymentVault> }
         environment: { [uuid: string]: Promise<EnvironmentVault> }

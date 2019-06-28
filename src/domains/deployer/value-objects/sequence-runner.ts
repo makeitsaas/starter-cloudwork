@@ -5,8 +5,8 @@
 import { Environment, EnvironmentVault, Order, Sequence, SequenceTask } from '@entities';
 import { SequenceOperator } from '@operators';
 import { FakeDelay } from '@fake';
-import { VaultModel } from '@models';
 import { Session } from '@session';
+import { VaultService } from '@services';
 
 export class SequenceRunner {
     readonly ready: Promise<any>;
@@ -30,7 +30,7 @@ export class SequenceRunner {
         this.order = this.sequence.order;
         this.environment = this.order.environment;
         this.orderedTasks = this.sequence.getTasksInOrder();
-        this.vault = await VaultModel.getEnvironmentVault(this.environment.uuid);
+        this.vault = await VaultService.getEnvironmentVault(this.environment.uuid);
         this.operator = new SequenceOperator(this._session, this.environment, this.sequence, this.order, this.vault);
         await this.operator.prepare();
     }
