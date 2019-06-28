@@ -23,7 +23,7 @@
         "../src/shared/fake"
       ],
       "@session": [
-        "lib/session"
+        "../src/core/session/session"
       ],
       "@databases": [
         "../src/core/databases"
