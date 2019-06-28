@@ -1,3 +1,3 @@
-export * from '../../domains/deployer/value-objects/sequence-runner';
-export * from '../../domains/deployer/value-objects/sequence-operator';
-export * from '../../domains/deployer/value-objects/service-operator';
+export * from '../../domains/deployment/value-objects/sequence-runner';
+export * from '../../domains/deployment/value-objects/sequence-operator';
+export * from '../../domains/deployment/value-objects/service-operator';

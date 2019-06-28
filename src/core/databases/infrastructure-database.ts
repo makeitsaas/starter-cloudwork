@@ -7,10 +7,10 @@ export const dbLoader = createConnection({
     port: 3306,
     username: process.env.DEPLOY_DB_USERNAME || "root",
     password: process.env.DEPLOY_DB_PASSWORD || "password",
-    database: process.env.DEPLOY_DB_DATABASE || "deployer",
+    database: process.env.DEPLOY_DB_DATABASE || "deployment",
     entities: [
-        __dirname + "/../../domains/deployer/entities/*.js",
-        __dirname + "/../../domains/deployer/entities/*.ts",
+        __dirname + "/../../domains/deployment/entities/*.js",
+        __dirname + "/../../domains/deployment/entities/*.ts",
         __dirname + "/../../domains/infrastructure/entities/*.js",
         __dirname + "/../../domains/infrastructure/entities/*.ts",
         __dirname + "/../../domains/pipeline/entities/*.js",
