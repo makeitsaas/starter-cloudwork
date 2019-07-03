@@ -7,19 +7,6 @@ export class DeploymentService {
 
     }
 
-    async getOrCreateEnvironment(uuid: string): Promise<Environment> {
-        const em = await this.session.em();
-        const existingEnvironment: Environment|void = await em.getRepository(Environment).findOne(uuid);
-        if(existingEnvironment) {
-            return existingEnvironment;
-        } else {
-            let newEnvironment= new Environment();
-            newEnvironment.uuid = uuid;
-            await em.save(newEnvironment);
-            return newEnvironment;
-        }
-    }
-
     async getOrCreateService(uuid: string, repositoryUrl: string): Promise<Service> {
         const em = await this.session.em();
         const existingService: Service|void = await em.getRepository(Service).findOne(uuid);

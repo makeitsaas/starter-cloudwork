@@ -10,13 +10,19 @@ import { SequenceRunner } from '@operators';
 import { DeployerAnsible, Playbook } from '@ansible';
 import { CliHelper } from '@utils';
 import { FakeOrders } from '@fake';
+import { myContainer, Ninja } from './test-ninja';
+import { Container } from '@core';
 
 export class App {
     readonly _session: Session;
+    readonly ready: Promise<any>;
 
     constructor() {
         this._session = new Session();
-        this.initStdListeners();
+        this.ready = Promise.all([
+            this.initStdListeners(),
+            this.initContainer()
+        ]);
     }
 
     async createSequence(orderId: number): Promise<Sequence> {
@@ -81,7 +87,7 @@ export class App {
         });
     }
 
-    initStdListeners() {
+    async initStdListeners() {
         process.stdin.resume();
         //do something when app is closing
         process.on('exit', this.exitHandler.bind(this, {cleanup: true}));
@@ -92,6 +98,17 @@ export class App {
         // catches "kill pid" (for example: nodemon restart)
         process.on('SIGUSR1', this.exitHandler.bind(this, {exit: true}));
         process.on('SIGUSR2', this.exitHandler.bind(this, {exit: true}));
+    }
+
+    async initContainer() {
+        const ninja = myContainer.get<Ninja>(Ninja);
+        const ninja2 = myContainer.get<Ninja>(Ninja);
+        console.log(ninja.fight());
+        console.log(ninja.sneak());
+        console.log(ninja.drinkSmoothie());
+        console.log(ninja.random, ninja2.random);
+
+        return Container.ready;
     }
 
     exit() {

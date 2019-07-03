@@ -20,99 +20,104 @@ program
 
 const app = new App();
 
-// maybe add below a script to display operations that needs to be led
-if (program.test) {
-    const pipelineModule = new PipelineModule();
-    pipelineModule
-        .runDemo()
+app.ready.then(() => {
+    // maybe add below a script to display operations that needs to be led
+    if (program.test) {
+        const pipelineModule = new PipelineModule();
+        pipelineModule
+            .runDemo()
         // .then(() => app.exit());
-} else if (program.test) {
-    console.log('test');
-    let task = new DeployServiceTask();
-    task.run().then(() => {
-        console.log('exit');
-        app.exit();
-    });
-} else if (program.ansible) {
-    let playbookReference: string;
-    let serviceUuid: string;
-    let environmentUuid: string;
-
-    const getPlaybookReference = async (): Promise<string> => {
-        if (program.playbook) {
-            playbookReference = program.playbook;
-        } else {
-            playbookReference = await CliHelper.askList(ConfigReader.playbooks.getKeys());
-        }
-
-        return playbookReference;
-    };
-    const getServiceUuid = async (): Promise<string> => {
-        if (program.service) {
-            serviceUuid = program.service;
-        } else {
-            serviceUuid = await CliHelper.askInteractively('Service uuid (6, 7, ...)');
-        }
-
-        return serviceUuid;
-    };
-    const getEnvironmentUuid = async (): Promise<string> => {
-        if (program.environment) {
-            environmentUuid = program.service;
-        } else {
-            environmentUuid = await CliHelper.askInteractively('Environment uuid (3)');
-        }
-
-        return environmentUuid;
-    };
-    Promise.resolve(getPlaybookReference())
-        .then(() => /proxy/.test(playbookReference) ? getEnvironmentUuid() : getServiceUuid())
-        .then(() => {
-            const playbookPromise = /proxy/.test(playbookReference) ?
-                app.loadPlaybook(playbookReference, environmentUuid, program.interactive) :
-                app.loadServicePlaybook(playbookReference, serviceUuid, program.interactive);
-            return playbookPromise
-                .then(async (playbook: Playbook) => {
-                    if (program.execute) {
-                        await playbook.execute();
-                    } else {
-                        console.log('\n\n\nSUCCESS ! Playbook has been created. Use commands below to execute it manually :\n');
-                        console.log(`cd ${await playbook.getDirectory()}`);
-                        console.log(`ansible-playbook -i inventories/hosts root-playbook.yml`);
-                        console.log(`cd ../..\n\n`);
-                    }
-                    app.exit();
-                });
-        })
-        .finally(() => {
-            app.exit()
-        });
-
-} else if (program.drop) {
-    const environmentUuid = program.environment;
-
-    if (!environmentUuid) {
-        console.error("You shall specify environment id");
-    } else {
-        app.dropEnvironment(environmentUuid).then(() => {
+    } else if (program.test) {
+        console.log('test');
+        let task = new DeployServiceTask();
+        task.run().then(() => {
+            console.log('exit');
             app.exit();
-        })
-    }
-} else if (program.sequence) {
-    console.log('program.sequence =', program.sequence);
-    app.runSequence(parseInt(program.sequence)).then(() => {
-        app.exit();
-    });
-} else if (program.order) {
-    console.log('program.order =', program.order);
-    app.createSequence(parseInt(program.order)).then(() => {
-        app.exit();
-    });
-} else {
-    console.log('Example commands :\n\
+        });
+    } else if (program.ansible) {
+        let playbookReference: string;
+        let serviceUuid: string;
+        let environmentUuid: string;
+
+        const getPlaybookReference = async (): Promise<string> => {
+            if (program.playbook) {
+                playbookReference = program.playbook;
+            } else {
+                playbookReference = await CliHelper.askList(ConfigReader.playbooks.getKeys());
+            }
+
+            return playbookReference;
+        };
+        const getServiceUuid = async (): Promise<string> => {
+            if (program.service) {
+                serviceUuid = program.service;
+            } else {
+                serviceUuid = await CliHelper.askInteractively('Service uuid (6, 7, ...)');
+            }
+
+            return serviceUuid;
+        };
+        const getEnvironmentUuid = async (): Promise<string> => {
+            if (program.environment) {
+                environmentUuid = program.service;
+            } else {
+                environmentUuid = await CliHelper.askInteractively('Environment uuid (3)');
+            }
+
+            return environmentUuid;
+        };
+        Promise.resolve(getPlaybookReference())
+            .then(() => /proxy/.test(playbookReference) ? getEnvironmentUuid() : getServiceUuid())
+            .then(() => {
+                const playbookPromise = /proxy/.test(playbookReference) ?
+                    app.loadPlaybook(playbookReference, environmentUuid, program.interactive) :
+                    app.loadServicePlaybook(playbookReference, serviceUuid, program.interactive);
+                return playbookPromise
+                    .then(async (playbook: Playbook) => {
+                        if (program.execute) {
+                            await playbook.execute();
+                        } else {
+                            console.log('\n\n\nSUCCESS ! Playbook has been created. Use commands below to execute it manually :\n');
+                            console.log(`cd ${await playbook.getDirectory()}`);
+                            console.log(`ansible-playbook -i inventories/hosts root-playbook.yml`);
+                            console.log(`cd ../..\n\n`);
+                        }
+                        app.exit();
+                    });
+            })
+            .finally(() => {
+                app.exit()
+            });
+
+    } else if (program.drop) {
+        const environmentUuid = program.environment;
+
+        if (!environmentUuid) {
+            console.error("You shall specify environment id");
+        } else {
+            app.dropEnvironment(environmentUuid).then(() => {
+                app.exit();
+            })
+        }
+    } else if (program.sequence) {
+        console.log('program.sequence =', program.sequence);
+        app.runSequence(parseInt(program.sequence)).then(() => {
+            app.exit();
+        });
+    } else if (program.order) {
+        console.log('program.order =', program.order);
+        app.createSequence(parseInt(program.order)).then(() => {
+            app.exit();
+        });
+    } else {
+        console.log('Example commands :\n\
 npm run cli -- --order=1 \n\
 npm run cli -- --sequence=35 \n\
 npm run cli -- --drop --environment=1 \n\
     ');
+        app.exit();
+    }
+}).catch(err => {
     app.exit();
-}
+    throw err;
+});
