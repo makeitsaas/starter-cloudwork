@@ -5,7 +5,8 @@
 import { Environment, EnvironmentVault, Order, Sequence, SequenceTask } from '@entities';
 import { SequenceOperator } from '@operators';
 import { FakeDelay } from '@fake';
-import { Session } from '@session';
+import { em, _EM_, service } from '@decorators';
+import { EntityManager } from 'typeorm';
 import { VaultService } from '@services';
 
 export class SequenceRunner {
@@ -17,8 +18,13 @@ export class SequenceRunner {
     private vault: EnvironmentVault;
     private operator: SequenceOperator;
 
+    @em(_EM_.deployment)
+    private em: EntityManager;
+
+    @service
+    private vaultService: VaultService;
+
     constructor(
-        readonly _session: Session,
         readonly sequenceId: number
     ) {
         this.ready = this.prepareRunner();
@@ -30,8 +36,8 @@ export class SequenceRunner {
         this.order = this.sequence.order;
         this.environment = this.order.environment;
         this.orderedTasks = this.sequence.getTasksInOrder();
-        this.vault = await VaultService.getEnvironmentVault(this.environment.uuid);
-        this.operator = new SequenceOperator(this._session, this.environment, this.sequence, this.order, this.vault);
+        this.vault = await this.vaultService.getEnvironmentVault(this.environment.uuid);
+        this.operator = new SequenceOperator(this.environment, this.sequence, this.order, this.vault);
         await this.operator.prepare();
     }
 
@@ -55,11 +61,6 @@ export class SequenceRunner {
         return this.sequence;
     }
 
-    // async reRunFromBeginning() {
-    //     console.log('xxxx cleanup not implemented');
-    //     console.log('xxxx this.runSequence()');
-    // }
-
     /*
      * ---------------
      * Private methods
@@ -74,18 +75,17 @@ export class SequenceRunner {
     private async markAsStarted() {
         console.log('-> mark sequence as started');
         this.sequence.isStarted = true;
-        await this._session.saveEntity(this.sequence);
+        await this.em.save(this.sequence);
     }
 
     private async markAsOver() {
         console.log('-> mark sequence as over');
         this.sequence.isOver = true;
-        await this._session.saveEntity(this.sequence);
+        await this.em.save(this.sequence);
     }
 
     private async retrieveSequence(): Promise<Sequence> {
-        const em = await this._session.em();
-        return await em.getRepository(Sequence).findOneOrFail({where: {id: this.sequenceId}, relations: ['tasks']});
+        return await this.em.getRepository(Sequence).findOneOrFail({where: {id: this.sequenceId}, relations: ['tasks']});
     }
 
     private async runSequenceTask(task: SequenceTask) {
@@ -97,12 +97,12 @@ export class SequenceRunner {
 
             console.log(`----> run task (position: ${task.position}, type: ${task.taskType})`);
             // task.isStarted = true;
-            // await this._session.saveEntity(task);
+            // await this.em.save(task);
 
             await this.runTaskOperations(task);
 
             // task.isOver = true;
-            // await this._session.saveEntity(task);
+            // await this.em.save(task);
 
             await FakeDelay.wait();
         } else {

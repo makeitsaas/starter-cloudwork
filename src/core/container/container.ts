@@ -1,26 +1,16 @@
 import { dbMainLoader, vaultDbLoader } from '@databases';
-import { Connection, Repository } from 'typeorm';
-import { FakeDelay } from '@fake';
+import { Connection } from 'typeorm';
 
 // For the moment, container is a singleton (not managed by inversify). Aim is to use inversify\ContainerModule and manage top-container for the app
-console.log('CONTAINER INIT');
 
-export interface IContainer {
-    ready: Promise<any>
-    databases: {
-        main: Connection
-        vault: Connection
-    },
-    services: {}
-}
-
-class ContainerClass implements IContainer {
+class ContainerClass {
     public ready: Promise<any>;
     public databases: {
         main: Connection
         vault: Connection
     };
-    public services: {}
+    public services: {
+    }
 }
 
 const ContainerBuilder = () => {
@@ -39,4 +29,4 @@ const ContainerBuilder = () => {
     return container;
 };
 
-export const Container: IContainer = ContainerBuilder();
+export const Container: ContainerClass = ContainerBuilder();

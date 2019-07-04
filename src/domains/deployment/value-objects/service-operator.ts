@@ -5,17 +5,32 @@ import {
     ServiceDeployment,
     ServiceSpecification
 } from '@entities';
-import { Session } from '@session';
-import { DeploymentService, VaultService } from '@services';
+import {
+    DeploymentService,
+    InfrastructureService,
+    VaultService
+} from '@services';
+import { em, _EM_, service } from '@decorators';
+import { EntityManager } from 'typeorm';
 
 export class ServiceOperator {
     service: Service;
-    serviceModel: DeploymentService;
     ready: Promise<any>;
     private deployment: ServiceDeployment;
 
+    @em(_EM_.deployment)
+    private em: EntityManager;
+
+    @service
+    private vaultService: VaultService;
+
+    @service
+    private deploymentService: DeploymentService;
+
+    @service
+    private infrastructureService: InfrastructureService;
+
     constructor(
-        private session: Session,
         private environment: Environment,
         private action: string,
         private specification: ServiceSpecification|void,
@@ -42,14 +57,14 @@ export class ServiceOperator {
         console.log('assigning servers and ports');
 
         if(!this.deployment.computingAllocation) {
-            this.deployment.computingAllocation = Promise.resolve(await this.session.infrastructure.allocateDevComputing());
-            await this.session.saveEntity(this.deployment);
+            this.deployment.computingAllocation = Promise.resolve(await this.infrastructureService.allocateDevComputing());
+            await this.em.save(this.deployment);
         }
 
         const databaseAllocation = await this.deployment.databaseAllocation;
         if(!databaseAllocation) {
-            this.deployment.databaseAllocation = this.session.infrastructure.allocateDevDatabase(); // TODO : pareil
-            await this.session.saveEntity(this.deployment);
+            this.deployment.databaseAllocation = this.infrastructureService.allocateDevDatabase(); // TODO : pareil
+            await this.em.save(this.deployment);
         }
 
     }
@@ -57,7 +72,7 @@ export class ServiceOperator {
     async registerVaultValues(): Promise<any> {
         await this.ready;
 
-        const vault = await VaultService.getDeploymentVault(`${this.deployment.id}`);
+        const vault = await this.vaultService.getDeploymentVault(`${this.deployment.id}`);
 
         let getters = this.vaultFieldsRequirementsGetters(vault);
 
@@ -97,9 +112,8 @@ export class ServiceOperator {
      */
 
     private async initService() {
-        this.serviceModel = await this.session.load(DeploymentService);
         if(this.specification) {
-            this.service = await this.serviceModel.getOrCreateService(this.specification.uuid, this.specification.repositoryUrl);
+            this.service = await this.deploymentService.getOrCreateService(this.specification.uuid, this.specification.repositoryUrl);
         } else if(this.currentComputeDeployment) {
             this.service = this.currentComputeDeployment.service;
         } else {
@@ -112,7 +126,7 @@ export class ServiceOperator {
             if(!this.specification) {
                 throw new Error('Missing specifications');
             }
-            this.deployment = await this.serviceModel.getOrCreateServiceDeployment(this.service, this.environment, this.specification);
+            this.deployment = await this.deploymentService.getOrCreateServiceDeployment(this.service, this.environment, this.specification);
         } else {
             this.deployment = this.currentComputeDeployment;
         }
@@ -120,7 +134,7 @@ export class ServiceOperator {
 
     private async runDatabaseScript() {
         console.log('database script');
-        await VaultService.getDeploymentVault(`${this.deployment.id}`);
+        await this.vaultService.getDeploymentVault(`${this.deployment.id}`);
     }
 
     private async runComputeScript() {

@@ -1,20 +1,10 @@
 import { Environment } from '../entities/environment';
-import { entityManager, InjectedEM } from '@decorators';
-import { injectable, inject } from "inversify";
+import { em, _EM_ } from '@decorators';
+import { EntityManager } from 'typeorm';
 
-export const TYPES = {
-    IEnvironmentService: Symbol("IEnvironmentService")
-};
-
-export interface IEnvironmentService {
-    getOrCreateEnvironment(uuid: string): Promise<Environment>
-    doSomething(): void
-}
-
-@injectable()
-export class EnvironmentService implements IEnvironmentService {
-    @entityManager
-    public em: InjectedEM;
+export class EnvironmentService {
+    @em(_EM_.deployment)
+    private em: EntityManager;
 
     async getOrCreateEnvironment(uuid: string): Promise<Environment> {
         const repo = await this.em.getRepository(Environment);

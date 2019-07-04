@@ -1,5 +1,4 @@
 import { injectable, inject, Container } from "inversify";
-import "reflect-metadata";
 
 export interface Warrior {
     fight(): string;

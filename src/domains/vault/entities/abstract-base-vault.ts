@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, EntityManager, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Session } from '@session';
+import { em, _EM_ } from '@decorators';
 
 const secret = process.env.VAULT_SECRET;
 
@@ -46,16 +46,8 @@ export abstract class AbstractBaseVault {
     /**
      * AbstractSessionAwareEntity Legacy => refactor to Value object
      */
-    protected _session: Session;
+    @em(_EM_.vault)
     protected _em: EntityManager;
-
-    assignSession(session: Session) {
-        this._session = session;
-    }
-
-    assignEm(em: EntityManager) {
-        this._em = em;
-    }
 
     save(): Promise<any> {
         return this._em.save(this);

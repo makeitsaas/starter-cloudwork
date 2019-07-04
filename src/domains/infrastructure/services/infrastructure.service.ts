@@ -1,19 +1,17 @@
 import { Environment, Server, ServerPort, ServiceDeployment } from '@entities';
-import { Session } from '@session';
 import { DatabaseAllocation } from '@entities';
 import { ComputingAllocation } from '@entities';
 import { NoPortAvailableOnServer } from '@errors';
+import { EntityManager } from 'typeorm';
+import { em, _EM_ } from '@decorators';
 
 export class InfrastructureService {
 
-    constructor(readonly session: Session) {
-    }
+    @em(_EM_.infrastructure)
+    private em: EntityManager;
 
     async getDeployedServices(environment: Environment): Promise<ServiceDeployment[]> {
-        const em = await this.session.em();
-        // const repo = await Container.databases.main.em.getRepository(ServiceDeployment);
-
-        return await em.getRepository(ServiceDeployment).find({
+        return await this.em.getRepository(ServiceDeployment).find({
             where: {
                 environment
             },
@@ -26,7 +24,7 @@ export class InfrastructureService {
         const allocation = new ComputingAllocation();
         allocation.allocatedPort = this.getAvailablePort(server);   // TODO : check if necessary to write Promise.resolve(await this.getAvailablePort(server))
 
-        await this.session.saveEntity(allocation);
+        await this.em.save(allocation);
 
         return allocation;
     }
@@ -38,13 +36,13 @@ export class InfrastructureService {
         allocation.server = Promise.resolve(server);
         allocation.bastion = Promise.resolve(server);
 
-        await this.session.saveEntity(allocation);
+        await this.em.save(allocation);
 
         return allocation;
     }
 
     private async getDevComputingServer(): Promise<Server> {
-        return (await this.session.em()).getRepository(Server).findOneOrFail({
+        return this.em.getRepository(Server).findOneOrFail({
             where: {
                 status: 'running',
                 type: 'computing'
@@ -53,7 +51,7 @@ export class InfrastructureService {
     }
 
     private async getDevDatabaseServer(): Promise<Server> {
-        return (await this.session.em()).getRepository(Server).findOneOrFail({
+        return this.em.getRepository(Server).findOneOrFail({
             where: {
                 status: 'running',
                 type: 'devkit'
@@ -62,7 +60,7 @@ export class InfrastructureService {
     }
 
     private async getAvailablePort(server: Server): Promise<ServerPort> {
-        const maxResult: { maxPort: number } = await (await this.session.em())
+        const maxResult: { maxPort: number } = await this.em
             .getRepository(ServerPort)
             .createQueryBuilder('server_port')
             .select('MAX(server_port.port)', 'maxPort')
@@ -80,7 +78,7 @@ export class InfrastructureService {
 
         allocatePort.server = Promise.resolve(server);
 
-        await this.session.saveEntity(allocatePort);
+        await this.em.save(allocatePort);
 
         return allocatePort;
     }

@@ -1,28 +1,17 @@
-import { EntitySchema, ObjectType, Repository } from 'typeorm';
 import { Container } from '@core';
 
-export interface InjectedEM {
-    getRepository: <Entity>(target: ObjectType<Entity> | EntitySchema<Entity> | string) => Repository<Entity>
-    save: <Entity>(target: Entity) => Promise<Entity>
-}
+export const _EM_: {[key in ('deployment'|'infrastructure'|'vault')]: 'main'|'vault'} = {
+    deployment: 'main',
+    infrastructure: 'main',
+    vault: 'vault'
+};
 
-export function entityManager(target: Object, propertyName: string, index?: number) {
-    Container.ready.then(() => {
-        Object.defineProperty(target, propertyName, {
-            value: Container.databases.main.manager
+export function em(type: 'main'|'vault') {
+    return function (target: Object, propertyName: string, index?: number) {
+        Container.ready.then(() => {
+            Object.defineProperty(target, propertyName, {
+                value: Container.databases[type].manager
+            });
         });
-    });
-    // const emPromise = Container.databases.main.then(connection => connection.manager);
-    // const em = {
-    //     getRepository<Entity>(target: ObjectType<Entity> | EntitySchema<Entity> | string) {
-    //         return emPromise.then(em => em.getRepository(target))
-    //     },
-    //     save<Entity>(e: Entity) {
-    //         return emPromise.then(em => em.save(e));
-    //     }
-    // };
-    //
-    // Object.defineProperty(target, propertyName, {
-    //     value: em
-    // });
+    }
 }

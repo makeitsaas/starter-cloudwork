@@ -1,8 +1,8 @@
 import { ExecutionResult, StepBody, StepExecutionContext } from 'workflow-es';
 import { FakeDelay } from '@fake';
-import { entityManager, IEnvironmentService, InjectedEM, TYPES } from '@decorators';
-import { Environment } from '../../deployment/entities/environment';
-import { injectable, inject } from "inversify";
+import { em, _EM_ } from '@decorators';
+import { Environment } from '@entities';
+import { inject } from "inversify";
 import { Smoothie } from '../../../../app/test-ninja';
 import { EntityManager } from 'typeorm';
 
@@ -12,14 +12,11 @@ export class HelloWorldTask extends StepBody {
     @inject(Smoothie)
     private smoothie: Smoothie;
 
-    @entityManager
-    public em: InjectedEM;
+    @em(_EM_.deployment)
+    public em: EntityManager;
 
     @inject(EntityManager)
     private myInjectedEm: EntityManager;
-
-    // @inject(TYPES.IEnvironmentService)
-    // private environmentService: IEnvironmentService;
 
     public someData: any;
     public run(context: StepExecutionContext): Promise<ExecutionResult> {

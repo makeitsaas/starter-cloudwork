@@ -6,8 +6,10 @@ import {
     ServiceDeployment,
     ServiceSpecification
 } from '@entities';
-import { Session } from '@session';
 import { ServiceOperator } from '@operators';
+import { InfrastructureService } from '@services';
+import { em, _EM_, service } from '@decorators';
+import { EntityManager } from 'typeorm';
 
 export class SequenceOperator {
     // primary check
@@ -17,8 +19,13 @@ export class SequenceOperator {
     servicesToDeploy: ServiceOperator[];
     servicesToDrop: ServiceOperator[];
 
+    @em(_EM_.deployment)
+    private em: EntityManager;
+
+    @service
+    private infrastructureService: InfrastructureService;
+
     constructor(
-        readonly session: Session,
         readonly environment: Environment,
         private sequence: Sequence,
         private order: Order,
@@ -28,7 +35,7 @@ export class SequenceOperator {
 
     async prepare() {
         this.requiredServices = this.order.getServices();
-        this.deployedServices = await this.session.infrastructure.getDeployedServices(this.environment);
+        this.deployedServices = await this.infrastructureService.getDeployedServices(this.environment);
         await this.preCheckServices();
     }
 
@@ -42,8 +49,7 @@ export class SequenceOperator {
         this.environment.configuration = {
             domains: this.sequence.order.getDomains()
         };
-        const em = await this.session.em();
-        await em.save(this.environment);
+        await this.em.save(this.environment);
     }
 
     async launchAllocations() {
@@ -104,7 +110,6 @@ export class SequenceOperator {
         console.log(`there is ${this.requiredServices.length} services and already ${this.deployedServices.length} deployments`);
 
         this.servicesToDeploy = this.requiredServices.map(serviceSpec => new ServiceOperator(
-            this.session,
             this.environment,
             'update',
             serviceSpec,
@@ -113,7 +118,6 @@ export class SequenceOperator {
 
         const deleteList = this.deployedServices.filter(deployment => !this.isDeploymentStillRequired(deployment));
         this.servicesToDrop = deleteList.map(deployment => new ServiceOperator(
-            this.session,
             this.environment,
             'delete',
             undefined,

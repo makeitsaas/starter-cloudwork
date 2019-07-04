@@ -1,39 +1,37 @@
 import { Environment, Service, ServiceDeployment, ServiceSpecification } from '@entities';
-import { Session } from '@session';
+import { em, _EM_ } from '@decorators';
+import { EntityManager } from 'typeorm';
 
 export class DeploymentService {
 
-    constructor(readonly session: Session) {
-
-    }
+    @em(_EM_.deployment)
+    private em: EntityManager;
 
     async getOrCreateService(uuid: string, repositoryUrl: string): Promise<Service> {
-        const em = await this.session.em();
-        const existingService: Service|void = await em.getRepository(Service).findOne(uuid);
-        if(existingService) {
-            if(existingService.repositoryUrl !== repositoryUrl) {
+        const existingService: Service | void = await this.em.getRepository(Service).findOne(uuid);
+        if (existingService) {
+            if (existingService.repositoryUrl !== repositoryUrl) {
                 existingService.repositoryUrl = repositoryUrl;
-                await em.save(existingService);
+                await this.em.save(existingService);
             }
             return existingService;
         } else {
             let newService = new Service();
             newService.uuid = uuid;
             newService.repositoryUrl = repositoryUrl;
-            await em.save(newService);
+            await this.em.save(newService);
             return newService;
         }
     }
 
     async getOrCreateServiceDeployment(service: Service, environment: Environment, options: ServiceSpecification): Promise<ServiceDeployment> {
-        const em = await this.session.em();
-        const existingDeployment: ServiceDeployment|void = await em.getRepository(ServiceDeployment).findOne({
-            where : {
+        const existingDeployment: ServiceDeployment | void = await this.em.getRepository(ServiceDeployment).findOne({
+            where: {
                 service,
                 environment
             }
         });
-        if(existingDeployment) {
+        if (existingDeployment) {
             return existingDeployment;
         } else {
             let newServiceDeployment = new ServiceDeployment();
@@ -41,7 +39,7 @@ export class DeploymentService {
             newServiceDeployment.environment = environment;
             newServiceDeployment.path = options.path;
             newServiceDeployment.repositoryVersion = options.repositoryVersion;
-            await em.save(newServiceDeployment);
+            await this.em.save(newServiceDeployment);
             return newServiceDeployment;
         }
     }

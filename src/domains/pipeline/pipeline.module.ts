@@ -6,6 +6,17 @@ import { Smoothie } from '../../../app/test-ninja';
 import { Container } from '@core';
 import { EntityManager } from 'typeorm';
 
+
+/**
+ * TODO :
+ * 1. inject full container
+ * 2. configure container to load services
+ * 3. migrate tasks from sequence operator
+ * 4. cleanup testing code
+ * 5. Créer un decorateur @service
+ * 6. Refactoriser le decorateur @emDatabase en @em('database')
+ */
+
 export class PipelineModule {
     private host: IWorkflowHost;
     readonly ready: Promise<any>;
@@ -19,7 +30,7 @@ export class PipelineModule {
         //config.useLogger(new ConsoleLogger());
         config.usePersistence(await workflowPersistenceLoader());
 
-        this.overloadWFContainerBindings(config);
+        this.overloadWorkflowContainer(config);
 
         this.host = config.getHost();
 
@@ -34,7 +45,7 @@ export class PipelineModule {
         return wfs.runDemo();
     }
 
-    private overloadWFContainerBindings(config: WorkflowConfig) {
+    private overloadWorkflowContainer(config: WorkflowConfig) {
         // careful : here we use inversify v5.x while workflow-es uses v4.x
         const c = config.getContainer();
         c.bind<Smoothie>(Smoothie).to(Smoothie);
