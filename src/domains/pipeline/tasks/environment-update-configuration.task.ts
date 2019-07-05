@@ -25,7 +25,8 @@ export class EnvironmentUpdateConfigurationTask extends StepBody {
     };
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
-        console.log("EnvironmentUpdateConfigurationTask");
+        this.checkInputs();
+
         return this.loadContext()
             .then(() => {
                 console.log(`  > order(${this.context.order.id}) \n  > environment(${this.context.environment.uuid})`);
@@ -37,6 +38,14 @@ export class EnvironmentUpdateConfigurationTask extends StepBody {
             .then(() => {
                 return ExecutionResult.next()
             });
+    }
+
+    private checkInputs() {
+        console.log("EnvironmentUpdateConfigurationTask");
+
+        if(!this.orderId) {
+            throw new Error("Missing orderId");
+        }
     }
 
     private loadContext() {
