@@ -9,10 +9,14 @@ import {
 } from 'typeorm';
 import * as yaml from 'js-yaml';
 import { Environment, Sequence, ServiceSpecification } from '@entities';
+import { em } from '../../../core/decorators/entity-manager-property';
 
 
 @Entity()
 export class Order {
+
+    @em('main')
+    private em: EntityManager;
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -62,9 +66,9 @@ export class Order {
         return (this.getParsedSpecs().services || []).map((spec: any) => new ServiceSpecification(spec));
     }
 
-    async saveDeep(em: EntityManager): Promise<Order> {
-        await em.save(this.environment);
-        return await em.save(this);
+    async saveDeep(): Promise<Order> {
+        await this.em.save(this.environment);
+        return await this.em.save(this);
     }
 
     private getParsedSpecs(): any {

@@ -4,6 +4,8 @@ import { CliHelper, ConfigReader } from '@utils';
 import { Playbook } from '@ansible';
 import { DeployServiceTask } from '@custom-modules/workflows/steps/deploy-service.task';
 import { PipelineModule } from '../src/domains/pipeline/pipeline.module';
+import { Order } from '../src/domains/pipeline/entities/order';
+import { FakeOrders } from '@fake';
 
 program
     .version('0.1.0')
@@ -27,7 +29,18 @@ app.ready.then(() => {
         pipelineModule
             .runDemo()
         // .then(() => app.exit());
-    } else if (program.test) {
+    } else if (program.order) {
+        console.log('program.order =', program.order);
+        // app.createSequence(parseInt(program.order)).then(() => {
+        //     app.exit();
+        // });
+        const o = new Order(FakeOrders[parseInt(program.order)]);
+        o.saveDeep().then(o => {
+            const pipelineModule = new PipelineModule();
+            pipelineModule
+                .processOrder(o)
+        });
+    } else if (program.testMore) {
         console.log('test');
         let task = new DeployServiceTask();
         task.run().then(() => {
@@ -102,11 +115,6 @@ app.ready.then(() => {
     } else if (program.sequence) {
         console.log('program.sequence =', program.sequence);
         app.runSequence(parseInt(program.sequence)).then(() => {
-            app.exit();
-        });
-    } else if (program.order) {
-        console.log('program.order =', program.order);
-        app.createSequence(parseInt(program.order)).then(() => {
             app.exit();
         });
     } else {

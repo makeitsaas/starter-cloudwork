@@ -1,4 +1,4 @@
-import { Environment } from '../entities/environment';
+import { Environment } from '@entities';
 import { em, _EM_ } from '@decorators';
 import { EntityManager } from 'typeorm';
 

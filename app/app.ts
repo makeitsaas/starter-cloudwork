@@ -28,7 +28,7 @@ export class App {
 
     async createSequence(orderId: number): Promise<Sequence> {
         const o = new Order(FakeOrders[orderId]);
-        await o.saveDeep(this.em);
+        await o.saveDeep();
 
         const s = new Sequence(o);
         return await s.saveDeep(this.em);

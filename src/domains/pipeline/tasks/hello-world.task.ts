@@ -6,7 +6,6 @@ import { inject } from "inversify";
 import { Smoothie } from '../../../../app/test-ninja';
 import { EntityManager } from 'typeorm';
 
-// @injectable()
 export class HelloWorldTask extends StepBody {
 
     @inject(Smoothie)
@@ -25,7 +24,7 @@ export class HelloWorldTask extends StepBody {
         // this.environmentService.doSomething();
         return this.myInjectedEm.getRepository(Environment).find()
             .then(results => console.log('there is results', results))
-            .then(() => FakeDelay.wait(5000))
+            .then(() => FakeDelay.wait(1000))
             .then(() => ExecutionResult.next());
     }
 }
