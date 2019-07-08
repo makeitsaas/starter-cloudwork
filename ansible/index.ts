@@ -1,2 +1,2 @@
 export * from './playbook';
-export * from './deployer-ansible';
+export * from './ansible-service';

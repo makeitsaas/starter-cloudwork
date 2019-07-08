@@ -12,6 +12,7 @@ import {
 } from '@services';
 import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
+import { AnsibleService, Playbook } from '@ansible';
 
 export class ServiceOperator {
     service: Service;
@@ -29,6 +30,9 @@ export class ServiceOperator {
 
     @service
     private infrastructureService: InfrastructureService;
+
+    @service
+    private ansibleService: AnsibleService;
 
     constructor(
         private environment: Environment,
@@ -92,16 +96,20 @@ export class ServiceOperator {
     }
 
     async deploy() {
-        await this.runDatabaseScript();
-        await this.runComputeScript();
+        await this.ready;
+        const playbookDatabase = await this.runDatabaseScript();
+        const playbookCompute = await this.runComputeScript();
+        console.log('deploy compute directory', await playbookCompute.getDirectory());
         await this.runMigrationsScript();
     }
 
     async cleanup() {
+        await this.ready;
         console.log('clean me');
     }
 
     async dropDeployment() {
+        await this.ready;
         console.log('drop me');
     }
 
@@ -132,13 +140,20 @@ export class ServiceOperator {
         }
     }
 
-    private async runDatabaseScript() {
+    private async runDatabaseScript(): Promise<Playbook|void> {
         console.log('database script');
         await this.vaultService.getDeploymentVault(`${this.deployment.id}`);
+        const db = await this.deployment.databaseAllocation;
+        if(db && db.status !== 'running') { // example condition, but would require a
+            const playbook = await this.ansibleService.preparePlaybook('database-create', this.environment, this.deployment);
+            return playbook.execute();
+        }
     }
 
-    private async runComputeScript() {
+    private async runComputeScript(): Promise<Playbook> {
         console.log('compute script');
+        const playbook = await this.ansibleService.preparePlaybook('computing-create', this.environment, this.deployment);
+        return playbook.execute();
     }
 
     private async runMigrationsScript() {

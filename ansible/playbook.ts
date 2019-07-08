@@ -56,6 +56,7 @@ export class Playbook {
     async execute() {
         await this.ready;
         console.log('execution start');
+        return this;
     }
 
     /*
@@ -93,24 +94,24 @@ export class Playbook {
     private async loadInventory(): Promise<AnsibleInventoryInterface> {
         this.inventory = {};
 
-        if(this.deployment && this.deployment.service) {
+        if (this.deployment && this.deployment.service) {
             const computingAllocation = await this.deployment.computingAllocation;
             const port = await (computingAllocation && computingAllocation.allocatedPort);
-            if(port) {
+            if (port) {
                 this.inventory.computing = (await port.server).ip;
             }
 
             const databaseAllocation = await this.deployment.databaseAllocation;
-            if(databaseAllocation) {
+            if (databaseAllocation) {
                 let server = await databaseAllocation.server;
-                if(server) {
+                if (server) {
                     this.inventory.database = server.ip;
                 }
             }
         }
 
         const proxy = await this.environment.proxy;
-        if(proxy) {
+        if (proxy) {
             this.inventory.proxy = proxy.ip;
         }
 
@@ -125,7 +126,7 @@ export class Playbook {
             services: await Promise.all(deployments.map(async deployment => {
                 const allocation = await deployment.computingAllocation;
                 const computePort = await (allocation && allocation.allocatedPort);
-                if(!computePort)
+                if (!computePort)
                     throw new Error(`No compute allocation for deployment ${deployment.id}`);
                 const computeServer = await computePort.server;
                 return {
@@ -138,7 +139,7 @@ export class Playbook {
         }
     }
 
-    private async getDeploymentVariables() : Promise<any> {
+    private async getDeploymentVariables(): Promise<any> {
         const db = this.deployment && await this.deployment.databaseAllocation;
         const dbServer = db && await db.server;
         const computing = this.deployment && await this.deployment.computingAllocation;
@@ -172,16 +173,16 @@ export class Playbook {
 
     private async getVault(key: string): Promise<AbstractBaseVault> {
         const type = ConfigReader.playbooks.getVariableVaultType(key);
-        if(type === 'deployment') {
-            if(!this.deployment) {
+        if (type === 'deployment') {
+            if (!this.deployment) {
                 throw new Error('Missing deployment');
             }
-            if(!this.deploymentVault) {
+            if (!this.deploymentVault) {
                 this.deploymentVault = await this.vaultService.getDeploymentVault(`${this.deployment.id}`)
             }
             return this.deploymentVault;
         } else {
-            if(!this.vault) {
+            if (!this.vault) {
                 this.vault = await this.vaultService.getEnvironmentVault(`${this.environment.uuid}`)
             }
             return this.vault;

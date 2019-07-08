@@ -4,8 +4,8 @@ import {
 } from '@entities';
 import { Playbook } from '@ansible';
 
-export class DeployerAnsible {
-    constructor(private interactive: boolean) {
+export class AnsibleService {
+    constructor(private interactive: boolean = false) {
     }
 
     async preparePlaybook(playbookReference: string, environment: Environment, deployment?: ServiceDeployment): Promise<Playbook> {

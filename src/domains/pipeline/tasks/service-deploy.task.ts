@@ -2,9 +2,8 @@ import { ExecutionResult, StepBody, StepExecutionContext } from 'workflow-es';
 import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
 import { Environment, Order, ServiceDeployment, ServiceSpecification } from '@entities';
-import { OrderService } from '../services/order.service';
+import { InfrastructureService, OrderService } from '@services';
 import { ServiceOperator } from '../../deployment/value-objects/service-operator';
-import { InfrastructureService } from '../../infrastructure/services/infrastructure.service';
 
 export class ServiceDeployTask extends StepBody {
 
@@ -33,6 +32,10 @@ export class ServiceDeployTask extends StepBody {
 
         return this.loadContext()
             .then(() => this.context.serviceOperator.deploy())
+            .catch(e => {
+                console.log('error', e);
+                throw e;
+            })
             .then(() => ExecutionResult.next());
     }
 

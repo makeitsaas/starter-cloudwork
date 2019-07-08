@@ -6,7 +6,7 @@ import "reflect-metadata";
 import { Environment, Order, Service, ServiceDeployment } from '@entities';
 import { Sequence } from '@entities';
 import { SequenceRunner } from '@operators';
-import { DeployerAnsible, Playbook } from '@ansible';
+import { AnsibleService, Playbook } from '@ansible';
 import { CliHelper } from '@utils';
 import { FakeOrders } from '@fake';
 import { Container } from '@core';
@@ -53,7 +53,7 @@ export class App {
     async loadPlaybook(playbookReference: string, environmentUuid: string, interactive: boolean = false): Promise<Playbook> {
         const env = await this.em.getRepository(Environment).findOneOrFail(environmentUuid);
 
-        const deployer = new DeployerAnsible(interactive);
+        const deployer = new AnsibleService(interactive);
 
         return await deployer.preparePlaybook(playbookReference, env);
     }
@@ -62,7 +62,7 @@ export class App {
         const service = await this.em.getRepository(Service).findOneOrFail(serviceUuid);
         const deployment = await this.em.getRepository(ServiceDeployment).findOneOrFail({where: {service}});
 
-        const deployer = new DeployerAnsible(interactive);
+        const deployer = new AnsibleService(interactive);
 
         const playbook = await deployer.preparePlaybook(playbookReference, deployment.environment, deployment);
 
