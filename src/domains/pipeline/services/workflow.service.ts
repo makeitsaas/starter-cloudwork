@@ -1,7 +1,13 @@
 import { IWorkflowHost } from 'workflow-es';
 import { Order } from '@entities';
+import { service } from '../../../core/decorators/service-property';
+import { InfrastructureService } from '../../infrastructure/services/infrastructure.service';
 
 export class WorkflowService {
+
+    @service
+    private infrastructureService: InfrastructureService;
+
     constructor(
         private host: IWorkflowHost
     ) {}
@@ -17,8 +23,12 @@ export class WorkflowService {
 
     async processOrder(order: Order) {
         console.log('WorkflowService.processOrder', order.id);
+        const requiredServices = order.getServices();
+        const deployedServices = await this.infrastructureService.getDeployedServices(order.environment);
         let id = await this.host.startWorkflow("update-environment-workflow", 1, {
-            orderId: order.id
+            orderId: order.id,
+            requiredServicesIds: requiredServices.map(s => s.uuid),
+            deployedServicesIds: deployedServices.map(d => d.id),
         });
         console.log('started workflow id:', id);
     }

@@ -24,9 +24,18 @@ export class UpdateEnvironmentWorkflow implements WorkflowBase<any> {
                 // data => workflow-level data, stored in mongodb and initiated when calling startWorkflow
                 step.orderId = data.orderId;
             })
-            .then(ServiceVaultSetupTask)
-            .then(ServiceAllocateResourcesTask)
-            .then(ServiceDeployTask)
+            .foreach(data => data.requiredServicesIds).do(
+                then => then
+                    .startWith(ServiceAllocateResourcesTask)
+                    .input((step, data) => step.orderId = data.orderId))
+            .foreach(data => data.requiredServicesIds).do(
+                then => then
+                    .startWith(ServiceVaultSetupTask)
+                    .input((step, data) => step.orderId = data.orderId))
+            .foreach(data => data.requiredServicesIds).do(
+                then => then
+                    .startWith(ServiceDeployTask)
+                    .input((step, data) => step.orderId = data.orderId))
             .then(ProxyReloadTask)
             .then(ServiceCleanupTask);
     }

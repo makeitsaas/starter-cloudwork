@@ -66,6 +66,10 @@ export class Order {
         return (this.getParsedSpecs().services || []).map((spec: any) => new ServiceSpecification(spec));
     }
 
+    getServiceSpecification(serviceUuid: string): ServiceSpecification|void {
+        return this.getServices().filter(spec => spec.uuid === serviceUuid)[0];
+    }
+
     async saveDeep(): Promise<Order> {
         await this.em.save(this.environment);
         return await this.em.save(this);

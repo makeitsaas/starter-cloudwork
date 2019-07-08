@@ -65,6 +65,6 @@ export class EnvironmentUpdateConfigurationTask extends StepBody {
                     order,
                     environment
                 };
-            })
+            });
     }
 }
