@@ -48,7 +48,6 @@ export class UpdateEnvironmentWorkflow implements WorkflowBase<any> {
             then => then
                 .startWith(ServiceCleanupTask)
                 .input((step, data) => step.orderId = data.orderId))
-            .onError(WorkflowErrorHandling.Retry, 5000)
-
+            .onError(WorkflowErrorHandling.Retry, 5000);
     }
 }

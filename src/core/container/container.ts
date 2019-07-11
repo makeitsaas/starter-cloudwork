@@ -9,7 +9,14 @@ class ContainerClass {
         main: Connection
         vault: Connection
     };
-    public services: {
+    private services: {
+        [key: string]: any
+    } = {};
+    public getService(metadata: any) {
+        if(!this.services[metadata.name]) {
+            this.services[metadata.name] = new metadata();
+        }
+        return this.services[metadata.name];
     }
 }
 
