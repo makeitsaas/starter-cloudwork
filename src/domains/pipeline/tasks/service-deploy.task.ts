@@ -33,7 +33,7 @@ export class ServiceDeployTask extends StepBody {
         return this.loadContext()
             .then(() => this.context.serviceOperator.deploy())
             .catch(e => {
-                console.log('error', e);
+                console.log('[TASK ERROR] deploy error', e);
                 throw e;
             })
             .then(() => ExecutionResult.next());

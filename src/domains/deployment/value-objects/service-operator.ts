@@ -13,6 +13,7 @@ import {
 import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
 import { AnsibleService, Playbook } from '@ansible';
+import { DatabaseDeploymentFailed } from '@errors';
 
 export class ServiceOperator {
     service: Service;
@@ -67,7 +68,7 @@ export class ServiceOperator {
 
         const databaseAllocation = await this.deployment.databaseAllocation;
         if(!databaseAllocation) {
-            this.deployment.databaseAllocation = this.infrastructureService.allocateDevDatabase(); // TODO : pareil
+            this.deployment.databaseAllocation = this.infrastructureService.allocateDevDatabase(); // TODO : same
             await this.em.save(this.deployment);
         }
 
@@ -99,6 +100,7 @@ export class ServiceOperator {
         await this.ready;
         const playbookDatabase = await this.runDatabaseScript();
         const playbookCompute = await this.runComputeScript();
+        console.log('deploy database directory', playbookDatabase && await playbookDatabase.getDirectory());
         console.log('deploy compute directory', await playbookCompute.getDirectory());
         await this.runMigrationsScript();
     }
@@ -143,17 +145,37 @@ export class ServiceOperator {
     private async runDatabaseScript(): Promise<Playbook|void> {
         console.log('database script');
         await this.vaultService.getDeploymentVault(`${this.deployment.id}`);
-        const db = await this.deployment.databaseAllocation;
-        if(db && db.status !== 'running') { // example condition, but would require a
-            const playbook = await this.ansibleService.preparePlaybook('database-create', this.environment, this.deployment);
-            return playbook.execute();
+
+        if(this.deployment.databaseStatus === 'deployed') {
+            return; // no need to deploy multiple times
         }
+
+        const playbook = await this.ansibleService.preparePlaybook('database-create', this.environment, this.deployment);
+        await this.deployment.saveDatabaseDeploymentStatus('pending');
+        try {
+            await playbook.execute();
+            await this.deployment.saveComputingDeploymentStatus('deployed');
+        } catch (e) {
+            await this.deployment.saveComputingDeploymentStatus('failed');
+            throw new DatabaseDeploymentFailed('Deployment failed');
+        }
+
+        return playbook;
     }
 
     private async runComputeScript(): Promise<Playbook> {
         console.log('compute script');
         const playbook = await this.ansibleService.preparePlaybook('computing-create', this.environment, this.deployment);
-        return playbook.execute();
+        await this.deployment.saveComputingDeploymentStatus('pending');
+        try {
+            await playbook.execute();
+            await this.deployment.saveComputingDeploymentStatus('deployed');
+        } catch (e) {
+            await this.deployment.saveComputingDeploymentStatus('failed');
+            throw new DatabaseDeploymentFailed('Deployment failed');
+        }
+
+        return playbook;
     }
 
     private async runMigrationsScript() {

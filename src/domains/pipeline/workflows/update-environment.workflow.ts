@@ -1,4 +1,4 @@
-import { WorkflowBase, WorkflowBuilder } from 'workflow-es';
+import { WorkflowBase, WorkflowBuilder, WorkflowErrorHandling } from 'workflow-es';
 
 import { EnvironmentUpdateConfigurationTask } from '../tasks/environment-update-configuration.task';
 import { ServiceAllocateResourcesTask } from '../tasks/service-allocate-resources.task';
@@ -19,11 +19,11 @@ export class UpdateEnvironmentWorkflow implements WorkflowBase<any> {
     public build(builder: WorkflowBuilder<any>) {
         builder
             .startWith(EnvironmentUpdateConfigurationTask)
-            .input((step, data) => {
-                // step => StepClass instance
-                // data => workflow-level data, stored in mongodb and initiated when calling startWorkflow
-                step.orderId = data.orderId;
-            })
+                .input((step, data) => {
+                    // step => StepClass instance
+                    // data => workflow-level data, stored in mongodb and initiated when calling startWorkflow
+                    step.orderId = data.orderId;
+                })
             .foreach(data => data.requiredServicesIds).do(
                 then => then
                     .startWith(ServiceAllocateResourcesTask)
@@ -36,7 +36,19 @@ export class UpdateEnvironmentWorkflow implements WorkflowBase<any> {
                 then => then
                     .startWith(ServiceDeployTask)
                     .input((step, data) => step.orderId = data.orderId))
+            .onError(WorkflowErrorHandling.Terminate)
             .then(ProxyReloadTask)
-            .then(ServiceCleanupTask);
+                .input((step, data) => {
+                    // step => StepClass instance
+                    // data => workflow-level data, stored in mongodb and initiated when calling startWorkflow
+                    step.orderId = data.orderId;
+                })
+            .onError(WorkflowErrorHandling.Retry, 5000)
+            .foreach(data => data.requiredServicesIds).do(
+            then => then
+                .startWith(ServiceCleanupTask)
+                .input((step, data) => step.orderId = data.orderId))
+            .onError(WorkflowErrorHandling.Retry, 5000)
+
     }
 }
