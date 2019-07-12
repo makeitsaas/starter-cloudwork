@@ -4,11 +4,13 @@ import { CliHelper, ConfigReader } from '@utils';
 import { Playbook } from '@ansible';
 import { DeployServiceTask } from '@custom-modules/workflows/steps/deploy-service.task';
 import { PipelineModule } from '../src/domains/pipeline/pipeline.module';
-import { Order } from '../src/domains/pipeline/entities/order';
+import { Order } from '@entities';
 import { FakeOrders } from '@fake';
+import { ModeLoader } from '../src/core/mode/cli-mode-loader';
 
 program
     .version('0.1.0')
+    .option('--mode [mode]', 'Environment type (prod, test, local)')
     .option('--test', 'What your do for testing')
     .option('--ansible', 'Prepare ansible playbook')
     .option('--playbook [playbookName]', 'Specify ansible playbook name')
@@ -19,6 +21,8 @@ program
     .option('--environment [environmentId]', 'Environment Id')
     .option('--drop', 'Associated with environment id, will drop deployment')
     .parse(process.argv);
+
+ModeLoader(program);
 
 const app = new App();
 

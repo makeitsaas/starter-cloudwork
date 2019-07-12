@@ -6,6 +6,7 @@ import { AbstractBaseVault, Environment, EnvironmentVault, ServiceDeployment, Se
 import { CliHelper, ConfigReader, SinglePlaybookConfig } from '@utils';
 import { VaultService } from '@services';
 import { service } from '@decorators';
+import { ModeConfig } from '../src/core/mode/cli-mode-loader';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string
@@ -55,7 +56,9 @@ export class Playbook {
 
     async execute() {
         await this.ready;
-        console.log('execution start');
+        if (ModeConfig.executePlaybooks) {
+            console.log('execution start');
+        }
         return this;
     }
 
