@@ -154,9 +154,9 @@ export class ServiceOperator {
         await this.deployment.saveDatabaseDeploymentStatus('pending');
         try {
             await playbook.execute();
-            await this.deployment.saveComputingDeploymentStatus('deployed');
+            await this.deployment.saveDatabaseDeploymentStatus('deployed');
         } catch (e) {
-            await this.deployment.saveComputingDeploymentStatus('failed');
+            await this.deployment.saveDatabaseDeploymentStatus('failed');
             throw new DatabaseDeploymentFailed('Deployment failed');
         }
 

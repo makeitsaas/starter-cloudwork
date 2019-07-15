@@ -1,7 +1,9 @@
 import * as fs from 'fs';
+import { PlaybookExecutor } from '@custom-modules/playbook-executor';
+
 const yaml = require("js-yaml");
 
-const ansiblePLaybookRelativePath = '../../playbooks';
+const ansiblePlaybookRelativePath = '../../playbooks';
 const ansibleTemplatesRelativePath = '../../templates';
 const tmpDirectoryRelativePath = '../../../tmp';
 
@@ -10,7 +12,7 @@ export interface AnsibleInventoryInterface {
 }
 
 export interface AnsibleVarsInterface {
-    [id: string]: string|number|any;
+    [id: string]: string | number | any;
 }
 
 export class AnsibleExecutionClient {
@@ -31,7 +33,7 @@ export class AnsibleExecutionClient {
      */
 
     public prepare() {
-        if(!this.ready) {
+        if (!this.ready) {
             this.ready = this.getExecutionDirectory()
                 .then(() => Promise.all([
                     this.writeInventoryFile(),
@@ -49,6 +51,15 @@ export class AnsibleExecutionClient {
         return this.executionAbsoluteDirectory;
     }
 
+    public execute() {
+        const runner = new PlaybookExecutor(this);
+        return runner.exec();
+    }
+
+    public writeLogs(logs: any) {
+        fs.writeFileSync(this.getDirectory() + '/root-playbook.log', logs);
+    }
+
     /*
      * ---------------
      * Private methods
@@ -59,10 +70,10 @@ export class AnsibleExecutionClient {
         const basePath = `${__dirname}/${tmpDirectoryRelativePath}`;
         let i = 1;
         let available = false;
-        const generatePath = (i:number) => {
+        const generatePath = (i: number) => {
             return `${basePath}/playbook-execution-${i}`;
         };
-        while(!available) {
+        while (!available) {
             this.executionAbsoluteDirectory = generatePath(i++);
             available = this.isFolderAvailable(this.executionAbsoluteDirectory);
         }
@@ -74,9 +85,9 @@ export class AnsibleExecutionClient {
             inventoryFile = inventoryDir + '/hosts',
             inventoryFileContent = '';
 
-        for(let key in this.inventory) {
-            inventoryFileContent +=`[${key}]\n`;
-            inventoryFileContent +=`${this.inventory[key]}\n\n`;
+        for (let key in this.inventory) {
+            inventoryFileContent += `[${key}]\n`;
+            inventoryFileContent += `${this.inventory[key]}\n\n`;
         }
 
         fs.mkdirSync(inventoryDir);
@@ -92,11 +103,11 @@ export class AnsibleExecutionClient {
     }
 
     private copyPlaybook() {
-        fs.copyFileSync(`${__dirname}/${ansiblePLaybookRelativePath}/${this.playbookName}.yml`, this.executionAbsoluteDirectory + '/root-playbook.yml');
+        fs.copyFileSync(`${__dirname}/${ansiblePlaybookRelativePath}/${this.playbookName}.yml`, this.executionAbsoluteDirectory + '/root-playbook.yml');
     }
 
     private linkPlaybooksDirectory() {
-        fs.symlinkSync(`${__dirname}/${ansiblePLaybookRelativePath}`, `${this.executionAbsoluteDirectory}/playbooks`);
+        fs.symlinkSync(`${__dirname}/${ansiblePlaybookRelativePath}`, `${this.executionAbsoluteDirectory}/playbooks`);
     }
 
     private linkTemplatesDirectory() {
@@ -110,7 +121,7 @@ export class AnsibleExecutionClient {
     private isFolderAvailable(path: string): boolean {
         try {
             return !fs.existsSync(path);
-        } catch(err) {
+        } catch (err) {
             return true;
         }
     }

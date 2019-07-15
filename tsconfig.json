@@ -14,7 +14,7 @@
       "@custom-modules/*": [
         "../ansible/modules/*",
         "../ansible/modules/node-ansible/*",
-        "../ansible/modules/deployer-ansible-client/*",
+        "../ansible/modules/ansible-playbook-runner/*",
         "../ansible/modules/ansible-output-parser/*",
         "../ansible/modules/ansible-execution-client/*",
         "../src/shared/*"

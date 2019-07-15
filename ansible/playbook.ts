@@ -58,6 +58,7 @@ export class Playbook {
         await this.ready;
         if (ModeConfig.executePlaybooks) {
             console.log('execution start');
+            await this.executionClient.execute();
         }
         return this;
     }

@@ -29,14 +29,27 @@ const app = new App();
 app.ready.then(() => {
     // maybe add below a script to display operations that needs to be led
     if (program.test) {
-        const pipelineModule = new PipelineModule();
-        // pipelineModule
-            // .runDemo()
         Promise.resolve()
             .then(() => console.log('demo has been disabled'))
             .then(() => app.exit());
     } else if (program.order) {
         console.log('program.order =', program.order);
+        /**
+         * TODO :
+         * - Execute playbooks for real
+         * - gather/store data from playbooks
+         * - list possible behaviors
+         * - make diagrams for these possible behaviors (processes, modules hierarchy, ...)
+         * - create servlet to take external orders (network rules => no authentication)
+         *      - orders create/update environment
+         *      - orders delete environment
+         *      - orders service recovering
+         *      - gather workflow reports
+         *      - response => status + workflow id
+         * - deploy spa & cdn
+         * - data pipelines + ML (step = read/transform/save mongo documents)
+         * - BP : mis + architecture-ready-to-use
+         */
         // app.createSequence(parseInt(program.order)).then(() => {
         //     app.exit();
         // });
