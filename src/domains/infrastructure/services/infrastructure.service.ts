@@ -4,6 +4,7 @@ import { ComputingAllocation } from '@entities';
 import { NoPortAvailableOnServer } from '@errors';
 import { EntityManager } from 'typeorm';
 import { em, _EM_ } from '@decorators';
+import { LambdaServer } from '../entities/lambda-server';
 
 export class InfrastructureService {
 
@@ -40,6 +41,32 @@ export class InfrastructureService {
 
         return allocation;
     }
+
+    async allocateLambdaServer(type: string, timeout: number): Promise<LambdaServer> {
+        let  lambda = new LambdaServer();
+        lambda.ip = 'tmp-ip-lambda';
+        lambda.type = 'angular';
+        lambda.timeout = timeout;
+
+        lambda = await this.em.save(lambda);
+        lambda.tmpDirectory = '/srv/lambda-' + lambda.id;
+        lambda = await this.em.save(lambda);
+
+        return lambda;
+    }
+
+    async releaseLambdaServer(lambda: LambdaServer): Promise<LambdaServer> {
+        lambda.stoppedAfterTimeout = lambda.hasReachedTimeout();
+        lambda.status = 'stopped';
+
+        return this.em.save(lambda);
+    }
+
+    /**
+     *
+     * Private methods
+     *
+     */
 
     private async getDevComputingServer(): Promise<Server> {
         return this.em.getRepository(Server).findOneOrFail({
