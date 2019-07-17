@@ -1,0 +1,9 @@
+---
+- debug:
+    msg: "EC2 instance shall have s3 write access role"
+- debug:
+    msg: "aws s3 cp --recursive /srv/angular-initial-test/dist/ s3://makeitsaas-public/auto/angular/initial-test"
+# Use ansible module instead
+- name: copy files to s3
+  command: "aws s3 cp --recursive {{ repo_absolute_path }}/dist/ s3://{{ s3_bucket }}/{{ s3_path }}"
+

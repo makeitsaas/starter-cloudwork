@@ -9,7 +9,7 @@ export class LambdaServer {
     status: 'starting'|'running'|'stopped'|'unhealthy' = 'starting';
 
     @Column()
-    type: 'angular'|'python'|'docker' = 'angular';
+    type: 'nodejs'|'python'|'docker' = 'nodejs';
 
     @Column()
     ip: string;

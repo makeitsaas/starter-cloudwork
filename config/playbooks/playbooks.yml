@@ -53,3 +53,9 @@ proxy-reload:
   variables:
     - key: environment_domain
       required: true
+spa-deploy:
+  inputs:
+    - environment
+    - lambda-server
+  variables:
+    - key: environment_domain

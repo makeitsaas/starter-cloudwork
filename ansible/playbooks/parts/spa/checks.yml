@@ -1,0 +1,11 @@
+---
+- set_fact: repo_url="https://github.com/Duwab/makeitsaas-manager-front"
+- set_fact: repo_absolute_path="/srv/angular-initial-test"
+- set_fact: s3_bucket="makeitsaas-public"
+- set_fact: s3_path="auto/angular/initial-test"
+- name: check if sources exist
+  stat:
+    path: "{{ repo_absolute_path }}"
+  register: git_directory
+- debug:
+    msg: "Does git_directory exists => {{git_directory.stat.exists}}"

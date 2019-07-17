@@ -5,6 +5,9 @@ import { NoPortAvailableOnServer } from '@errors';
 import { EntityManager } from 'typeorm';
 import { em, _EM_ } from '@decorators';
 import { LambdaServer } from '../entities/lambda-server';
+import { FakeDelay } from '@fake';
+
+const TMP_STATIC_LAMBDA_SERVER_IP = '35.157.192.169';
 
 export class InfrastructureService {
 
@@ -42,11 +45,14 @@ export class InfrastructureService {
         return allocation;
     }
 
-    async allocateLambdaServer(type: string, timeout: number): Promise<LambdaServer> {
+    async allocateLambdaServer(type: string, timeout?: number): Promise<LambdaServer> {
+        console.log('waiting for lambda server allocation (fake delay)');
+        await FakeDelay.wait(1000);
+
         let  lambda = new LambdaServer();
-        lambda.ip = 'tmp-ip-lambda';
-        lambda.type = 'angular';
-        lambda.timeout = timeout;
+        lambda.ip = TMP_STATIC_LAMBDA_SERVER_IP;
+        lambda.type = 'nodejs';
+        lambda.timeout = timeout || lambda.timeout;
 
         lambda = await this.em.save(lambda);
         lambda.tmpDirectory = '/srv/lambda-' + lambda.id;

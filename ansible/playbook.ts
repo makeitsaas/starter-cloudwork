@@ -7,6 +7,7 @@ import { CliHelper, ConfigReader, SinglePlaybookConfig } from '@utils';
 import { VaultService } from '@services';
 import { service } from '@decorators';
 import { ModeConfig } from '../src/core/mode/cli-mode-loader';
+import { LambdaServer } from '../src/domains/infrastructure/entities/lambda-server';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string
@@ -14,31 +15,63 @@ export interface EnvironmentCommonVariablesInterface {
     services: any[]
 }
 
+export interface IPlaybookInputObjects {
+    environment: Environment
+    deployment?: ServiceDeployment
+    lambdaServer?: LambdaServer
+}
+
 export class Playbook {
 
+    /**
+     * Main properteis
+     */
     readonly ready: Promise<any>;
+    private playbookConfig: SinglePlaybookConfig;
+
+    /**
+     * Execution properties
+     */
     private executionClient: AnsibleExecutionClient;
     private vars: AnsibleVarsInterface;
     private inventory: AnsibleInventoryInterface;
-    private playbookConfig: SinglePlaybookConfig;
-    private vault: EnvironmentVault;
-    private deploymentVault?: ServiceDeploymentVault;
 
+    /**
+     * Convenience properties
+     */
+    private vault: EnvironmentVault;
+    private deploymentVault: ServiceDeploymentVault;
+    private environment: Environment;
+    readonly deployment?: ServiceDeployment;
+    readonly lambdaServer?: LambdaServer;
+
+    /**
+     * DI properties
+     */
     @service
     private vaultService: VaultService;
 
+    /**
+     * Constructor-set properties
+     *
+     * @param name
+     * @param inputObjects
+     * @param interactive
+     */
     constructor(
-        private name: string,
-        private environment: Environment,
-        private deployment?: ServiceDeployment,
+        name: string,
+        inputObjects: IPlaybookInputObjects,
         private interactive: boolean = false
     ) {
-        this.playbookConfig = ConfigReader.playbooks.getConfig(this.name);
+        this.environment = inputObjects.environment;
+        this.deployment = inputObjects.deployment;
+        this.lambdaServer = inputObjects.lambdaServer;
+        this.playbookConfig = ConfigReader.playbooks.getConfig(name);
         this.ready = Promise.all([
             this.loadVars(),
             this.loadInventory()
         ]).then(async () => {
-            this.executionClient = new AnsibleExecutionClient(this.vars, this.inventory, this.name);
+            this.executionClient = new AnsibleExecutionClient(this.vars, this.inventory, name);
             await this.executionClient.prepare();
         });
     }
@@ -112,6 +145,10 @@ export class Playbook {
                     this.inventory.database = server.ip;
                 }
             }
+        }
+
+        if(this.lambdaServer) {
+            this.inventory['lambda-server'] = this.lambdaServer.ip;
         }
 
         const proxy = await this.environment.proxy;

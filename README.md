@@ -123,3 +123,14 @@ return this.addParamValue(commandParams, '' + this.config[param] + '', flag);
 * **scheduler :** parses orders and rewrites it into a list of jobs
 * **runner :** executes jobs using ansible playbooks  
 * **repository :** persists configurations  
+
+
+
+### Add a new playbook
+
+1. Create root playbook entry point in `ansible/playbooks/{playbook-name}.yml`
+2. Add necessary sub-playbooks under `ansible/playbooks/parts` directory
+3. Declare playbook in `config/playbooks/`
+4. Add missing inventory hosts in ... 
+4. Launch `npm run cli -- --ansible -i --mode=local` to see generated playbook
+5. Go to freshly created execution directory and try it manually using `ansible-playbook -i inventories/hosts root-playbook.yml`

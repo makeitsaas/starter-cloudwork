@@ -56,7 +56,7 @@ app.ready.then(() => {
         const o = new Order(FakeOrders[parseInt(program.order)]);
         o.saveDeep().then(o => {
             const pipelineModule = new PipelineModule();
-            pipelineModule
+            return pipelineModule
                 .processOrder(o)
         });
     } else if (program.testMore) {
@@ -98,10 +98,14 @@ app.ready.then(() => {
 
             return environmentUuid;
         };
+        const envBasedPlaybookRegexp = /(proxy|spa)/;
+
+        // Do something better to load playbook context
+        // Then use the same logic for context injection in workflow steps
         Promise.resolve(getPlaybookReference())
-            .then(() => /proxy/.test(playbookReference) ? getEnvironmentUuid() : getServiceUuid())
+            .then(() => envBasedPlaybookRegexp.test(playbookReference) ? getEnvironmentUuid() : getServiceUuid())
             .then(() => {
-                const playbookPromise = /proxy/.test(playbookReference) ?
+                const playbookPromise = envBasedPlaybookRegexp.test(playbookReference) ?
                     app.loadPlaybook(playbookReference, environmentUuid, program.interactive) :
                     app.loadServicePlaybook(playbookReference, serviceUuid, program.interactive);
                 return playbookPromise
