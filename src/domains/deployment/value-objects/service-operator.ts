@@ -13,7 +13,7 @@ import {
 import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
 import { AnsibleService, Playbook } from '@ansible';
-import { DatabaseDeploymentFailed } from '@errors';
+import { ComputingDeploymentFailed, DatabaseDeploymentFailed, SpaDeploymentFailed } from '@errors';
 
 export class ServiceOperator {
     service: Service;
@@ -38,14 +38,14 @@ export class ServiceOperator {
     constructor(
         private environment: Environment,
         private action: string,
-        private specification: ServiceSpecification|void,
-        private currentComputeDeployment: ServiceDeployment|void
+        private specification: ServiceSpecification | void,
+        private currentComputeDeployment: ServiceDeployment | void
     ) {
         this.ready = (async () => {
             await this.initService();
             await this.initDeployment();
 
-            if(!this.service || !this.deployment) {
+            if (!this.service || !this.deployment) {
                 throw new Error("Could not initialize service operator properly");
             }
         })();
@@ -59,19 +59,20 @@ export class ServiceOperator {
 
     async allocate() {
         await this.ready;
+
         console.log('assigning servers and ports');
+        if (this.deployment.isAPIDeployment()) {
+            if (!this.deployment.computingAllocation) {
+                this.deployment.computingAllocation = Promise.resolve(await this.infrastructureService.allocateDevComputing());
+                await this.em.save(this.deployment);
+            }
 
-        if(!this.deployment.computingAllocation) {
-            this.deployment.computingAllocation = Promise.resolve(await this.infrastructureService.allocateDevComputing());
-            await this.em.save(this.deployment);
+            const databaseAllocation = await this.deployment.databaseAllocation;
+            if (!databaseAllocation) {
+                this.deployment.databaseAllocation = this.infrastructureService.allocateDevDatabase(); // TODO : same
+                await this.em.save(this.deployment);
+            }
         }
-
-        const databaseAllocation = await this.deployment.databaseAllocation;
-        if(!databaseAllocation) {
-            this.deployment.databaseAllocation = this.infrastructureService.allocateDevDatabase(); // TODO : same
-            await this.em.save(this.deployment);
-        }
-
     }
 
     async registerVaultValues(): Promise<any> {
@@ -81,10 +82,10 @@ export class ServiceOperator {
 
         let getters = this.vaultFieldsRequirementsGetters(vault);
 
-        for(let key in getters) {
+        for (let key in getters) {
             let vaultValue = vault.getValue(key);
 
-            if(!vaultValue) {
+            if (!vaultValue) {
                 const value = await getters[key].apply(this);
                 console.log('vault add value', key, value);
                 vault.addValue(key, value);
@@ -98,11 +99,17 @@ export class ServiceOperator {
 
     async deploy() {
         await this.ready;
-        const playbookDatabase = await this.runDatabaseScript();
-        const playbookCompute = await this.runComputeScript();
-        console.log('deploy database directory', playbookDatabase && await playbookDatabase.getDirectory());
-        console.log('deploy compute directory', await playbookCompute.getDirectory());
-        await this.runMigrationsScript();
+        console.log('deploy');
+        if(this.deployment.isAPIDeployment()) {
+            const playbookDatabase = await this.runDatabaseScript();
+            const playbookCompute = await this.runComputeScript();
+            console.log('deploy database directory', playbookDatabase && await playbookDatabase.getDirectory());
+            console.log('deploy compute directory', await playbookCompute.getDirectory());
+            await this.runMigrationsScript();
+        } else if(this.deployment.isSPADeployment()) {
+            const playbookSPA = await this.runSPAScript();
+            console.log('deploy spa directory', await playbookSPA.getDirectory());
+        }
     }
 
     async cleanup() {
@@ -122,9 +129,9 @@ export class ServiceOperator {
      */
 
     private async initService() {
-        if(this.specification) {
-            this.service = await this.deploymentService.getOrCreateService(this.specification.uuid, this.specification.repositoryUrl);
-        } else if(this.currentComputeDeployment) {
+        if (this.specification) {
+            this.service = await this.deploymentService.getOrCreateService(this.specification);
+        } else if (this.currentComputeDeployment) {
             this.service = this.currentComputeDeployment.service;
         } else {
             throw new Error("Missing information : either service specification or deployment");
@@ -132,8 +139,8 @@ export class ServiceOperator {
     }
 
     private async initDeployment() {
-        if(!this.currentComputeDeployment) {
-            if(!this.specification) {
+        if (!this.currentComputeDeployment) {
+            if (!this.specification) {
                 throw new Error('Missing specifications');
             }
             this.deployment = await this.deploymentService.getOrCreateServiceDeployment(this.service, this.environment, this.specification);
@@ -142,11 +149,11 @@ export class ServiceOperator {
         }
     }
 
-    private async runDatabaseScript(): Promise<Playbook|void> {
+    private async runDatabaseScript(): Promise<Playbook | void> {
         console.log('database script');
         await this.vaultService.getDeploymentVault(`${this.deployment.id}`);
 
-        if(this.deployment.databaseStatus === 'deployed') {
+        if (this.deployment.databaseStatus === 'deployed') {
             return; // no need to deploy multiple times
         }
 
@@ -172,7 +179,22 @@ export class ServiceOperator {
             await this.deployment.saveComputingDeploymentStatus('deployed');
         } catch (e) {
             await this.deployment.saveComputingDeploymentStatus('failed');
-            throw new DatabaseDeploymentFailed('Deployment failed');
+            throw new ComputingDeploymentFailed('Deployment failed');
+        }
+
+        return playbook;
+    }
+
+    private async runSPAScript(): Promise<Playbook> {
+        console.log('spa script');
+        const playbook = await this.ansibleService.preparePlaybook('spa-deploy', this.environment, this.deployment);
+        await this.deployment.saveCDNDeploymentStatus('pending');
+        try {
+            await playbook.execute();
+            await this.deployment.saveCDNDeploymentStatus('deployed');
+        } catch (e) {
+            await this.deployment.saveCDNDeploymentStatus('failed');
+            throw new SpaDeploymentFailed('Deployment failed');
         }
 
         return playbook;
@@ -186,15 +208,27 @@ export class ServiceOperator {
         console.log('cleanup script');
     }
 
-    private vaultFieldsRequirementsGetters(vault: AbstractBaseVault): {[id: string]: () => Promise<string>} {
-        return {
-            "DB_DATABASE": this.generateDatabaseName,
-            "DB_USERNAME": this.generateDatabaseUserName,
-            "DB_PASSWORD": this.passwordGenerator(),
-            // "GITHUB_CLIENT_ID": this.getGithubSecret('client_id'),
-            // "GITHUB_CLIENT_SECRET": this.getGithubSecret('client_secret'),
-            // "GITHUB_CALLBACK_URL": this.getGithubSecret('callback_url'),
-        };
+    private vaultFieldsRequirementsGetters(vault: AbstractBaseVault): { [id: string]: () => Promise<string> } {
+        if (this.deployment.isSPADeployment()) {
+            return {
+                "CDN_PATH": this.generateCDNPath
+            };
+        } else if (this.deployment.isAPIDeployment()) {
+            return {
+                "DB_DATABASE": this.generateDatabaseName,
+                "DB_USERNAME": this.generateDatabaseUserName,
+                "DB_PASSWORD": this.passwordGenerator(),
+                // "GITHUB_CLIENT_ID": this.getGithubSecret('client_id'),
+                // "GITHUB_CLIENT_SECRET": this.getGithubSecret('client_secret'),
+                // "GITHUB_CALLBACK_URL": this.getGithubSecret('callback_url'),
+            };
+        } else {
+            return {};
+        }
+    }
+
+    private generateCDNPath(): Promise<string> {
+        return Promise.resolve(`${this.deployment.type}/deployment-${this.deployment.id}`);
     }
 
     private generateDatabaseName(): Promise<string> {
@@ -206,7 +240,7 @@ export class ServiceOperator {
         return Promise.resolve(`user_d${this.deployment.id}`);
     }
 
-    private passwordGenerator(size: number|undefined = undefined): () => Promise<string> {
+    private passwordGenerator(size: number | undefined = undefined): () => Promise<string> {
         return () => {
             return this.generatePassword(size);
         };
@@ -216,7 +250,7 @@ export class ServiceOperator {
         const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-)(+[]!?&";
         let password = "";
 
-        for(let i = 0; i < size; i++) {
+        for (let i = 0; i < size; i++) {
             password += characters[Math.floor(Math.random() * characters.length)];
         }
 

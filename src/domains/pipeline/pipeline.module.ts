@@ -6,6 +6,8 @@ import { Smoothie } from '../../../app/test-ninja';
 import { Container } from '@core';
 import { EntityManager } from 'typeorm';
 import { Order } from './entities/order';
+import { UpdateServiceWorkflow } from './workflows/update-service.workflow';
+import { WrapperWorkflow } from './workflows/wrapper.workflow';
 
 
 /**
@@ -36,6 +38,8 @@ export class PipelineModule {
         this.host = config.getHost();
 
         this.host.registerWorkflow(UpdateEnvironmentWorkflow);
+        this.host.registerWorkflow(UpdateServiceWorkflow);
+        this.host.registerWorkflow(WrapperWorkflow);
     }
 
     async runDemo() {
@@ -51,6 +55,13 @@ export class PipelineModule {
         const wfs = new WorkflowService(this.host);
         await this.host.start();
         return wfs.processOrder(order);
+    }
+
+    async updateService() {
+        await this.ready;
+        const wfs = new WorkflowService(this.host);
+        await this.host.start();
+        return wfs.updateService();
     }
 
     private overloadWorkflowContainer(config: WorkflowConfig) {

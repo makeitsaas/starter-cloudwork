@@ -32,4 +32,9 @@ export class WorkflowService {
         });
         console.log('started workflow id:', id);
     }
+
+    async updateService() {
+        let id = await this.host.startWorkflow("wrapper-workflow", 1, {});
+        console.log('started workflow id:', id);
+    }
 }

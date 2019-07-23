@@ -40,7 +40,7 @@ export class ServiceCleanupTask extends StepBody {
     }
 
     private checkInputs() {
-        console.log(`ServiceDeployTask(${this.serviceUuid})`);
+        console.log(`ServiceCleanupTask(${this.serviceUuid})`);
 
         if(!this.orderId) {
             throw new Error("Missing orderId");

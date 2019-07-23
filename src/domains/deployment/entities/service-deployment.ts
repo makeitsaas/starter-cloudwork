@@ -3,7 +3,6 @@ import {
     CreateDateColumn,
     Entity, EntityManager,
     ManyToOne,
-    OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from 'typeorm';
@@ -11,7 +10,7 @@ import { Service } from '@entities';
 import { Environment } from '@entities';
 import { ComputingAllocation } from '@entities';
 import { DatabaseAllocation } from '@entities';
-import { em } from '../../../core/decorators/entity-manager-property';
+import { em } from '@decorators';
 import { InvalidEnumValue } from '../errors';
 
 const COMPUTING_STATUS_LIST = [
@@ -35,7 +34,10 @@ export class ServiceDeployment {
     databaseStatus: string = 'init';     // pending, running, failed, stopped, down
 
     @Column()
-    type: string = 'default';
+    cdnStatus: string = 'init';     // pending, running, failed, stopped, down
+
+    @Column()
+    type: ('angular'|'api-node-v1'|'default') = 'default';
 
     @ManyToOne(type => Service, { eager: true })
     service: Service;
@@ -80,5 +82,22 @@ export class ServiceDeployment {
 
         this.databaseStatus = newStatus;
         return this.em.save(this);
+    }
+
+    saveCDNDeploymentStatus(newStatus: string): Promise<ServiceDeployment> {
+        if(COMPUTING_STATUS_LIST.indexOf(newStatus) === -1) {
+            throw new InvalidEnumValue('CDN status is wrong');
+        }
+
+        this.cdnStatus = newStatus;
+        return this.em.save(this);
+    }
+
+    isSPADeployment() {
+        return this.type === 'angular';
+    }
+
+    isAPIDeployment() {
+        return /^api/.test(this.type);
     }
 }

@@ -7,5 +7,6 @@ deployment:
   - db_username
   - db_password
   - service_port
+  - cdn_path
 environment:
   - environment_domain

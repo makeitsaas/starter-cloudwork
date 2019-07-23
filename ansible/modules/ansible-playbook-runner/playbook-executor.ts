@@ -30,7 +30,7 @@ export class PlaybookExecutor {
             .exec();
 
         return promise
-            .catch((e: any) => console.log('error', e))
+            .catch((e: any) => console.log('error (playbook-executor)', e))
             .then((stats: any) => {
                 console.log("\ncode :", stats.code, "\n"); // Exit code of the executed command
                 this.context.writeLogs(stats.output);

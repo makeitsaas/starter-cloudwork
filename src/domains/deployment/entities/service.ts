@@ -8,6 +8,9 @@ export class Service {
     @Column()
     repositoryUrl: string;
 
+    @Column()
+    type: ('angular'|'api-node-v1'|'default') = 'default';
+
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;
 

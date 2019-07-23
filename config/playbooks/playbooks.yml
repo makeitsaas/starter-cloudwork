@@ -59,3 +59,5 @@ spa-deploy:
     - lambda-server
   variables:
     - key: environment_domain
+    - key: cdn_path
+      required: true

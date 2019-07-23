@@ -164,18 +164,28 @@ export class Playbook {
         return {
             environment_id: this.environment.uuid,
             hosts: this.environment.configuration.domains,
-            services: await Promise.all(deployments.map(async deployment => {
-                const allocation = await deployment.computingAllocation;
-                const computePort = await (allocation && allocation.allocatedPort);
-                if (!computePort)
-                    throw new Error(`No compute allocation for deployment ${deployment.id}`);
-                const computeServer = await computePort.server;
-                return {
-                    path: deployment.path,
-                    repositoryVersion: deployment.repositoryVersion,
-                    port: computePort.port,
-                    host: computeServer.ip === this.inventory.proxy ? 'localhost' : computeServer.ip
-                };
+            services: await Promise.all(deployments.filter(d => d.type === 'api-node-v1').map(async deployment => {
+                if(deployment.isAPIDeployment()) {
+                    const allocation = await deployment.computingAllocation;
+                    const computePort = await (allocation && allocation.allocatedPort);
+                    if (!computePort)
+                        throw new Error(`No compute allocation for deployment ${deployment.id}`);
+                    const computeServer = await computePort.server;
+                    return {
+                        path: deployment.path,
+                        repositoryVersion: deployment.repositoryVersion,
+                        port: computePort.port,
+                        host: computeServer.ip === this.inventory.proxy ? 'localhost' : computeServer.ip
+                    };
+                } else if(deployment.isSPADeployment()) {
+                    return {
+                        path: deployment.path,
+                        repositoryVersion: deployment.repositoryVersion,
+                    };
+                } else {
+                    return {}
+                }
+
             }))
         }
     }
@@ -185,13 +195,23 @@ export class Playbook {
         const dbServer = db && await db.server;
         const computing = this.deployment && await this.deployment.computingAllocation;
         const computingPort = computing && await computing.allocatedPort;
-        return this.deployment && {
-            repo_url: this.deployment.service.repositoryUrl,
-            db_hostname: dbServer && dbServer.ip,
-            service_port: computingPort && computingPort.port,
-            redis_hostname: dbServer && dbServer.ip,
-            repo_directory: `d${this.deployment.id}`
-        } || {};
+
+        if(this.deployment && this.deployment.isAPIDeployment()) {
+            return {
+                repo_url: this.deployment.service.repositoryUrl,
+                db_hostname: dbServer && dbServer.ip,
+                service_port: computingPort && computingPort.port,
+                redis_hostname: dbServer && dbServer.ip,
+                repo_directory: `d${this.deployment.id}`,
+            };
+        } else if(this.deployment && this.deployment.isAPIDeployment()) {
+            return this.deployment && {
+                repo_url: this.deployment.service.repositoryUrl,
+                // cdn_path: this.deployment,
+            };
+        } else {
+            return {};
+        }
     }
 
     private getRequiredVariablesNames(): string[] {

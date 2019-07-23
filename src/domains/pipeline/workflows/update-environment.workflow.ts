@@ -4,10 +4,11 @@ import { EnvironmentUpdateConfigurationTask } from '../tasks/environment-update-
 import { ServiceAllocateResourcesTask } from '../tasks/service-allocate-resources.task';
 import { ProxyReloadTask } from '../tasks/proxy-reload.task';
 import { ServiceCleanupTask } from '../tasks/service-cleanup.task';
-import { ServiceDeployTask } from '../tasks/service-deploy.task';
+// import { ServiceDeployTask } from '../tasks/service-deploy.task';
 import { ServiceVaultSetupTask } from '../tasks/service-vault-setup.task';
 import { em } from '@decorators';
 import { EntityManager } from 'typeorm';
+import { UpdateServiceWorkflow } from './update-service.workflow';
 
 export class UpdateEnvironmentWorkflow implements WorkflowBase<any> {
     public id: string = "update-environment-workflow";
@@ -17,6 +18,8 @@ export class UpdateEnvironmentWorkflow implements WorkflowBase<any> {
     private em: EntityManager;
 
     public build(builder: WorkflowBuilder<any>) {
+        let deployServiceWorkflow = new UpdateServiceWorkflow();
+
         builder
             .startWith(EnvironmentUpdateConfigurationTask)
                 .input((step, data) => {
@@ -29,13 +32,14 @@ export class UpdateEnvironmentWorkflow implements WorkflowBase<any> {
                     .startWith(ServiceAllocateResourcesTask)
                     .input((step, data) => step.orderId = data.orderId))
             .foreach(data => data.requiredServicesIds).do(
-                then => then
+            (then) => then
                     .startWith(ServiceVaultSetupTask)
                     .input((step, data) => step.orderId = data.orderId))
-            .foreach(data => data.requiredServicesIds).do(
-                then => then
-                    .startWith(ServiceDeployTask)
-                    .input((step, data) => step.orderId = data.orderId))
+            // .foreach(data => data.requiredServicesIds).do(
+            //     then => then
+            //         .startWith(ServiceDeployTask)
+            //         .input((step, data) => step.orderId = data.orderId))
+            .foreach(data => data.requiredServicesIds).do(then => deployServiceWorkflow.build(then))
             .onError(WorkflowErrorHandling.Terminate)
             .then(ProxyReloadTask)
                 .input((step, data) => {

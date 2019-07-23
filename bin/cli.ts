@@ -30,8 +30,12 @@ app.ready.then(() => {
     // maybe add below a script to display operations that needs to be led
     if (program.test) {
         Promise.resolve()
-            .then(() => console.log('demo has been disabled'))
-            .then(() => app.exit());
+            .then(() => {
+                const pipelineModule = new PipelineModule();
+                return pipelineModule
+                    .updateService();
+            })
+            // .then(() => app.exit());
     } else if (program.order) {
         console.log('program.order =', program.order);
         /**

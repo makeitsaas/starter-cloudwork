@@ -7,7 +7,7 @@ export class DeploymentService {
     @em(_EM_.deployment)
     private em: EntityManager;
 
-    async getOrCreateService(uuid: string, repositoryUrl: string): Promise<Service> {
+    async getOrCreateService({uuid, repositoryUrl, type}: ServiceSpecification): Promise<Service> {
         const existingService: Service | void = await this.em.getRepository(Service).findOne(uuid);
         if (existingService) {
             if (existingService.repositoryUrl !== repositoryUrl) {
@@ -19,6 +19,7 @@ export class DeploymentService {
             let newService = new Service();
             newService.uuid = uuid;
             newService.repositoryUrl = repositoryUrl;
+            newService.type = type;
             await this.em.save(newService);
             return newService;
         }
@@ -38,6 +39,7 @@ export class DeploymentService {
             newServiceDeployment.service = service;
             newServiceDeployment.environment = environment;
             newServiceDeployment.path = options.path;
+            newServiceDeployment.type = options.type;
             newServiceDeployment.repositoryVersion = options.repositoryVersion;
             await this.em.save(newServiceDeployment);
             return newServiceDeployment;

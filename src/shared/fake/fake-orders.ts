@@ -7,9 +7,15 @@ services:
   - id: "6"
     path: /auth
     repo_url: 'https://github.com/makeitsaas/makeitsaas-auth-instance'
+    type: api-node-v1
   - id: "7"
     path: /
     repo_url: 'https://github.com/Duwab/makeitsaas-manager-api'
+    type: api-node-v1
+  - id: "8"
+    path: /
+    repo_url: 'https://github.com/Duwab/makeitsaas-manager-front'
+    type: angular
 `;
 
 const order2 = `
