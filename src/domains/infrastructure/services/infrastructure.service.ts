@@ -4,8 +4,10 @@ import { ComputingAllocation } from '@entities';
 import { NoPortAvailableOnServer } from '@errors';
 import { EntityManager } from 'typeorm';
 import { em, _EM_ } from '@decorators';
-import { LambdaServer } from '../entities/lambda-server';
+import { LambdaServer } from '@entities';
 import { FakeDelay } from '@fake';
+import * as EC2 from 'aws-sdk/clients/ec2';
+
 
 const TMP_STATIC_LAMBDA_SERVER_IP = '35.157.192.169';
 
@@ -13,6 +15,34 @@ export class InfrastructureService {
 
     @em(_EM_.infrastructure)
     private em: EntityManager;
+
+    async testAWSConnection() {
+        console.log('test');
+        let ec2 = new EC2({apiVersion: '2016-11-15'});
+        const instanceParams = {
+            ImageId: 'ami-0a8412cbcfcef4252',
+            InstanceType: 't2.small',
+            KeyName: 'adu-dev',
+            SecurityGroupIds: ['sg-04c858cae6f24e840'],
+            SubnetId: 'subnet-01a2857a',
+            IamInstanceProfile: {
+                Name: 'ec2-job-runner'
+            },
+            TagSpecifications: [{
+                ResourceType: 'instance',
+                Tags: [{
+                    Key: 'mis-instance-type',
+                    Value: 'job-runner'
+                }]
+            }],
+            MinCount: 1,
+            MaxCount: 1
+        };
+        const info = ec2.runInstances(instanceParams).promise();
+        info.then((v: any) => console.log(v));
+
+        return info;
+    }
 
     async getDeployedServices(environment: Environment): Promise<ServiceDeployment[]> {
         return await this.em.getRepository(ServiceDeployment).find({
@@ -49,7 +79,7 @@ export class InfrastructureService {
         console.log('waiting for lambda server allocation (fake delay)');
         await FakeDelay.wait(1000);
 
-        let  lambda = new LambdaServer();
+        let lambda = new LambdaServer();
         lambda.ip = TMP_STATIC_LAMBDA_SERVER_IP;
         lambda.type = 'nodejs';
         lambda.timeout = timeout || lambda.timeout;

@@ -13,6 +13,12 @@ Domains reflected in this repository :
 * vault : keeps credentials safe (resources, environment, ...)
 * deployment : plans every environment and executes deployment tasks (using Ansible)
 
+Use cases :
+- Create a multi-services environment, on shared servers (API + Front, using only repositories urls)
+- Perform specific operations on temporary servers (batch, ML, ...)
+- Manage existing environments (migrations, update, delete, ...)
+- Adapt deployment configurations according to environment type
+
 ## Getting Started
 
 ### Installation

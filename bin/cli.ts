@@ -7,6 +7,7 @@ import { PipelineModule } from '../src/domains/pipeline/pipeline.module';
 import { Order } from '@entities';
 import { FakeOrders } from '@fake';
 import { ModeLoader } from '../src/core/mode/cli-mode-loader';
+import { InfrastructureModule } from '../src/domains/infrastructure/infrastructure.module';
 
 program
     .version('0.1.0')
@@ -29,13 +30,10 @@ const app = new App();
 app.ready.then(() => {
     // maybe add below a script to display operations that needs to be led
     if (program.test) {
-        Promise.resolve()
-            .then(() => {
-                const pipelineModule = new PipelineModule();
-                return pipelineModule
-                    .updateService();
-            })
-            // .then(() => app.exit());
+        let infra = new InfrastructureModule();
+        return infra.test().then(() => {
+            // app.exit();
+        });
     } else if (program.order) {
         console.log('program.order =', program.order);
         /**
@@ -153,6 +151,7 @@ npm run cli -- --drop --environment=1 \n\
         app.exit();
     }
 }).catch(err => {
+    console.log('error catch end', err);
     app.exit();
     throw err;
 });
