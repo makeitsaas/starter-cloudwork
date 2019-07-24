@@ -6,11 +6,8 @@ import { EntityManager } from 'typeorm';
 import { em, _EM_, service } from '@decorators';
 import { LambdaServer } from '@entities';
 import { FakeDelay } from '@fake';
-import * as EC2 from 'aws-sdk/clients/ec2';
 import { AwsService } from './aws.service';
 
-
-const TMP_STATIC_LAMBDA_SERVER_IP = '35.157.192.169';
 
 export class InfrastructureService {
 
@@ -23,8 +20,9 @@ export class InfrastructureService {
     async testAWSConnection() {
         console.log('test');
         const jobRunner = await this.awsService.allocateJobRunner();
-
-        return jobRunner.ready;
+        console.log('public ip :', await jobRunner.getPublicIp());
+        await FakeDelay.wait(15000);    // Test purpose
+        return this.awsService.terminateEC2Instance(jobRunner.instanceId)
     }
 
     async getDeployedServices(environment: Environment): Promise<ServiceDeployment[]> {
@@ -59,11 +57,14 @@ export class InfrastructureService {
     }
 
     async allocateLambdaServer(type: string, timeout?: number): Promise<LambdaServer> {
-        console.log('waiting for lambda server allocation (fake delay)');
-        await FakeDelay.wait(1000);
+        console.log('allocate lambda');
+        const jobRunner = await this.awsService.allocateJobRunner(),
+            instanceId = await jobRunner.getInstanceId(),
+            instancePublicIp = await jobRunner.getPublicIp();
 
         let lambda = new LambdaServer();
-        lambda.ip = TMP_STATIC_LAMBDA_SERVER_IP;
+        lambda.ip = instancePublicIp;
+        lambda.instanceId = instanceId;
         lambda.type = 'nodejs';
         lambda.timeout = timeout || lambda.timeout;
 
@@ -71,14 +72,8 @@ export class InfrastructureService {
         lambda.tmpDirectory = '/srv/lambda-' + lambda.id;
         lambda = await this.em.save(lambda);
 
+        console.log('lambda ok', lambda);
         return lambda;
-    }
-
-    async releaseLambdaServer(lambda: LambdaServer): Promise<LambdaServer> {
-        lambda.stoppedAfterTimeout = lambda.hasReachedTimeout();
-        lambda.status = 'stopped';
-
-        return this.em.save(lambda);
     }
 
     /**

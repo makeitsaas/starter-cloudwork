@@ -20,6 +20,7 @@ program
     .option('--order [orderId]', 'Creates a sequence from order')
     .option('--sequence [sequenceId]', 'Runs a sequence')
     .option('--environment [environmentId]', 'Environment Id')
+    .option('--service [serviceId]', 'Service Id')
     .option('--drop', 'Associated with environment id, will drop deployment')
     .parse(process.argv);
 
@@ -52,9 +53,9 @@ app.ready.then(() => {
          * - data pipelines + ML (step = read/transform/save mongo documents)
          * - BP : mis + architecture-ready-to-use
          */
-        // app.createSequence(parseInt(program.order)).then(() => {
-        //     app.exit();
-        // });
+            // app.createSequence(parseInt(program.order)).then(() => {
+            //     app.exit();
+            // });
         const o = new Order(FakeOrders[parseInt(program.order)]);
         o.saveDeep().then(o => {
             const pipelineModule = new PipelineModule();
@@ -100,11 +101,11 @@ app.ready.then(() => {
 
             return environmentUuid;
         };
-        const envBasedPlaybookRegexp = /(proxy|spa)/;
+        const envBasedPlaybookRegexp = /(proxy)/;
 
         // Do something better to load playbook context
         // Then use the same logic for context injection in workflow steps
-        Promise.resolve(getPlaybookReference())
+        return Promise.resolve(getPlaybookReference())
             .then(() => envBasedPlaybookRegexp.test(playbookReference) ? getEnvironmentUuid() : getServiceUuid())
             .then(() => {
                 const playbookPromise = envBasedPlaybookRegexp.test(playbookReference) ?
@@ -122,6 +123,10 @@ app.ready.then(() => {
                         }
                         app.exit();
                     });
+            })
+            .catch(e => {
+                console.log('error (run single playbook)');
+                console.log(e);
             })
             .finally(() => {
                 app.exit()

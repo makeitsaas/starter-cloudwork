@@ -7,7 +7,7 @@ import { CliHelper, ConfigReader, SinglePlaybookConfig } from '@utils';
 import { VaultService } from '@services';
 import { service } from '@decorators';
 import { ModeConfig } from '../src/core/mode/cli-mode-loader';
-import { LambdaServer } from '../src/domains/infrastructure/entities/lambda-server';
+import { LambdaServer } from '@entities';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string
@@ -73,7 +73,7 @@ export class Playbook {
         ]).then(async () => {
             this.executionClient = new AnsibleExecutionClient(this.vars, this.inventory, name);
             await this.executionClient.prepare();
-        });
+        }).catch(async e => this.onInitError(e));
     }
 
     /*
@@ -89,10 +89,25 @@ export class Playbook {
 
     async execute() {
         await this.ready;
+        let error;
+
         if (ModeConfig.executePlaybooks) {
             console.log('execution start');
-            await this.executionClient.execute();
+            try {
+                await this.executionClient.execute();
+            } catch (e) {
+                console.log('playbook execution error');
+                console.log(e);
+                error = e;
+            }
         }
+
+        await this.onDone();
+
+        if (error) {
+            throw error;
+        }
+
         return this;
     }
 
@@ -147,7 +162,7 @@ export class Playbook {
             }
         }
 
-        if(this.lambdaServer) {
+        if (this.lambdaServer) {
             this.inventory['lambda-server'] = this.lambdaServer.ip;
         }
 
@@ -165,7 +180,7 @@ export class Playbook {
             environment_id: this.environment.uuid,
             hosts: this.environment.configuration.domains,
             services: await Promise.all(deployments.filter(d => d.type === 'api-node-v1').map(async deployment => {
-                if(deployment.isAPIDeployment()) {
+                if (deployment.isAPIDeployment()) {
                     const allocation = await deployment.computingAllocation;
                     const computePort = await (allocation && allocation.allocatedPort);
                     if (!computePort)
@@ -177,7 +192,7 @@ export class Playbook {
                         port: computePort.port,
                         host: computeServer.ip === this.inventory.proxy ? 'localhost' : computeServer.ip
                     };
-                } else if(deployment.isSPADeployment()) {
+                } else if (deployment.isSPADeployment()) {
                     return {
                         path: deployment.path,
                         repositoryVersion: deployment.repositoryVersion,
@@ -196,7 +211,7 @@ export class Playbook {
         const computing = this.deployment && await this.deployment.computingAllocation;
         const computingPort = computing && await computing.allocatedPort;
 
-        if(this.deployment && this.deployment.isAPIDeployment()) {
+        if (this.deployment && this.deployment.isAPIDeployment()) {
             return {
                 repo_url: this.deployment.service.repositoryUrl,
                 db_hostname: dbServer && dbServer.ip,
@@ -204,7 +219,7 @@ export class Playbook {
                 redis_hostname: dbServer && dbServer.ip,
                 repo_directory: `d${this.deployment.id}`,
             };
-        } else if(this.deployment && this.deployment.isAPIDeployment()) {
+        } else if (this.deployment && this.deployment.isAPIDeployment()) {
             return this.deployment && {
                 repo_url: this.deployment.service.repositoryUrl,
                 // cdn_path: this.deployment,
@@ -247,6 +262,17 @@ export class Playbook {
                 this.vault = await this.vaultService.getEnvironmentVault(`${this.environment.uuid}`)
             }
             return this.vault;
+        }
+    }
+
+    private async onInitError(e: Error) {
+        await this.onDone();
+        throw e;
+    }
+
+    private async onDone() {
+        if (this.lambdaServer) {
+            await this.lambdaServer.release();
         }
     }
 }

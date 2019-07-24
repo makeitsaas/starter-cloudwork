@@ -33,13 +33,15 @@ export class AwsService {
                 Tags: [{
                     Key: 'mis-instance-type',
                     Value: 'job-runner'
+                }, {
+                    Key: 'Name',
+                    Value: 'auto-job-runner'
                 }]
             }],
             MinCount: 1,
             MaxCount: 1
         };
         const info = ec2.runInstances(instanceParams).promise();
-        info.then((v: any) => console.log(v));
 
         const instancePromise = info.then((result: Reservation) => {
             if (result && result.Instances && result.Instances.length === 1) {

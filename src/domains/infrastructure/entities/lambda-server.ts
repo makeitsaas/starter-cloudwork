@@ -1,4 +1,7 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, EntityManager, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { _EM_, em } from '../../../core/decorators/entity-manager-property';
+import { service } from '../../../core/decorators/service-property';
+import { AwsService } from '../services/aws.service';
 
 @Entity()
 export class LambdaServer {
@@ -15,6 +18,9 @@ export class LambdaServer {
     ip: string;
 
     @Column()
+    instanceId: string;
+
+    @Column()
     tmpDirectory: string = '/srv/lambda-0';
 
     @Column()
@@ -29,10 +35,24 @@ export class LambdaServer {
     @UpdateDateColumn({type: 'timestamp'})
     updatedAt: Date;
 
+    @em(_EM_.infrastructure)
+    private em: EntityManager;
+
+    @service
+    awsService: AwsService;
+
     hasReachedTimeout(): boolean {
         const timeoutTimestamp = this.createdAt.getTime() + this.timeout * 1000,
                 nowTimestamp = (new Date()).getTime();
 
         return timeoutTimestamp > nowTimestamp;
+    }
+
+    async release(): Promise<LambdaServer> {
+        await this.awsService.terminateEC2Instance(this.instanceId);
+        this.stoppedAfterTimeout = this.hasReachedTimeout();
+        this.status = 'stopped';
+
+        return this.em.save(this);
     }
 }

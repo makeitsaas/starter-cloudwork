@@ -64,15 +64,15 @@ export class App {
 
         const deployer = new AnsibleService(interactive);
 
-        const playbook = await deployer.preparePlaybook(playbookReference, deployment.environment, deployment);
+        return await deployer.preparePlaybook(playbookReference, deployment.environment, deployment);
 
-        const doExecute = await CliHelper.askConfirmation('Execute playbook ?', false);
+        // const doExecute = await CliHelper.askConfirmation('Execute playbook ?', false);
+        //
+        // if(doExecute) {
+        //     await playbook.execute();
+        // }
 
-        if(doExecute) {
-            await playbook.execute();
-        }
-
-        return playbook;
+        // return playbook;
     }
 
     exitHandler() {
