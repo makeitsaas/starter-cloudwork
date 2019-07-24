@@ -3,10 +3,11 @@ import { DatabaseAllocation } from '@entities';
 import { ComputingAllocation } from '@entities';
 import { NoPortAvailableOnServer } from '@errors';
 import { EntityManager } from 'typeorm';
-import { em, _EM_ } from '@decorators';
+import { em, _EM_, service } from '@decorators';
 import { LambdaServer } from '@entities';
 import { FakeDelay } from '@fake';
 import * as EC2 from 'aws-sdk/clients/ec2';
+import { AwsService } from './aws.service';
 
 
 const TMP_STATIC_LAMBDA_SERVER_IP = '35.157.192.169';
@@ -16,32 +17,14 @@ export class InfrastructureService {
     @em(_EM_.infrastructure)
     private em: EntityManager;
 
+    @service
+    awsService: AwsService;
+
     async testAWSConnection() {
         console.log('test');
-        let ec2 = new EC2({apiVersion: '2016-11-15'});
-        const instanceParams = {
-            ImageId: 'ami-0a8412cbcfcef4252',
-            InstanceType: 't2.small',
-            KeyName: 'adu-dev',
-            SecurityGroupIds: ['sg-04c858cae6f24e840'],
-            SubnetId: 'subnet-01a2857a',
-            IamInstanceProfile: {
-                Name: 'ec2-job-runner'
-            },
-            TagSpecifications: [{
-                ResourceType: 'instance',
-                Tags: [{
-                    Key: 'mis-instance-type',
-                    Value: 'job-runner'
-                }]
-            }],
-            MinCount: 1,
-            MaxCount: 1
-        };
-        const info = ec2.runInstances(instanceParams).promise();
-        info.then((v: any) => console.log(v));
+        const jobRunner = await this.awsService.allocateJobRunner();
 
-        return info;
+        return jobRunner.ready;
     }
 
     async getDeployedServices(environment: Environment): Promise<ServiceDeployment[]> {

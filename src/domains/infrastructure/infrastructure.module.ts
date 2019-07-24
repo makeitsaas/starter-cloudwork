@@ -2,6 +2,7 @@ import { service } from '@decorators';
 import { InfrastructureService } from './services/infrastructure.service';
 import * as AWS from 'aws-sdk';
 
+console.log('module');
 AWS.config.update({region: 'eu-central-1'});
 
 /**
@@ -12,6 +13,8 @@ export class InfrastructureModule {
     infrastructure: InfrastructureService;
 
     async test() {
-        return this.infrastructure.testAWSConnection();
+        return this.infrastructure.testAWSConnection().then(() => {
+            console.log('testAWSConnection OK');
+        });
     }
 }
