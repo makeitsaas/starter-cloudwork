@@ -29,8 +29,6 @@ computing-create:
     - environment
     - service-deployment
   variables:
-    - key: environment_domain
-      required: true
     - key: repo_url
       required: true
     - key: repo_directory
@@ -47,17 +45,17 @@ computing-create:
       required: true
     - key: service_port
       required: true
+    - key: github_client_id
+      required: true
+    - key: github_client_secret
+      required: true
 proxy-reload:
   inputs:
     - environment
-  variables:
-    - key: environment_domain
-      required: true
 spa-deploy:
   inputs:
     - environment
     - lambda-server
   variables:
-    - key: environment_domain
     - key: cdn_path
       required: true

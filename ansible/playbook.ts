@@ -11,6 +11,8 @@ import { LambdaServer } from '@entities';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string
+    environment_domain: string
+    environment_domain_front: string
     vhosts: {
         domains: string[]
         services: any[]
@@ -228,6 +230,8 @@ export class Playbook {
 
         return {
             environment_id: this.environment.uuid,
+            environment_domain: this.environment.configuration.domains[0],
+            environment_domain_front: 'angular-' + this.environment.configuration.domains[0],
             vhosts
         }
     }

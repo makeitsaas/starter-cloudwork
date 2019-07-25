@@ -114,7 +114,7 @@ app.ready.then(() => {
                 return playbookPromise
                     .then(async (playbook: Playbook) => {
                         if (program.execute === undefined) {
-                            program.execute = CliHelper.askConfirmation('Execute playbook ?');
+                            program.execute = await CliHelper.askConfirmation('Execute playbook ?');
                         }
                         if (program.execute) {
                             await playbook.execute();

@@ -9,4 +9,6 @@ deployment:
   - service_port
   - cdn_path
 environment:
-  - environment_domain
+  - main_environment_domain
+  - github_client_id
+  - github_client_secret

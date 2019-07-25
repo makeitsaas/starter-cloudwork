@@ -9,6 +9,15 @@ const vaultTypesConfig = yaml.safeLoad(fs.readFileSync(`config/playbooks/vault-t
 const playbooksConfig = yaml.safeLoad(fs.readFileSync(`config/playbooks/playbooks.yml`, 'utf8'));
 const playbooks = fs.readdirSync('ansible/playbooks');  // do someting to check if available playbooks match with config
 
+for(let key in playbooksConfig) {
+    if(!playbooksConfig[key].inputs) {
+        playbooksConfig[key].inputs = [];
+    }
+    if(!playbooksConfig[key].variables) {
+        playbooksConfig[key].variables = [];
+    }
+}
+
 
 export interface SinglePlaybookConfig {
     inputs: ('environment' | 'service-deployment' | 'lambda-server')[];
@@ -36,7 +45,7 @@ export const ConfigReader = {
             } else if (serviceDeploymentVaultVariables.indexOf(key) !== -1) {
                 return 'deployment';
             } else {
-                throw new Error('Variable has no assigned vault type');
+                throw new Error(`Variable '${key}' has no assigned vault type`);
             }
         },
         doesPlaybookRequireLambdaServer: (key: string): boolean => {
