@@ -113,6 +113,9 @@ app.ready.then(() => {
                     app.loadServicePlaybook(playbookReference, serviceUuid, program.interactive);
                 return playbookPromise
                     .then(async (playbook: Playbook) => {
+                        if (program.execute === undefined) {
+                            program.execute = CliHelper.askConfirmation('Execute playbook ?');
+                        }
                         if (program.execute) {
                             await playbook.execute();
                         } else {
