@@ -1,10 +1,17 @@
-hosts:
-{% for domainName in hosts %}
-    - {{domainName}}
+vhosts:
+{% for vhost in vhosts %}
+  - domains:
+{% for domainName in vhost.domains %}
+      - {{domainName}}
 {% endfor %}
-services:
-{% for service in services %}
-    - path: {{service.path}}
-      host: {{service.host}}
-      port: {{service.port}}
+    services:
+{% for service in vhost.services %}
+      - behavior: {{service.behavior}}
+        path: {{service.path}}
+        host: {{service.host}}
+        port: {{service.port}}
+        secure: {{service.secure}}
+        outputBasePath: {{service.outputBasePath}}
+        repositoryVersion: {{service.repositoryVersion}}
+{% endfor %}
 {% endfor %}

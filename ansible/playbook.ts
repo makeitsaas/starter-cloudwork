@@ -11,8 +11,10 @@ import { LambdaServer } from '@entities';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string
-    hosts: string[]
-    services: any[]
+    vhosts: {
+        domains: string[]
+        services: any[]
+    }[]
 }
 
 export interface IPlaybookInputObjects {
@@ -176,32 +178,57 @@ export class Playbook {
 
     private async getCommonVariables(): Promise<EnvironmentCommonVariablesInterface> {
         const deployments = await this.environment.deployments;
+        const servicesRouting = await Promise.all(deployments.map(async deployment => {
+            if (deployment.isAPIDeployment()) {
+                const allocation = await deployment.computingAllocation;
+                const computePort = await (allocation && allocation.allocatedPort);
+                if (!computePort)
+                    throw new Error(`No compute allocation for deployment ${deployment.id}`);
+                const computeServer = await computePort.server;
+                return {
+                    behavior: 'api',
+                    path: deployment.path,
+                    host: computeServer.ip === this.inventory.proxy ? 'localhost' : computeServer.ip,
+                    port: computePort.port,
+                    secure: false,
+                    outputBasePath: null,
+                    repositoryVersion: deployment.repositoryVersion,
+                };
+            } else if (deployment.isSPADeployment()) {
+                return {
+                    behavior: 'web',
+                    path: deployment.path,
+                    host: 's3.eu-central-1.amazonaws.com',
+                    port: 443,
+                    secure: true,
+                    outputBasePath: '/makeitsaas-public/auto/angular/initial-test',
+                    repositoryVersion: deployment.repositoryVersion,
+                };
+            } else {
+                return {}
+            }
+
+        }));
+
+        const vhostsAPI = {
+            domains: this.environment.configuration.domains,
+            services: servicesRouting.filter(service => service.behavior === 'api')
+        };
+
+        const vhostsWeb = {
+            domains: this.environment.configuration.domains.map((d: string) => `angular-${d}`),    // automatic prefix for the moment
+            services: servicesRouting.filter(service => service.behavior === 'web')
+        };
+
+        let vhosts = [vhostsAPI];
+
+        if(vhostsWeb.services.length) {
+            vhosts.push(vhostsWeb);
+        }
+
         return {
             environment_id: this.environment.uuid,
-            hosts: this.environment.configuration.domains,
-            services: await Promise.all(deployments.filter(d => d.type === 'api-node-v1').map(async deployment => {
-                if (deployment.isAPIDeployment()) {
-                    const allocation = await deployment.computingAllocation;
-                    const computePort = await (allocation && allocation.allocatedPort);
-                    if (!computePort)
-                        throw new Error(`No compute allocation for deployment ${deployment.id}`);
-                    const computeServer = await computePort.server;
-                    return {
-                        path: deployment.path,
-                        repositoryVersion: deployment.repositoryVersion,
-                        port: computePort.port,
-                        host: computeServer.ip === this.inventory.proxy ? 'localhost' : computeServer.ip
-                    };
-                } else if (deployment.isSPADeployment()) {
-                    return {
-                        path: deployment.path,
-                        repositoryVersion: deployment.repositoryVersion,
-                    };
-                } else {
-                    return {}
-                }
-
-            }))
+            vhosts
         }
     }
 
