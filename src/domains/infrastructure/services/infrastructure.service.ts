@@ -37,9 +37,23 @@ export class InfrastructureService {
     async allocateDevComputing(): Promise<ComputingAllocation> {
         const server = await this.getDevComputingServer();
         const allocation = new ComputingAllocation();
-        allocation.allocatedPort = this.getAvailablePort(server);   // TODO : check if necessary to write Promise.resolve(await this.getAvailablePort(server))
+        const allocatedPort = await this.getAvailablePort(server);
 
-        await this.em.save(allocation);
+        try {
+            await this.em.save(allocatedPort);
+        } catch(e) {
+            console.log('[ALLOCATION ERROR] saving port', e);
+            throw e;
+        }
+
+        allocation.allocatedPort = Promise.resolve(allocatedPort);
+
+        try {
+            await this.em.save(allocation);
+        } catch(e) {
+            console.log('[ALLOCATION ERROR] saving allocation', e);
+            throw e;
+        }
 
         return allocation;
     }
@@ -54,6 +68,12 @@ export class InfrastructureService {
         await this.em.save(allocation);
 
         return allocation;
+    }
+
+    async allocateProxy(): Promise<Server> {
+        const server = await this.getDevProxyServer();
+
+        return server;
     }
 
     async allocateLambdaServer(type: string, timeout?: number): Promise<LambdaServer> {
@@ -96,6 +116,15 @@ export class InfrastructureService {
             where: {
                 status: 'running',
                 type: 'devkit'
+            }
+        });
+    }
+
+    private async getDevProxyServer(): Promise<Server> {
+        return this.em.getRepository(Server).findOneOrFail({
+            where: {
+                status: 'running',
+                type: 'proxy'
             }
         });
     }

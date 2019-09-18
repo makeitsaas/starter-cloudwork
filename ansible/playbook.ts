@@ -28,7 +28,7 @@ export interface IPlaybookInputObjects {
 export class Playbook {
 
     /**
-     * Main properteis
+     * Main properties
      */
     readonly ready: Promise<any>;
     private playbookConfig: SinglePlaybookConfig;

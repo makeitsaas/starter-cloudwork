@@ -62,14 +62,14 @@ export class ServiceOperator {
 
         console.log('assigning servers and ports');
         if (this.deployment.isAPIDeployment()) {
-            if (!this.deployment.computingAllocation) {
+            if (!await this.deployment.computingAllocation) {
                 this.deployment.computingAllocation = Promise.resolve(await this.infrastructureService.allocateDevComputing());
                 await this.em.save(this.deployment);
             }
 
             const databaseAllocation = await this.deployment.databaseAllocation;
             if (!databaseAllocation) {
-                this.deployment.databaseAllocation = this.infrastructureService.allocateDevDatabase(); // TODO : same
+                this.deployment.databaseAllocation = Promise.resolve(await this.infrastructureService.allocateDevDatabase());
                 await this.em.save(this.deployment);
             }
         }

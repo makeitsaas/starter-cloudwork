@@ -140,3 +140,56 @@ return this.addParamValue(commandParams, '' + this.config[param] + '', flag);
 4. Add missing inventory hosts in ... 
 4. Launch `npm run cli -- --ansible -i --mode=local` to see generated playbook
 5. Go to freshly created execution directory and try it manually using `ansible-playbook -i inventories/hosts root-playbook.yml`
+
+
+## Notes
+
+### TypeORM
+
+* Saving database lazy relations
+Using TypeORM to manage relations, you can load them in two way 
+([see doc](https://github.com/typeorm/typeorm/blob/master/docs/eager-and-lazy-relations.md)) : eager and lazy
+
+By default, only setting up @ManyToOne, @ManyToMany, @OneToMany only adds the constraint in database, but data shall be
+fetched separately.
+
+**Using eager option**
+
+```
+@ManyToOne(type => Server, { cascade: true, eager: true })
+server: Server;
+```
+
+Foreign key will always be loaded at the same time the entity is.
+
+**Using lazy relations**
+
+Replace type definition by a promise of this type 
+
+```
+@ManyToOne(type => Server, { cascade: true })
+server: Promise<Server>;
+```
+
+In this case, attribute will always be defined as a promise, returning the expected relation.
+
+Beware ! When saving a lazy relation, two mandatory conditions shall be fulfilled :
+- the relation shall already have been saved
+- the value shall be a promise of the instance
+
+Meaning :
+```
+const em = connection.manager;
+const server = new Server();
+const allocation = new Allocation();
+
+await em.save(server);                          // Save relation before
+allocation.server = Promise.resolve(server);    // Set relation as a promise of the instance
+await em.save(allocation);                      // Then save final entity
+
+// ok then
+```
+
+If you don't do so, there would be no error. But relation will not be saved at all :/
+
+
