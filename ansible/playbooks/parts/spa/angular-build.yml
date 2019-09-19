@@ -3,11 +3,11 @@
     msg: "Install dependencies"
 - debug:
     msg: "Build angular application"
-- name: clone repo
+- name: clone or update repo
   git:
       repo: "{{ repo_url }}"
       dest: "{{ repo_absolute_path }}"
-  when: git_directory.stat.exists == False
+#  when: git_directory.stat.exists == False
 - name: Install service packages based on PATH/package.json
   npm:
       path: "{{ repo_absolute_path }}"
