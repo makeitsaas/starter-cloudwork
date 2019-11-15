@@ -11,8 +11,8 @@ import { LambdaServer } from '@entities';
 
 export interface EnvironmentCommonVariablesInterface {
     environment_id: string
-    environment_domain: string
     environment_domain_front: string
+    environment_domain_api: string
     vhosts: {
         domains: string[]
         services: any[]
@@ -213,12 +213,12 @@ export class Playbook {
         }));
 
         const vhostsAPI = {
-            domains: this.environment.configuration.domains,
+            domains: this.environment.configuration.domains.api,
             services: servicesRouting.filter(service => service.behavior === 'api')
         };
 
         const vhostsWeb = {
-            domains: this.environment.configuration.domains.map((d: string) => `angular-${d}`),    // automatic prefix for the moment
+            domains: this.environment.configuration.domains.front,    // automatic prefix for the moment
             services: servicesRouting.filter(service => service.behavior === 'web')
         };
 
@@ -230,8 +230,8 @@ export class Playbook {
 
         return {
             environment_id: this.environment.uuid,
-            environment_domain: this.environment.configuration.domains[0],
-            environment_domain_front: 'angular-' + this.environment.configuration.domains[0],
+            environment_domain_front: this.environment.configuration.domains.front[0] || '',
+            environment_domain_api: this.environment.configuration.domains.api[0] || '',
             vhosts
         }
     }

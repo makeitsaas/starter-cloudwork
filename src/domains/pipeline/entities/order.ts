@@ -3,13 +3,27 @@ import {
     CreateDateColumn,
     Entity, EntityManager, JoinColumn,
     ManyToOne,
-    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from 'typeorm';
 import * as yaml from 'js-yaml';
-import { Environment, Sequence, ServiceSpecification } from '@entities';
+import { Environment, ServiceSpecification } from '@entities';
 import { em } from '../../../core/decorators/entity-manager-property';
+
+class OrderSpecUpdate {
+    action = "update";
+    environment_id: string;
+    api?: {
+        domains: string[],
+        services: ServiceSpecification[]
+    };
+    front?: {
+        domains: string[],
+        services: ServiceSpecification[]
+    };
+}
+
+type OrderSpec = OrderSpecUpdate;
 
 
 @Entity()
@@ -27,12 +41,12 @@ export class Order {
     @Column()
     isValid: boolean = false;
 
-    @ManyToOne(type => Environment, env => env.orders, { cascade: true, eager: true })
+    @ManyToOne(type => Environment, env => env.orders, {cascade: true, eager: true})
     @JoinColumn()
     environment: Environment;
 
-    @OneToMany(type => Sequence, sequence => sequence.order, {onDelete: 'CASCADE'})
-    sequences: Sequence[];
+    // @OneToMany(type => Sequence, sequence => sequence.order, {onDelete: 'CASCADE'})
+    // sequences: Sequence[];
 
     @CreateDateColumn({type: 'timestamp'})
     createdAt: Date;
@@ -40,11 +54,12 @@ export class Order {
     @UpdateDateColumn({type: 'timestamp'})
     updatedAt: Date;
 
+    parsedSpecs: OrderSpec;
+
     constructor(specs?: string) { // maybe uuid + specs
         if (specs) {
             this.specs = specs;
-            this.isValid = !!this.parseSpecs();
-            if(this.isValid) {
+            if (!!this.getParsedSpecs()) {
                 const env = new Environment();
                 env.uuid = this.getEnvironmentUuid();
                 this.environment = env;
@@ -53,21 +68,38 @@ export class Order {
     }
 
     getEnvironmentUuid() {
-        return this.getParsedSpecs().environment_id || this.getParsedSpecs().environmentId || '';
+        return this.getParsedSpecs().environment_id;
     }
 
-    getDomains(): string[] {
-        return this.getParsedSpecs().domains || [];
+    getAPIDomains(): string[] {
+        const parsed = this.getParsedSpecs();
+        return parsed.api && parsed.api.domains || [];
     }
 
-    getServices(): ServiceSpecification[] {
-        // ok actuellement on a une liste de services specs, avec le path
-        // comment retourner ça pour qu'on distingue service, service deployment, path
-        return (this.getParsedSpecs().services || []).map((spec: any) => new ServiceSpecification(spec));
+    getFrontDomains(): string[] {
+        const parsed = this.getParsedSpecs();
+        return parsed.front && parsed.front.domains || [];
     }
 
-    getServiceSpecification(serviceUuid: string): ServiceSpecification|void {
-        return this.getServices().filter(spec => spec.uuid === serviceUuid)[0];
+    getServicesSpecifications(): ServiceSpecification[] {
+        return [
+            ...this.getFrontServicesSpecifications(),
+            ...this.getAPIServicesSpecifications()
+        ];
+    }
+
+    getFrontServicesSpecifications(): ServiceSpecification[] {
+        const parsed = this.getParsedSpecs();
+        return parsed.front && parsed.front.services || [];
+    }
+
+    getAPIServicesSpecifications(): ServiceSpecification[] {
+        const parsed = this.getParsedSpecs();
+        return parsed.api && parsed.api.services || [];
+    }
+
+    getServiceSpecificationByUuid(serviceUuid: string): ServiceSpecification | void {
+        return this.getServicesSpecifications().filter(spec => spec.uuid === serviceUuid)[0];
     }
 
     async saveDeep(): Promise<Order> {
@@ -75,16 +107,14 @@ export class Order {
         return await this.em.save(this);
     }
 
-    private getParsedSpecs(): any {
-        return this.parseSpecs() || {};
-    }
-
-    private parseSpecs(): any {
+    private getParsedSpecs(): OrderSpecUpdate {
         try {
-            return yaml.safeLoad(this.specs);
+            const spec = yaml.safeLoad(this.specs);
+            // add verification here
+            return spec;
         } catch (e) {
-            console.error('parse error', e);
-            return null;
+            console.error('error when parsing order specifications', this.specs, e);
+            throw e;
         }
     }
 }

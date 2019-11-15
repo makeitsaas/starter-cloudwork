@@ -32,6 +32,7 @@ export class ServiceDeployTask extends StepBody {
 
         return this.loadContext()
             .then(() => this.context.serviceOperator.deploy())
+            .then(() => this.context.serviceOperator.updatePath())
             .catch(e => {
                 console.log('[TASK ERROR] deploy error', e);
                 throw e;
@@ -49,7 +50,7 @@ export class ServiceDeployTask extends StepBody {
 
     private async loadContext() {
         let order: Order = await this.orderService.getOrderById(this.orderId);
-        let serviceSpecification: ServiceSpecification|void = await order.getServiceSpecification(this.serviceUuid);
+        let serviceSpecification: ServiceSpecification|void = await order.getServiceSpecificationByUuid(this.serviceUuid);
         let deployment: ServiceDeployment = await this.getDeployment(order.environment, this.serviceUuid);
         let serviceOperator: ServiceOperator = new ServiceOperator(
             order.environment,

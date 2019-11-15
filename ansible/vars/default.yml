@@ -1,4 +1,5 @@
-environment_domain: <environment-dns>
+environment_domain_front: <environment-dns-front>
+environment_domain_api: <environment-dns-api>
 repo_url: https://github.com/repo/url.git
 repo_directory: <service-directory>
 redis_hostname: <redis-hostname>

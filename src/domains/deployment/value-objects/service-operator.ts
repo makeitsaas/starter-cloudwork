@@ -97,6 +97,13 @@ export class ServiceOperator {
         await vault.save();
     }
 
+    async updatePath() {
+        if(this.specification && this.deployment && this.specification.path !== this.deployment.path) {
+            this.deployment.path = this.specification.path;
+            await this.em.save(this.deployment);
+        }
+    }
+
     async deploy() {
         await this.ready;
         console.log('deploy');

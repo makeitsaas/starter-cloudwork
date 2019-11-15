@@ -46,7 +46,7 @@ export class ServiceAllocateResourcesTask extends StepBody {
 
     private async loadContext() {
         let order: Order = await this.orderService.getOrderById(this.orderId);
-        let serviceSpecification: ServiceSpecification|void = await order.getServiceSpecification(this.serviceUuid);
+        let serviceSpecification: ServiceSpecification|void = await order.getServiceSpecificationByUuid(this.serviceUuid);
         let deployment: ServiceDeployment = await this.getDeployment(order.environment, this.serviceUuid);
         let serviceOperator: ServiceOperator = new ServiceOperator(
             order.environment,

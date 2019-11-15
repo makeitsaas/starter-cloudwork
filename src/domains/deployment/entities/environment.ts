@@ -7,7 +7,7 @@ export class Environment {
     uuid: string;
 
     @Column({type: 'json'})
-    configuration: any = {};
+    configuration: {domains:{front: string[], api: string[]}} = {domains: {front: [], api: []}};
 
     @OneToMany(type => Order, order => order.environment, {onDelete: 'CASCADE'})
     orders: Order[];

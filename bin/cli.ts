@@ -147,6 +147,7 @@ app.ready.then(() => {
         }
     } else if (program.sequence) {
         console.log('program.sequence =', program.sequence);
+        // DEPRECATED ?
         app.runSequence(parseInt(program.sequence)).then(() => {
             app.exit();
         });

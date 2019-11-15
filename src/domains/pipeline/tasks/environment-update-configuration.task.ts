@@ -31,7 +31,10 @@ export class EnvironmentUpdateConfigurationTask extends StepBody {
             .then(() => {
                 console.log(`  > order(${this.context.order.id}) \n  > environment(${this.context.environment.uuid})`);
                 this.context.environment.configuration = {
-                    domains: this.context.order.getDomains()
+                    domains: {
+                        front: this.context.order.getFrontDomains(),
+                        api: this.context.order.getAPIDomains()
+                    }
                 };
                 return this.em.save(this.context.environment);
             })
@@ -42,7 +45,6 @@ export class EnvironmentUpdateConfigurationTask extends StepBody {
 
     private checkInputs() {
         console.log("EnvironmentUpdateConfigurationTask");
-
         if(!this.orderId) {
             throw new Error("Missing orderId");
         }

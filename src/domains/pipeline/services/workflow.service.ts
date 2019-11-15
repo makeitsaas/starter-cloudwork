@@ -23,7 +23,7 @@ export class WorkflowService {
 
     async processOrder(order: Order) {
         console.log('WorkflowService.processOrder', order.id);
-        const requiredServices = order.getServices();
+        const requiredServices = order.getServicesSpecifications();
         const deployedServices = await this.infrastructureService.getDeployedServices(order.environment);
         let id = await this.host.startWorkflow("update-environment-workflow", 1, {
             orderId: order.id,

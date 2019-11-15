@@ -81,3 +81,8 @@ export class AnsibleService {
     }
 }
 ```
+
+
+## Variables
+
+All variables are exported in `inventories/hosts` and `vars/default.yml`, then are used by `templates/*`.

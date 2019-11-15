@@ -11,6 +11,7 @@ import { InfrastructureService } from '@services';
 import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
 
+// DEPRECATED ?
 export class SequenceOperator {
     // primary check
     requiredServices: ServiceSpecification[];    // all the services we shall have in the end
@@ -34,7 +35,7 @@ export class SequenceOperator {
     }
 
     async prepare() {
-        this.requiredServices = this.order.getServices();
+        this.requiredServices = this.order.getServicesSpecifications();
         this.deployedServices = await this.infrastructureService.getDeployedServices(this.environment);
         await this.preCheckServices();
     }
@@ -46,9 +47,10 @@ export class SequenceOperator {
      */
 
     async updateEnvironmentConfiguration() {
-        this.environment.configuration = {
-            domains: this.sequence.order.getDomains()
-        };
+        // DEPRECATED ?
+        // this.environment.configuration = {
+        //     domains: this.sequence.order.getDomains()
+        // };
         await this.em.save(this.environment);
     }
 

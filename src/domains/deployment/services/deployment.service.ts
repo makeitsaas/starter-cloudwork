@@ -7,7 +7,7 @@ export class DeploymentService {
     @em(_EM_.deployment)
     private em: EntityManager;
 
-    async getOrCreateService({uuid, repositoryUrl, type}: ServiceSpecification): Promise<Service> {
+    async getOrCreateService({uuid, repository: {url: repositoryUrl}, type}: ServiceSpecification): Promise<Service> {
         const existingService: Service | void = await this.em.getRepository(Service).findOne(uuid);
         if (existingService) {
             if (existingService.repositoryUrl !== repositoryUrl) {
@@ -40,7 +40,7 @@ export class DeploymentService {
             newServiceDeployment.environment = environment;
             newServiceDeployment.path = options.path;
             newServiceDeployment.type = options.type;
-            newServiceDeployment.repositoryVersion = options.repositoryVersion;
+            newServiceDeployment.repositoryVersion = options.repository.version;
             await this.em.save(newServiceDeployment);
             return newServiceDeployment;
         }

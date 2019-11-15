@@ -35,6 +35,7 @@ export class App {
     }
 
     async runSequence(sequenceId: number): Promise<Sequence> {
+        // DEPRECATED ?
         const runner = new SequenceRunner(sequenceId);
 
         return await runner.runSequence();

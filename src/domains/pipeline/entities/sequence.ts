@@ -11,6 +11,8 @@ import { SequenceTask } from '@entities';
 import { Order } from '@entities';
 import { ConfigReader } from '@utils';
 
+// DEPRECATED ?
+
 /**
  * A sequence : a list of task. These shall be used to apply order specifications
  */
@@ -20,8 +22,8 @@ export class Sequence {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => Order, order => order.sequences, { cascade: true, eager: true })
-    order: Order;
+    // @ManyToOne(type => Order, order => order.sequences, { cascade: true, eager: true })
+    // order: Order;
 
     @Column()
     sequenceType: string;
@@ -51,7 +53,7 @@ export class Sequence {
     }
 
     fromOrder(order: Order) {
-        this.order = order;
+        // this.order = order;
         this.sequenceType = 'environment-update';
 
         const blueprint = ConfigReader.sequenceBlueprint(this.sequenceType);

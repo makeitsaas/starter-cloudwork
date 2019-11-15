@@ -9,6 +9,7 @@ import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
 import { VaultService } from '@services';
 
+// DEPRECATED ?
 export class SequenceRunner {
     readonly ready: Promise<any>;
     private sequence: Sequence;
@@ -33,7 +34,7 @@ export class SequenceRunner {
     private async prepareRunner(): Promise<any> {
         console.log(`prepare runner for Sequence ${this.sequenceId}`);
         this.sequence = await this.retrieveSequence();
-        this.order = this.sequence.order;
+        // this.order = this.sequence.order;
         this.environment = this.order.environment;
         this.orderedTasks = this.sequence.getTasksInOrder();
         this.vault = await this.vaultService.getEnvironmentVault(this.environment.uuid);
