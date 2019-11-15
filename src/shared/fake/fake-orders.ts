@@ -1,3 +1,8 @@
+const order2 = `
+action: "drop"
+environment_id: "3"
+`;
+
 const order1 = `
 action: "update"
 environment_id: "3"
@@ -16,11 +21,6 @@ services:
     path: /
     repo_url: 'https://github.com/Duwab/makeitsaas-manager-front'
     type: angular
-`;
-
-const order2 = `
-action: "drop"
-environment_id: "3"
 `;
 
 const order3 = `
