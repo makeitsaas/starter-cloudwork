@@ -127,9 +127,12 @@ export class Playbook {
         const commonVars = await this.getCommonVariables();
         const deploymentVars = await this.getDeploymentVariables();
 
+        const discovery = await this.getDiscoveryConfig();
+
         this.vars = {
             ...commonVars,
-            ...deploymentVars
+            ...deploymentVars,
+            discovery
         };
 
         for (let i in required) {
@@ -176,6 +179,10 @@ export class Playbook {
         }
 
         return {};
+    }
+
+    private async getDiscoveryConfig() {
+        return await this.environment.generateDiscoveryConfig();
     }
 
     private async getCommonVariables(): Promise<EnvironmentCommonVariablesInterface> {

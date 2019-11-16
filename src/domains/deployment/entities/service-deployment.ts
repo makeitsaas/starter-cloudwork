@@ -24,6 +24,9 @@ const COMPUTING_STATUS_LIST = [
 
 @Entity()
 export class ServiceDeployment {
+    @em('main')
+    private em: EntityManager;
+
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -48,6 +51,9 @@ export class ServiceDeployment {
     @Column()
     path: string;
 
+    @Column("simple-array")
+    tags: string[] = [];
+
     @Column({nullable: true})
     repositoryVersion?: string;
 
@@ -62,9 +68,6 @@ export class ServiceDeployment {
 
     @UpdateDateColumn({type: 'timestamp'})
     updatedAt: Date;
-
-    @em('main')
-    private em: EntityManager;
 
     saveComputingDeploymentStatus(newStatus: string): Promise<ServiceDeployment> {
         if(COMPUTING_STATUS_LIST.indexOf(newStatus) === -1) {
@@ -99,5 +102,15 @@ export class ServiceDeployment {
 
     isAPIDeployment() {
         return /^api/.test(this.type);
+    }
+
+    async serviceLazy(): Promise<Service> {
+        // when loaded via jointure, eager option is "ignored".
+        // For example, after a 'await environment.deployment', deployment.service is undefined
+        // only use lazy relations instead
+
+        const deploymentWithEagerRelations = await this.em.getRepository(ServiceDeployment).findOneOrFail(this.id);
+
+        return deploymentWithEagerRelations.service;
     }
 }

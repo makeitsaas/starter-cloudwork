@@ -40,6 +40,11 @@
     src: templates/env.j2
     dest: "{{ repo_absolute_path }}/.env"
     mode: 0644
+- name: write .discovery.json file
+  template:
+    src: templates/discovery.json.j2
+    dest: "{{ repo_absolute_path }}/.discovery.json"
+    mode: 0644
 - name: write __start__.sh file
   template:
     src: templates/npm-start.sh
