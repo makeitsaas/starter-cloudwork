@@ -6,13 +6,13 @@ api:
       - manager-api.lab.makeitsaas.com
     services:
       - uuid: "6"
-        path: /auth
+        path: /core
         repository: 
           url: 'https://github.com/makeitsaas/makeitsaas-auth-instance'
-        roles: [auth, discovery, upload]
+        tags: ["api:discovery", "api:authentication", "api:upload"]
         type: node
       - uuid: "7"
-        path: /
+        path: /manager
         repository: 
           url: 'https://github.com/Duwab/makeitsaas-manager-api'
         type: node
@@ -45,6 +45,7 @@ api:
         repository: 
           url: 'https://github.com/makeitsaas/simple-landing'
         type: node
+        tags: ["api:discovery", "api:authentication"]
 `;
 
 export const FakeOrders: {[id: number]: string} = {

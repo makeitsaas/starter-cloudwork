@@ -31,8 +31,9 @@ export class ServiceDeployTask extends StepBody {
         this.checkInputs();
 
         return this.loadContext()
-            .then(() => this.context.serviceOperator.deploy())
             .then(() => this.context.serviceOperator.updatePath())  // maybe somewhere else
+            .then(() => this.context.serviceOperator.updateTags())  // maybe somewhere else
+            .then(() => this.context.serviceOperator.deploy())
             .catch(e => {
                 console.log('[TASK ERROR] deploy error', e);
                 throw e;

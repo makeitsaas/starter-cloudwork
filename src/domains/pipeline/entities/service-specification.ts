@@ -8,4 +8,5 @@ export class ServiceSpecification {
     };
     path: string;
     type: ('angular'|'api-node-v1'|'default');
+    tags?: string[];
 }

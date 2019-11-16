@@ -104,6 +104,13 @@ export class ServiceOperator {
         }
     }
 
+    async updateTags() {
+        if(this.specification && this.deployment && this.specification.tags !== undefined && this.specification.tags !== this.deployment.tags) {
+            this.deployment.tags = this.specification.tags;
+            await this.em.save(this.deployment);
+        }
+    }
+
     async deploy() {
         await this.ready;
         console.log('deploy');
