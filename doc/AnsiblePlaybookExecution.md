@@ -27,6 +27,17 @@ run this command in the execution folder :
 ansible-playbook -i inventories/hosts root-playbook.yml
 ```
 
+## Adding a new playbook
+
+1. Create root playbook entry point in `ansible/playbooks/{playbook-name}.yml`
+2. Add necessary sub-playbooks under `ansible/playbooks/parts` directory
+3. Declare playbook in `config/playbooks/`
+4. Add missing inventory hosts in ... 
+4. Launch `npm run cli -- --ansible -i --mode=local` to see generated playbook
+5. Go to freshly created execution directory and try it manually using `ansible-playbook -i inventories/hosts root-playbook.yml`
+
+
+
 ## About ansible-in-deployer-app
 
 * Straight forward scripts
@@ -86,3 +97,4 @@ export class AnsibleService {
 ## Variables
 
 All variables are exported in `inventories/hosts` and `vars/default.yml`, then are used by `templates/*`.
+
