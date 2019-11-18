@@ -7,6 +7,7 @@ import { CliTestHandler } from './lib/cli/cli-test-handler';
 import { CliExampleDisplayHandler } from './lib/cli/cli-example-display-handler';
 import { CliOrderHandler } from './lib/cli/cli-order-handler';
 import { CliActionDropEnvironment } from './lib/cli/cli-action-drop-environment';
+import { CliPushOrderHandler } from './lib/cli/cli-push-order-handler';
 
 program
     .version('0.1.0')
@@ -17,6 +18,7 @@ program
     .option('-X, --execute', 'Combined with --ansible, executes the freshly created playbook')
     .option('-i, --interactive', 'Creates a sequence from order')
     .option('--order [orderId]', 'Creates a sequence from order')
+    .option('--pushOrder [orderId]', 'Pushes an order to SQS queue')
     .option('--sequence [sequenceId]', 'Runs a sequence')
     .option('--environment [environmentId]', 'Environment Id')
     .option('--service [serviceId]', 'Service Id')
@@ -29,7 +31,9 @@ const app = new Main();
 
 app.ready.then(() => {
     if (program.test || program.testMore) {
-        return CliTestHandler(program, app);
+        return CliTestHandler(program, app).then(() => app.exit());
+    } else if (program.pushOrder) {
+        return CliPushOrderHandler(program.pushOrder).then(() => app.exit());
     } else if (program.order) {
         return CliOrderHandler(FakeOrders[parseInt(program.order)], app);
     } else if (program.ansible) {
@@ -37,10 +41,9 @@ app.ready.then(() => {
     } else if (program.drop) {
         return CliActionDropEnvironment(program.environment, app);
     } else {
-        return CliExampleDisplayHandler(program, app);
+        return CliExampleDisplayHandler(program, app).then(() => app.exit());
     }
 }).catch(err => {
-    console.log('error catch end');
+    console.log('----- error catch end');
     console.log(err);
-    app.exit();
 });
