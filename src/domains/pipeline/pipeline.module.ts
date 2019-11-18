@@ -2,9 +2,9 @@ import { configureWorkflow, IWorkflowHost, WorkflowConfig } from 'workflow-es';
 import { workflowPersistenceLoader } from '@databases';
 import { WorkflowService } from './services/workflow.service';
 import { UpdateEnvironmentWorkflow } from './workflows/update-environment.workflow';
-import { Smoothie } from '../../../app/test-ninja';
-import { Container } from '@core';
-import { EntityManager } from 'typeorm';
+// import { Smoothie } from '../../../app/test-injectable';
+// import { Container } from '@core';
+// import { EntityManager } from 'typeorm';
 import { Order } from './entities/order';
 import { UpdateServiceWorkflow } from './workflows/update-service.workflow';
 import { WrapperWorkflow } from './workflows/wrapper.workflow';
@@ -67,7 +67,7 @@ export class PipelineModule {
     private overloadWorkflowContainer(config: WorkflowConfig) {
         // careful : here we use inversify v5.x while workflow-es uses v4.x
         const c = config.getContainer();
-        c.bind<Smoothie>(Smoothie).to(Smoothie);
-        c.bind(EntityManager).toConstantValue(Container.databases.main.manager);
+        // c.bind<Smoothie>(Smoothie).to(Smoothie);
+        // c.bind(EntityManager).toConstantValue(Container.databases.main.manager);
     }
 }

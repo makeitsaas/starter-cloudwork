@@ -4,16 +4,12 @@ config();   // run this before importing other modules
 
 import "reflect-metadata";
 import { Environment, Order, Service, ServiceDeployment } from '@entities';
-import { Sequence } from '@entities';
-import { SequenceRunner } from '@operators';
 import { AnsibleService, Playbook } from '@ansible';
-import { CliHelper } from '@utils';
-import { FakeOrders } from '@fake';
 import { Container } from '@core';
 import { em, _EM_ } from '@decorators';
 import { EntityManager } from 'typeorm';
 
-export class App {
+export class Main {
     readonly ready: Promise<any>;
 
     @em(_EM_.deployment)
@@ -24,21 +20,6 @@ export class App {
             this.initStdListeners(),
             this.initContainer()
         ]);
-    }
-
-    async createSequence(orderId: number): Promise<Sequence> {
-        const o = new Order(FakeOrders[orderId]);
-        await o.saveDeep();
-
-        const s = new Sequence(o);
-        return await s.saveDeep(this.em);
-    }
-
-    async runSequence(sequenceId: number): Promise<Sequence> {
-        // DEPRECATED ?
-        const runner = new SequenceRunner(sequenceId);
-
-        return await runner.runSequence();
     }
 
     async dropEnvironment(environmentUuid: string): Promise<number> {
@@ -62,18 +43,9 @@ export class App {
     async loadServicePlaybook(playbookReference: string, serviceUuid: string, interactive: boolean = false): Promise<Playbook> {
         const service = await this.em.getRepository(Service).findOneOrFail(serviceUuid);
         const deployment = await this.em.getRepository(ServiceDeployment).findOneOrFail({where: {service}});
-
         const deployer = new AnsibleService(interactive);
 
         return await deployer.preparePlaybook(playbookReference, deployment.environment, deployment);
-
-        // const doExecute = await CliHelper.askConfirmation('Execute playbook ?', false);
-        //
-        // if(doExecute) {
-        //     await playbook.execute();
-        // }
-
-        // return playbook;
     }
 
     exitHandler() {

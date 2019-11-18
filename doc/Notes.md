@@ -93,3 +93,25 @@ await em.save(allocation);                      // Then save final entity
 ```
 
 If you don't do so, there would be no error. But relation will not be saved at all :/
+
+
+## CLI todo
+
+```
+/**
+ * TODO :
+ * - Execute playbooks for real
+ * - gather/store data from playbooks
+ * - list possible behaviors
+ * - make diagrams for these possible behaviors (processes, modules hierarchy, ...)
+ * - create servlet to take external orders (network rules => no authentication)
+ *      - orders create/update environment
+ *      - orders delete environment
+ *      - orders service recovering
+ *      - gather workflow reports
+ *      - response => status + workflow id
+ * - deploy spa & cdn
+ * - data pipelines + ML (step = read/transform/save mongo documents)
+ * - BP : mis + architecture-ready-to-use
+ */
+```

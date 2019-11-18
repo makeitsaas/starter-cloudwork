@@ -1,0 +1,46 @@
+import * as program from 'commander';
+import { Main } from '../src/main';
+import { FakeOrders } from '@fake';
+import { ModeLoader } from '../src/core/mode/cli-mode-loader';
+import { CliAnsibleHandler } from './lib/cli/cli-ansible';
+import { CliTestHandler } from './lib/cli/cli-test-handler';
+import { CliExampleDisplayHandler } from './lib/cli/cli-example-display-handler';
+import { CliOrderHandler } from './lib/cli/cli-order-handler';
+import { CliActionDropEnvironment } from './lib/cli/cli-action-drop-environment';
+
+program
+    .version('0.1.0')
+    .option('--mode [mode]', 'Environment type (prod, test, local)')
+    .option('--test', 'What your do for testing')
+    .option('--ansible', 'Prepare ansible playbook')
+    .option('--playbook [playbookName]', 'Specify ansible playbook name')
+    .option('-X, --execute', 'Combined with --ansible, executes the freshly created playbook')
+    .option('-i, --interactive', 'Creates a sequence from order')
+    .option('--order [orderId]', 'Creates a sequence from order')
+    .option('--sequence [sequenceId]', 'Runs a sequence')
+    .option('--environment [environmentId]', 'Environment Id')
+    .option('--service [serviceId]', 'Service Id')
+    .option('--drop', 'Associated with environment id, will drop deployment')
+    .parse(process.argv);
+
+ModeLoader(program);
+
+const app = new Main();
+
+app.ready.then(() => {
+    if (program.test || program.testMore) {
+        return CliTestHandler(program, app);
+    } else if (program.order) {
+        return CliOrderHandler(FakeOrders[parseInt(program.order)], app);
+    } else if (program.ansible) {
+        return CliAnsibleHandler(program, app);
+    } else if (program.drop) {
+        return CliActionDropEnvironment(program.environment, app);
+    } else {
+        return CliExampleDisplayHandler(program, app);
+    }
+}).catch(err => {
+    console.log('error catch end');
+    console.log(err);
+    app.exit();
+});
