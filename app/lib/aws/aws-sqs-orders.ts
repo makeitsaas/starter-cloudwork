@@ -76,19 +76,26 @@ export class AwsSqsOrders {
         }));
     }
 
-    pollLoop() {
+    pollLoop(callback: (m:Message) => Promise<any>) {
         this.poll().then(message => {
             if (message) {
+                callback(message).then(() => this.pollLoop(callback));
                 this.pollSubject.next(message);
+            } else {
+                this.pollLoop(callback);
             }
-            this.pollLoop();
+
         })
     }
 
     deleteMessage(message: Message) {
+        if(!message.ReceiptHandle) {
+            throw new Error('Missing message.ReceiptHandle')
+        }
+
         const deleteParams = {
             QueueUrl: this.queueURL,
-            ReceiptHandle: message.ReceiptHandle || ''
+            ReceiptHandle: message.ReceiptHandle
         };
         sqs.deleteMessage(deleteParams, function (err, data) {
             if (err) {
@@ -100,14 +107,6 @@ export class AwsSqsOrders {
     }
 
     onOrder() {
-        // return an observable that pushes new orders
-        const subject = new BehaviorSubject(null);
-
-        if (!this.loopPolling) {
-            this.loopPolling = true;
-            this.pollLoop();
-        }
-
         return this.pollSubject.asObservable();
     }
 }

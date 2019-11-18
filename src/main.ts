@@ -8,6 +8,7 @@ import { AnsibleService, Playbook } from '@ansible';
 import { Container } from '@core';
 import { em, _EM_ } from '@decorators';
 import { EntityManager } from 'typeorm';
+import { PipelineModule } from './domains/pipeline/pipeline.module';
 
 export class Main {
     readonly ready: Promise<any>;
@@ -20,6 +21,16 @@ export class Main {
             this.initStdListeners(),
             this.initContainer()
         ]);
+    }
+
+    async handleYMLOrder(ymlOrder: string): Promise<any> {
+        console.log('yml order:', ymlOrder);
+        const o = new Order(ymlOrder);
+        return o.saveDeep().then(o => {
+            const pipelineModule = new PipelineModule();
+            return pipelineModule
+                .processOrder(o)
+        });
     }
 
     async dropEnvironment(environmentUuid: string): Promise<number> {

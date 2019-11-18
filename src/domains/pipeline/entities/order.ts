@@ -63,6 +63,7 @@ export class Order {
                 const env = new Environment();
                 env.uuid = this.getEnvironmentUuid();
                 this.environment = env;
+                this.isValid = true;
             }
         }
     }

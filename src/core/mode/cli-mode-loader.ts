@@ -25,8 +25,8 @@ interface IModeConfig {
 
 export let ModeConfig: IModeConfig;
 
-export const ModeLoader = (program: CommanderStatic) => {
-    if (program.mode) {
+export const ModeLoader = (program?: CommanderStatic) => {
+    if (program && program.mode) {
         process.env.MODE = program.mode;
     }
 

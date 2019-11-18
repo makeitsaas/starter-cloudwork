@@ -1,9 +1,14 @@
 // something that will poll orders from sqs queue
 import { Main } from '../src/main';
 import { AwsSqsOrders } from './lib/aws/aws-sqs-orders';
+import { Message } from 'aws-sdk/clients/sqs';
+import { FakeDelay } from '@fake';
+import { ModeLoader } from '../src/core/mode/cli-mode-loader';
 
 const app = new Main();
 const sqsClient = new AwsSqsOrders();
+
+ModeLoader();
 
 app.ready.then(() => {
     return workerHandler();
@@ -13,11 +18,20 @@ app.ready.then(() => {
     app.exit();
 });
 
-
 const workerHandler = () => {
     console.log('process.env.AWS_SQS_ORDERS_QUEUE_URL', process.env.AWS_SQS_ORDERS_QUEUE_URL);
 
+    sqsClient.pollLoop((message:Message) => {
+        console.log('message', message.Attributes && message.Attributes.SentTimestamp);
+        console.log('fake delay');
+        return Promise.all([
+            FakeDelay.wait(5000),
+            sqsClient.deleteMessage(message),
+            app.handleYMLOrder(message.Body || '')
+        ]);
+    });
+
     sqsClient.onOrder().subscribe(message => {
-        console.log('message', message);
+        console.log('message from subscription');
     });
 };
