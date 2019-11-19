@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import { PlaybookExecutor } from '@custom-modules/playbook-executor';
 
 const yaml = require("js-yaml");
-
 const ansiblePlaybookRelativePath = '../../playbooks';
 const ansibleTemplatesRelativePath = '../../templates';
 const tmpDirectoryRelativePath = '../../../tmp';
@@ -49,6 +48,22 @@ export class AnsibleExecutionClient {
 
     public getDirectory(): string {
         return this.executionAbsoluteDirectory;
+    }
+
+    public log(data: any) {
+        fs.appendFileSync(this.getStdoutFilePath(), data);
+    }
+
+    public error(data: any) {
+        fs.appendFileSync(this.getStderrFilePath(), data);
+    }
+
+    public getStdoutFilePath(): string {
+        return `${this.executionAbsoluteDirectory}/stdout.log`;
+    }
+
+    public getStderrFilePath(): string {
+        return `${this.executionAbsoluteDirectory}/stderr.log`;
     }
 
     public execute() {

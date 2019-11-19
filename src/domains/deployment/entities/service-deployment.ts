@@ -10,8 +10,9 @@ import { Service } from '@entities';
 import { Environment } from '@entities';
 import { ComputingAllocation } from '@entities';
 import { DatabaseAllocation } from '@entities';
-import { em } from '@decorators';
+import { em, service } from '@decorators';
 import { InvalidEnumValue } from '../errors';
+import { InfrastructureService, CDNBucketInfo } from '../../infrastructure/services/infrastructure.service';
 
 const COMPUTING_STATUS_LIST = [
     'init',
@@ -27,6 +28,9 @@ export class ServiceDeployment {
     @em('main')
     private em: EntityManager;
 
+    @service
+    infrastructure: InfrastructureService;
+
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -40,12 +44,12 @@ export class ServiceDeployment {
     cdnStatus: string = 'init';     // pending, running, failed, stopped, down
 
     @Column()
-    type: ('angular'|'api-node-v1'|'default') = 'default';
+    type: ('angular' | 'api-node-v1' | 'default') = 'default';
 
-    @ManyToOne(type => Service, { eager: true })
+    @ManyToOne(type => Service, {eager: true})
     service: Service;
 
-    @ManyToOne(type => Environment, { eager: true })
+    @ManyToOne(type => Environment, {eager: true})
     environment: Environment;
 
     @Column()
@@ -70,7 +74,7 @@ export class ServiceDeployment {
     updatedAt: Date;
 
     saveComputingDeploymentStatus(newStatus: string): Promise<ServiceDeployment> {
-        if(COMPUTING_STATUS_LIST.indexOf(newStatus) === -1) {
+        if (COMPUTING_STATUS_LIST.indexOf(newStatus) === -1) {
             throw new InvalidEnumValue('Computing status is wrong');
         }
 
@@ -79,7 +83,7 @@ export class ServiceDeployment {
     }
 
     saveDatabaseDeploymentStatus(newStatus: string): Promise<ServiceDeployment> {
-        if(COMPUTING_STATUS_LIST.indexOf(newStatus) === -1) {
+        if (COMPUTING_STATUS_LIST.indexOf(newStatus) === -1) {
             throw new InvalidEnumValue('Database status is wrong');
         }
 
@@ -88,7 +92,7 @@ export class ServiceDeployment {
     }
 
     saveCDNDeploymentStatus(newStatus: string): Promise<ServiceDeployment> {
-        if(COMPUTING_STATUS_LIST.indexOf(newStatus) === -1) {
+        if (COMPUTING_STATUS_LIST.indexOf(newStatus) === -1) {
             throw new InvalidEnumValue('CDN status is wrong');
         }
 
@@ -101,7 +105,11 @@ export class ServiceDeployment {
     }
 
     isAPIDeployment() {
-        return /^api/.test(this.type);
+        return /^(api|node)/.test(this.type);
+    }
+
+    async getCDNBucketInfo(): Promise<CDNBucketInfo> {
+        return this.infrastructure.getCDNBucket(this);
     }
 
     async serviceLazy(): Promise<Service> {
@@ -109,8 +117,26 @@ export class ServiceDeployment {
         // For example, after a 'await environment.deployment', deployment.service is undefined
         // only use lazy relations instead
 
+        if(this.service) {
+            return Promise.resolve(this.service);
+        }
+
         const deploymentWithEagerRelations = await this.em.getRepository(ServiceDeployment).findOneOrFail(this.id);
 
         return deploymentWithEagerRelations.service;
+    }
+
+    async environmentLazy(): Promise<Environment> {
+        // when loaded via jointure, eager option is "ignored".
+        // For example, after a 'await environment.deployment', deployment.service is undefined
+        // only use lazy relations instead
+
+        if(this.environment) {
+            return Promise.resolve(this.environment);
+        }
+
+        const deploymentWithEagerRelations = await this.em.getRepository(ServiceDeployment).findOneOrFail(this.id);
+
+        return deploymentWithEagerRelations.environment;
     }
 }

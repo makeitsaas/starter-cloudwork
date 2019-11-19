@@ -1,4 +1,4 @@
-import { injectable, inject } from "inversify";
+import { injectable } from "inversify";
 import * as IORedis from 'ioredis';
 import { IQueueProvider, QueueType } from "workflow-es";
 
@@ -14,15 +14,15 @@ export class RedisQueueProvider implements IQueueProvider {
     }
 
     public async queueForProcessing(id: string, queue: any): Promise<void> {
-        console.log('queueForProcessing', id, queue);
+        // console.log('queueForProcessing', id, queue);
         this.redis.lpush(this.getQueueName(queue), id);
     }
 
     public async dequeueForProcessing(queue: any): Promise<string> {
         const id = await this.redis.rpop(this.getQueueName(queue));
-        if (id) {
-            console.log('queueForProcessing', queue, id);
-        }
+        // if (id) {
+        //     console.log('queueForProcessing', queue, id);
+        // }
         return id;
     }
 

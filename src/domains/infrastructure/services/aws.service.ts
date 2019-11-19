@@ -21,7 +21,8 @@ export class AwsService {
         const ec2 = new EC2({apiVersion: '2016-11-15'});
         const instanceParams = {
             ImageId: 'ami-0a8412cbcfcef4252',
-            InstanceType: 't2.small',
+            InstanceType: 't2.medium',
+            // InstanceType: 't2.small',
             KeyName: 'adu-dev',
             SecurityGroupIds: ['sg-04c858cae6f24e840'],
             SubnetId: 'subnet-01a2857a',

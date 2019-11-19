@@ -10,13 +10,13 @@ import { ModeConfig } from '../src/core/mode/cli-mode-loader';
 import { LambdaServer } from '@entities';
 
 export interface EnvironmentCommonVariablesInterface {
-    environment_id: string
-    environment_domain_front: string
-    environment_domain_api: string
+    environment_id: string;
+    environment_domain_front: string;
+    environment_domain_api: string;
     vhosts: {
         domains: string[]
         services: any[]
-    }[]
+    }[];
 }
 
 export interface IPlaybookInputObjects {
@@ -129,6 +129,8 @@ export class Playbook {
 
         const discovery = await this.getDiscoveryConfig();
 
+        console.log('deployment variables', deploymentVars);
+
         this.vars = {
             ...commonVars,
             ...deploymentVars,
@@ -204,13 +206,14 @@ export class Playbook {
                     repositoryVersion: deployment.repositoryVersion,
                 };
             } else if (deployment.isSPADeployment()) {
+                const cdnBucketInfo = await deployment.getCDNBucketInfo();
                 return {
                     behavior: 'web',
                     path: deployment.path,
-                    host: 's3.eu-central-1.amazonaws.com',
-                    port: 443,
-                    secure: true,
-                    outputBasePath: '/makeitsaas-public/auto/angular/initial-test',
+                    host: cdnBucketInfo.host,
+                    port: cdnBucketInfo.port,
+                    secure: cdnBucketInfo.secure,
+                    outputBasePath: '/' + cdnBucketInfo.bucketName + cdnBucketInfo.bucketPath,
                     repositoryVersion: deployment.repositoryVersion,
                 };
             } else {
@@ -257,9 +260,11 @@ export class Playbook {
                 redis_hostname: dbServer && dbServer.ip,
                 repo_directory: `d${this.deployment.id}`,
             };
-        } else if (this.deployment && this.deployment.isAPIDeployment()) {
+        } else if (this.deployment && this.deployment.isSPADeployment()) {
+            const cdnBucketInfo = await this.deployment.getCDNBucketInfo();
             return this.deployment && {
                 repo_url: this.deployment.service.repositoryUrl,
+                cdn_bucket_uri: cdnBucketInfo.bucketURI
                 // cdn_path: this.deployment,
             };
         } else {

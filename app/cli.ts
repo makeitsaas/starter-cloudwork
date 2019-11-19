@@ -1,6 +1,6 @@
 import * as program from 'commander';
 import { Main } from '../src/main';
-import { FakeOrders } from '@fake';
+import { CustomOrders } from '@config';
 import { ModeLoader } from '../src/core/mode/cli-mode-loader';
 import { CliAnsibleHandler } from './lib/cli/cli-ansible';
 import { CliTestHandler } from './lib/cli/cli-test-handler';
@@ -35,7 +35,7 @@ app.ready.then(() => {
     } else if (program.pushOrder) {
         return CliPushOrderHandler(program.pushOrder).then(() => app.exit());
     } else if (program.order) {
-        return CliOrderHandler(FakeOrders[parseInt(program.order)], app);
+        return CliOrderHandler(CustomOrders[parseInt(program.order)], app);
     } else if (program.ansible) {
         return CliAnsibleHandler(program, app);
     } else if (program.drop) {

@@ -19,6 +19,9 @@
         "../ansible/modules/ansible-execution-client/*",
         "../src/shared/*"
       ],
+      "@config": [
+        "../config"
+      ],
       "@fake": [
         "../src/shared/fake"
       ],

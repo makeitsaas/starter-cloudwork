@@ -8,6 +8,16 @@ import { LambdaServer } from '@entities';
 import { FakeDelay } from '@fake';
 import { AwsService } from './aws.service';
 
+export interface CDNBucketInfo {
+    provider: 'aws';
+    host: string;
+    port: number;
+    secure: boolean;
+    bucketName: string;
+    bucketPath: string;
+    bucketURI: string;
+    spa: boolean;
+}
 
 export class InfrastructureService {
 
@@ -94,6 +104,24 @@ export class InfrastructureService {
 
         console.log('lambda ok', lambda);
         return lambda;
+    }
+
+    async getCDNBucket(deployment: ServiceDeployment): Promise<CDNBucketInfo> {
+        const environmentUuid = (await deployment.environmentLazy()).uuid;
+        const serviceUuid = (await deployment.serviceLazy()).uuid;
+        const type = /^[a-z-_]+$/.test(deployment.type) ? deployment.type : 'default';
+        const path = `auto/${type}/e${environmentUuid}-s${serviceUuid}`;
+
+        return {
+            provider: 'aws',
+            host: 's3.eu-central-1.amazonaws.com',
+            port: 443,
+            secure: true,
+            bucketName: `makeitsaas-public`,
+            bucketPath: `/${path}`,
+            bucketURI: `s3://makeitsaas-public/${path}`,
+            spa: deployment.isSPADeployment()
+        };
     }
 
     /**

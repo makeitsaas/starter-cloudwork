@@ -69,7 +69,6 @@ export class AwsSqsOrders {
                     // this.deleteMessage(data.Messages[0])
                     resolve(data.Messages[0]);
                 } else {
-                    console.log('nothing');
                     resolve();
                 }
             });

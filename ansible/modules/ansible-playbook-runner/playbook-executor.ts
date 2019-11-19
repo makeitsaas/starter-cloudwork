@@ -9,14 +9,6 @@ const ansibleOutputParser = require('../../modules/ansible-output-parser/index')
 
 const keyPath = 'config/keys/server-key';
 
-const playbook = new Ansible.Playbook()
-//.inventory('config/inventories/dev')
-    .privateKey(keyPath)
-    .user('ubuntu');
-
-playbook.on('stdout', (data: any) => process.stdout.write('.'));
-playbook.on('stderr', (data: any) => process.stdout.write('x'));
-
 export class PlaybookExecutor {
     constructor(
         private context: AnsibleExecutionClient
@@ -24,7 +16,19 @@ export class PlaybookExecutor {
     }
 
     exec() {
-        const promise = playbook
+        const executablePlaybook = this.getExecutablePlaybook();
+
+        executablePlaybook.on('stdout', (data: any) => {
+            process.stdout.write('.');
+            this.context.log(data);
+        });
+
+        executablePlaybook.on('stderr', (data: any) => {
+            process.stdout.write('x')
+            this.context.error(data);
+        });
+
+        const promise = executablePlaybook
             .inventory(`${this.context.getDirectory()}/inventories/hosts`)
             .playbook(`${this.context.getDirectory()}/root-playbook`)
             .exec();
@@ -41,5 +45,18 @@ export class PlaybookExecutor {
                     throw parsed;
                 }
             });
+    }
+
+    getExecutablePlaybook() {
+        const playbook = new Ansible.Playbook()
+        //.inventory('config/inventories/dev')
+            .privateKey(keyPath)
+            .user('ubuntu');
+            // .verbose('vvvv');
+
+        // playbook.on('stdout', (data: any) => process.stdout.write('.'));
+        // playbook.on('stderr', (data: any) => process.stdout.write('x'));
+
+        return playbook;
     }
 }

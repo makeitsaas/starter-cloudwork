@@ -98,15 +98,19 @@ export class ServiceOperator {
     }
 
     async updatePath() {
+        await this.ready;
         if(this.specification && this.deployment && this.specification.path !== this.deployment.path) {
+            console.log('replace', this.deployment.path, 'by', this.specification.path);
             this.deployment.path = this.specification.path;
             await this.em.save(this.deployment);
         }
     }
 
     async updateTags() {
-        if(this.specification && this.deployment && this.specification.tags !== undefined && this.specification.tags !== this.deployment.tags) {
-            this.deployment.tags = this.specification.tags;
+        await this.ready;
+
+        if(this.specification && this.deployment && this.specification.tags !== this.deployment.tags) {
+            this.deployment.tags = this.specification.tags !== undefined ? this.specification.tags : [];
             await this.em.save(this.deployment);
         }
     }

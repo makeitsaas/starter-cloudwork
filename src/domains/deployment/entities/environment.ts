@@ -52,7 +52,6 @@ export class Environment {
     updatedAt: Date;
 
     async generateDiscoveryConfig(): Promise<DiscoveryConfigType> {
-
         const deployments = await this.deployments;
         const discovery: DiscoveryConfigType = {
             front: {},

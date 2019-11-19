@@ -1,8 +1,7 @@
 ---
-- set_fact: repo_url="https://github.com/Duwab/makeitsaas-manager-front"
-- set_fact: repo_absolute_path="/srv/angular-initial-test"
-- set_fact: s3_bucket="makeitsaas-public"
-- set_fact: s3_path="auto/angular/initial-test"
+- set_fact: repo_url="{{repo_url}}"
+- set_fact: repo_absolute_path="/srv/angular-build"
+- set_fact: cdn_bucket_uri="{{cdn_bucket_uri}}"
 - name: check if sources exist
   stat:
     path: "{{ repo_absolute_path }}"
