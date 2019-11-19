@@ -1,9 +1,10 @@
 const stepHeadPattern = /^([\w ]+) (\[(.+)\] )?\*\*\*+$/;
-const playRecapPattern = /^.+  +: +ok=(\d+)  +changed=(\d+)  +unreachable=(\d+)  +failed=(\d+) +$/;
+const playRecapPattern = /^.+  +: +ok=(\d+)  +changed=(\d+)  +unreachable=(\d+)  +failed=(\d+)  .*$/;
 const stepStatusPattern = /^(\w+)\: \[.*\].*$/;  // ligne du début 'ok: [...] ...'
 const stepWithDataPattern = /^(\w+)\: +\[.*\] +\=\> +(\{.*\}) *$/;
 
 module.exports = function (output) {
+    // TODO : log output
     let lines = output.split(/\r?\n/),
         steps = [],
         currentStep;
@@ -81,12 +82,7 @@ function parseLinesData(lines) {
         const content = lines.join(' ');
         //console.log('content', content);
         if (playRecapPattern.test(content)) {
-            return {
-                'ok': parseInt(content.replace(playRecapPattern, '$1')),
-                'changed': parseInt(content.replace(playRecapPattern, '$2')),
-                'unreachable': parseInt(content.replace(playRecapPattern, '$3')),
-                'failed': parseInt(content.replace(playRecapPattern, '$4'))
-            }
+            return recapAsObject(content);
         } else if (stepWithDataPattern.test(content)) {
             try {
                 let probablyJsonContent = content.replace(stepWithDataPattern, '$2');
@@ -103,3 +99,30 @@ function findRecap(steps) {
 
     return found && found.data;
 }
+
+function recapAsObject(recapLine) {
+    // recapLine = "3.121.138.238              : ok=20   changed=7    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   "
+    // onlyValues = "ok=20   changed=7    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   "
+    // valuesArray = ["ok=20", "changed=7", "unreachable=0", "failed=0", "skipped=1", "rescued=0", "ignored=0"]
+
+    const onlyValues = recapLine.replace(/^.+  +: +(ok=\d+ .*)$/, '$1');
+    const valuesArray = onlyValues.trim().split(/ +/);
+    const values = {};
+
+    valuesArray.map(keyAndValue => {
+        const [key, value] = keyAndValue.split('=');
+        values[key] = parseInt(value);
+    });
+
+    return values;
+}
+
+
+/*
+return {
+    'ok': parseInt(content.replace(playRecapPattern, '$1')),
+    'changed': parseInt(content.replace(playRecapPattern, '$2')),
+    'unreachable': parseInt(content.replace(playRecapPattern, '$3')),
+    'failed': parseInt(content.replace(playRecapPattern, '$4'))
+}
+ */

@@ -2,6 +2,7 @@ import { CommanderStatic } from 'commander';
 import { InvalidMode } from '../errors';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
+import * as AWS from 'aws-sdk';
 
 /**
  * Documentation : Mode configuration
@@ -26,6 +27,13 @@ interface IModeConfig {
 export let ModeConfig: IModeConfig;
 
 export const ModeLoader = (program?: CommanderStatic) => {
+    if(ModeConfig) {
+        // already done
+        return;
+    }
+
+    AWS.config.update({region: 'eu-central-1'});
+
     if (program && program.mode) {
         process.env.MODE = program.mode;
     }

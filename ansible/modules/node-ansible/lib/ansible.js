@@ -156,14 +156,14 @@ var AdHoc = function () {
 
     this.commandName = function () {
         return 'ansible';
-    }
+    };
 
     this.config = {};
 
     this.module = function (module) {
         this.config.module = module;
         return this;
-    }
+    };
 
     this.args = function (args, freeform) {
         if (!_.isObject(args)) {
@@ -174,12 +174,12 @@ var AdHoc = function () {
         this.config.args = args;
         this.config.freeform = freeform;
         return this;
-    }
+    };
 
     this.hosts = function (hosts) {
         this.config.hosts = hosts;
         return this;
-    }
+    };
 
     this.validate = function () {
         var errors = [];
@@ -196,7 +196,7 @@ var AdHoc = function () {
         }
 
         return errors;
-    }
+    };
 
     this.compileParams = function () {
         var result = [
@@ -215,7 +215,7 @@ var AdHoc = function () {
         return result;
     }
 
-}
+};
 
 inherits(AdHoc, AbstractAnsibleCommand);
 
@@ -225,29 +225,29 @@ var Playbook = function () {
 
     this.commandName = function () {
         return 'ansible-playbook';
-    }
+    };
 
     this.config = {};
 
     this.askPass = function () {
         this.config.askPass = true;
         return this;
-    }
+    };
 
     this.askSudoPass = function () {
         this.config.askSudoPass = true;
         return this;
-    }
+    };
 
     this.playbook = function (playbook) {
         this.config.playbook = playbook;
         return this;
-    }
+    };
 
     this.variables = function (variables) {
         this.config.variables = variables;
         return this;
-    }
+    };
 
     this.tags = function () {
         var args
@@ -255,7 +255,7 @@ var Playbook = function () {
         if (_.isString(args)) args = Array(args);
         this.config.tags = args;
         return this;
-    }
+    };
 
     this.skipTags = function () {
         var args
@@ -263,15 +263,15 @@ var Playbook = function () {
         if (_.isString(args)) args = Array(args);
         this.config.skipTags = args;
         return this;
-    }
+    };
 
     this.addTags = function () {
         return ('--tags=' + this.config.tags.join(','));
-    }
+    };
 
     this.addSkipTags = function () {
         return ('--skip-tags=' + this.config.skipTags.join(','));
-    }
+    };
 
     this.validate = function () {
         var errors = [];
@@ -282,7 +282,7 @@ var Playbook = function () {
         }
 
         return errors;
-    }
+    };
 
     this.compileParams = function () {
         var result = [
@@ -316,7 +316,7 @@ var Playbook = function () {
 
         return result;
     }
-}
+};
 
 inherits(Playbook, AbstractAnsibleCommand);
 

@@ -46,4 +46,5 @@ app.ready.then(() => {
 }).catch(err => {
     console.log('----- error catch end');
     console.log(err);
+    throw err;
 });

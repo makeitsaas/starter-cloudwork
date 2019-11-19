@@ -207,6 +207,7 @@ export class ServiceOperator {
             await playbook.execute();
             await this.deployment.saveCDNDeploymentStatus('deployed');
         } catch (e) {
+            console.error(e);
             await this.deployment.saveCDNDeploymentStatus('failed');
             throw new SpaDeploymentFailed('Deployment failed');
         }

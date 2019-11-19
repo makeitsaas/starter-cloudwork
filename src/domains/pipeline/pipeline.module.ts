@@ -8,6 +8,7 @@ import { UpdateEnvironmentWorkflow } from './workflows/update-environment.workfl
 import { Order } from './entities/order';
 import { UpdateServiceWorkflow } from './workflows/update-service.workflow';
 import { WrapperWorkflow } from './workflows/wrapper.workflow';
+import { workflowLockLoader, workflowQueueLoader } from '../../core/queues/pipeline-lock';
 
 
 /**
@@ -32,6 +33,8 @@ export class PipelineModule {
         const config = configureWorkflow();
         //config.useLogger(new ConsoleLogger());
         config.usePersistence(await workflowPersistenceLoader());
+        config.useLockManager(await workflowLockLoader());
+        config.useQueueManager(await workflowQueueLoader());
 
         this.overloadWorkflowContainer(config);
 
@@ -53,8 +56,16 @@ export class PipelineModule {
     async processOrder(order: Order) {
         await this.ready;
         const wfs = new WorkflowService(this.host);
-        await this.host.start();
+        // await this.host.start(); => register order workflow
         return wfs.processOrder(order);
+    }
+
+    async startWorker() {
+        await this.ready;
+        await this.host.start();
+        console.log('---- new host ready (workflow worker)');
+
+        return this.host;
     }
 
     async updateService() {

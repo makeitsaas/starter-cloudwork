@@ -16,6 +16,7 @@ app.ready.then(() => {
     console.log('----- error catch end');
     console.log(err);
     app.exit();
+    throw err;
 });
 
 const workerHandler = () => {

@@ -12,6 +12,7 @@
     "tsn": "ts-node -r tsconfig-paths/register src/main.ts ",
     "cli": "ts-node -r tsconfig-paths/register app/cli.ts ",
     "worker-orders": "ts-node -r tsconfig-paths/register app/worker-orders.ts ",
+    "worker-workflow": "ts-node -r tsconfig-paths/register app/worker-workflow.ts ",
     "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s ./app -o ./dist",
     "prod": "node dist/app.js"
   },
@@ -27,10 +28,12 @@
     "fs": "0.0.1-security",
     "inquirer": "^6.3.1",
     "inversify": "^5.0.1",
+    "ioredis": "^4.14.1",
     "js-yaml": "^3.13.1",
     "jsonfile": "^5.0.0",
     "mysql": "^2.17.1",
     "node-ansible": "^0.5.5",
+    "redlock": "^4.1.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.5.3",
     "simple-encryptor": "^3.0.0",
@@ -38,10 +41,13 @@
     "typescript": "^3.5.1",
     "uuid": "^3.3.2",
     "workflow-es": "^2.3.5",
-    "workflow-es-mongodb": "^2.1.0"
+    "workflow-es-mongodb": "^2.1.0",
+    "workflow-es-redis": "^2.1.0"
   },
   "devDependencies": {
+    "@types/ioredis": "^4.0.19",
     "@types/node": "^12.12.8",
+    "@types/redlock": "^4.0.0",
     "ts-node": "^8.2.0",
     "tsconfig-paths": "^3.8.0",
     "tscpaths": "0.0.9"

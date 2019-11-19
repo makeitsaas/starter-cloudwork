@@ -2,7 +2,7 @@ import { service } from '@decorators';
 import { InfrastructureService } from './services/infrastructure.service';
 import * as AWS from 'aws-sdk';
 
-console.log('module');
+console.log('XXXXXXX INFRASTRUCTURE AWS CONFIGURE');
 AWS.config.update({region: 'eu-central-1'});
 
 /**

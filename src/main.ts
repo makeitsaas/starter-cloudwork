@@ -9,6 +9,9 @@ import { Container } from '@core';
 import { em, _EM_ } from '@decorators';
 import { EntityManager } from 'typeorm';
 import { PipelineModule } from './domains/pipeline/pipeline.module';
+import { ModeLoader } from './core/mode/cli-mode-loader';
+
+ModeLoader();
 
 export class Main {
     readonly ready: Promise<any>;

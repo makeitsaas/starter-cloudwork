@@ -1,5 +1,5 @@
 import { service } from '@decorators';
-import { DescribeInstancesResult, Instance, InstanceId } from 'aws-sdk/clients/ec2';
+import { Instance, InstanceId } from 'aws-sdk/clients/ec2';
 import { AwsService } from '../services/aws.service';
 import { FakeDelay } from '@fake';
 
