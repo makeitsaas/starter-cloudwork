@@ -14,6 +14,7 @@ program
     .option('--mode [mode]', 'Environment type (prod, test, local)')
     .option('--test', 'What your do for testing')
     .option('--ansible', 'Prepare ansible playbook')
+    .option('--introspection', 'App introspection')
     .option('--playbook [playbookName]', 'Specify ansible playbook name')
     .option('-X, --execute', 'Combined with --ansible, executes the freshly created playbook')
     .option('-i, --interactive', 'Creates a sequence from order')
@@ -32,6 +33,9 @@ const app = new Main();
 app.ready.then(() => {
     if (program.test || program.testMore) {
         return CliTestHandler(program, app).then(() => app.exit());
+    } else if (program.introspection) {
+        console.log('introspection');
+        return app.introspection().then(introspection => (console.log(introspection), app.exit()));
     } else if (program.pushOrder) {
         return CliPushOrderHandler(program.pushOrder).then(() => app.exit());
     } else if (program.order) {

@@ -1,4 +1,4 @@
-import { configureWorkflow, IWorkflowHost, WorkflowConfig } from 'workflow-es';
+import { configureWorkflow, IWorkflowHost, WorkflowConfig, IWorkflowRegistry } from 'workflow-es';
 import { workflowPersistenceLoader } from '@databases';
 import { WorkflowService } from './services/workflow.service';
 import { UpdateEnvironmentWorkflow } from './workflows/update-environment.workflow';
@@ -9,6 +9,7 @@ import { Order } from './entities/order';
 import { UpdateServiceWorkflow } from './workflows/update-service.workflow';
 import { WrapperWorkflow } from './workflows/wrapper.workflow';
 import { workflowLockLoader, workflowQueueLoader } from '../../core/queues/pipeline-lock';
+import { TYPES, IPersistenceProvider, WorkflowStatus, WorkflowStepBase, ExecutionPointer } from 'workflow-es';
 
 
 /**
@@ -22,6 +23,7 @@ import { workflowLockLoader, workflowQueueLoader } from '../../core/queues/pipel
  */
 
 export class PipelineModule {
+    private workflowConfig: WorkflowConfig;
     private host: IWorkflowHost;
     readonly ready: Promise<any>;
 
@@ -43,6 +45,7 @@ export class PipelineModule {
         this.host.registerWorkflow(UpdateEnvironmentWorkflow);
         this.host.registerWorkflow(UpdateServiceWorkflow);
         this.host.registerWorkflow(WrapperWorkflow);
+        this.workflowConfig = config;
     }
 
     async runDemo() {
@@ -73,6 +76,46 @@ export class PipelineModule {
         const wfs = new WorkflowService(this.host);
         await this.host.start();
         return wfs.updateService();
+    }
+
+    async introspection(workflowId: string) {
+        const {statusName, steps, pointers} = await this.getWorkflowProgress(workflowId);
+        console.log("\n\n\n------- wf introspection", `status=${statusName}`);
+        console.log(steps.map(step => `step(${step.id}): ${step.body.name}`));
+        console.log(`execution pointers steps (${pointers.length}) :`);
+        console.log(pointers.map((p, i) => `pointer n°${i} => step(${p.stepId})${p.active ? ' **active**' : ''}`));
+        return {
+            schema: true
+        };
+    }
+
+    async getWorkflowProgress(workflowId: string): Promise<{status: number, statusName: string, steps: WorkflowStepBase[], pointers: ExecutionPointer[]}> {
+        await this.ready;
+
+        const container = await this.workflowConfig.getContainer();
+        const persistence = container.get<IPersistenceProvider>(TYPES.IPersistenceProvider);
+        const registry = container.get<IWorkflowRegistry>(TYPES.IWorkflowRegistry);
+
+        const wf = await persistence.getWorkflowInstance(workflowId);
+        const wfDefinition = await registry.getDefinition(wf.workflowDefinitionId, wf.version);
+
+        return {
+            status: wf.status,
+            statusName: this.getWorkflowStatusKey(wf.status),
+            steps: wfDefinition.steps,
+            pointers: wf.executionPointers
+        }
+    }
+
+    private getWorkflowStatusKey(value: number): string {
+        const statuses: { [key: string]: number } = {...WorkflowStatus};
+        for (let key in statuses) {
+            if (statuses[key] === value) {
+                return key
+            }
+        }
+
+        return "unknown";
     }
 
     private overloadWorkflowContainer(config: WorkflowConfig) {

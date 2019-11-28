@@ -52,6 +52,16 @@ api:
           url: 'https://github.com/makeitsaas/makeitsaas-auth-instance'
         type: node
         tags: ["api:authentication"]
+front:
+    domains:
+      - simple-landing-front.lab.makeitsaas.com
+      - app.simplelanding.io
+    services:
+      - uuid: "11"
+        path: /
+        repository:
+          url: 'https://github.com/makeitsaas/simple-landing-front'
+        type: angular
 `;
 const order4 = `
 action: "update"

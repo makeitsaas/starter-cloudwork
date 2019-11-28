@@ -62,6 +62,14 @@ export class Main {
         return await deployer.preparePlaybook(playbookReference, deployment.environment, deployment);
     }
 
+    async introspection() {
+        const workflowId = "5ddfca1d2a3f9827730e9440";
+
+        return {
+            pipeline: await (new PipelineModule()).introspection(workflowId)
+        }
+    }
+
     exitHandler() {
         process.exit(0);
     }
