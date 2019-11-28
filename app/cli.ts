@@ -39,7 +39,7 @@ app.ready.then(() => {
     } else if (program.pushOrder) {
         return CliPushOrderHandler(program.pushOrder).then(() => app.exit());
     } else if (program.order) {
-        return CliOrderHandler(CustomOrders[parseInt(program.order)], app);
+        return CliOrderHandler(program.order, app);
     } else if (program.ansible) {
         return CliAnsibleHandler(program, app);
     } else if (program.drop) {

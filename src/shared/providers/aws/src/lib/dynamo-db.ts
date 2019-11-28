@@ -2,6 +2,7 @@ import * as AWS from "aws-sdk";
 import * as DynamoDB from "aws-sdk/clients/dynamodb";
 import { DYNAMO_DB_COLUMNS, DYNAMODB_TABLE_NAME } from '@custom-modules/providers/aws/config/dynamo-order';
 import parsers from "./parsers";
+import { AwsSqsOrderInterface } from '../../../../../../app/lib/aws/aws-sqs-order-interface';
 
 AWS.config.update({
     region: "eu-central-1"
@@ -36,35 +37,16 @@ const scan = () => {
     // });
 };
 
-const create = (userUuid: string, order: string) => {
-    // const item = orderItem(userUuid, order);
-    //
-    // const dynamoParams = {
-    //     TableName: DYNAMODB_TABLE_NAME,
-    //     Item: item
-    // };
-    //
-    // return new Promise((resolve, reject) => {
-    //     DynamoDb.putItem(dynamoParams, (err: any, data: any) => {
-    //         if (err) {
-    //             reject(err);
-    //         } else {
-    //             resolve(data);
-    //         }
-    //     });
-    // });
+const orderItem = (orderUuid: string, userUuid: string, order: string) => {
+    return {
+        UserUuid: {S: userUuid},
+        OrderUuid: {S: orderUuid},
+        OrderContent: {S: order},
+        OrderReport: {S: `{}`},
+        CreatedAt: {S: NOW()},
+        UpdatedAt: {S: NOW()}
+    };
 };
-
-// const orderItem = (userUuid: string, order: string) => {
-//     return {
-//         UserUuid: { S: userUuid },
-//         OrderUuid: { S: uuid() },
-//         OrderContent: { S: order },
-//         OrderReport: { S: `{}` },
-//         CreatedAt: { S: NOW() },
-//         UpdatedAt: { S: NOW() }
-//     };
-// };
 
 const NOW = () => {
     return `${new Date()}`;
@@ -92,11 +74,11 @@ export class DynamoClient {
         }
     }
 
-    async update(orderUuid: string, newReport: any) {
+    async update(orderUuid: string, userUuid: string, newReport: any) {
         const params: DynamoDB.Types.UpdateItemInput = {
             TableName: this.tableName,
             Key: {
-                "UserUuid": {S: "test-random-uuid-1234"},
+                "UserUuid": {S: userUuid},
                 "OrderUuid": {S: orderUuid},
             },
             UpdateExpression: "set OrderReport = :report",
@@ -114,6 +96,25 @@ export class DynamoClient {
                 } else {
                     // const elements = data.Items.map(parseElement);
                     console.log("found", data);
+                    resolve(data);
+                }
+            });
+        });
+    }
+
+    async create({OrderUuid, UserUuid, OrderContent}: AwsSqsOrderInterface) {
+        const item = orderItem(OrderUuid, UserUuid, OrderContent);
+
+        const dynamoParams = {
+            TableName: this.tableName,
+            Item: item
+        };
+
+        return new Promise((resolve, reject) => {
+            myDynamo.putItem(dynamoParams, (err: any, data: any) => {
+                if (err) {
+                    reject(err);
+                } else {
                     resolve(data);
                 }
             });

@@ -13,4 +13,12 @@ export class OrderService {
             }
         })
     }
+
+    getOrderByUuid(orderUuid: string): Promise<Order> {
+        return this.em.getRepository(Order).findOneOrFail({
+            where: {
+                orderUuid: orderUuid
+            }
+        })
+    }
 }

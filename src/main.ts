@@ -29,9 +29,11 @@ export class Main {
         ]);
     }
 
-    async handleYMLOrder(ymlOrder: string): Promise<any> {
+    async handleYMLOrder(orderUuid: string, userUuid: string, ymlOrder: string): Promise<any> {
         console.log('yml order:', ymlOrder);
         const o = new Order(ymlOrder);
+        o.orderUuid = orderUuid;
+        o.userUuid = userUuid;
         return o.saveDeep().then(o => {
             return this.pipelineModule
                 .processOrder(o)
@@ -65,7 +67,8 @@ export class Main {
     }
 
     async introspection() {
-        const workflowId = "5ddfca1d2a3f9827730e9440";
+        // TODO : remove hardcoded id
+        const workflowId = "5de04a7a18720413a0ecdc66";
 
         const report = await this.pipelineModule.report(workflowId);
         const wfIntrospection = await this.pipelineModule.introspection(workflowId);

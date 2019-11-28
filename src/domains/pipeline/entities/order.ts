@@ -40,6 +40,9 @@ export class Order {
     orderUuid: string;
 
     @Column("text")
+    userUuid: string;
+
+    @Column("text")
     specs: string;
 
     @Column()

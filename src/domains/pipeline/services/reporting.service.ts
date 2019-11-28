@@ -31,7 +31,8 @@ export class ReportingService {
     }
 
     async sendReport(orderUuid: string, report: any) {
-        return this.reportTableService.updateReport(orderUuid, report);
+        const userUuid = await this.getOrderUserUuid(orderUuid);
+        return this.reportTableService.updateReport(orderUuid, userUuid, report);
     }
 
     async buildAndSendReport(workflowUuid: string) {
@@ -59,6 +60,11 @@ export class ReportingService {
     async getOrderUuid(orderId: number): Promise<string> {
         // ok, temporary two primary index due to recent orderUuid implementation
         return this.orderService.getOrderById(orderId).then(order => order.orderUuid);
+    }
+
+    async getOrderUserUuid(orderUuid: string): Promise<string> {
+        // ok, temporary two primary index due to recent orderUuid implementation
+        return this.orderService.getOrderByUuid(orderUuid).then(order => order.userUuid);
     }
 
     async getWorkflowProgress(workflowId: string): Promise<{status: number, statusName: string, steps: WorkflowStepBase[], pointers: ExecutionPointer[]}> {
