@@ -1,6 +1,6 @@
 import { service } from '@decorators';
 import { Instance, InstanceId } from 'aws-sdk/clients/ec2';
-import { AwsService } from '../services/aws.service';
+import { AwsJobRunnerService } from '../services/aws-job-runner.service';
 import { FakeDelay } from '@fake';
 
 export class MissingInstancePublicIpError extends Error {
@@ -9,7 +9,7 @@ export class MissingInstancePublicIpError extends Error {
 
 export class AwsJobRunner {
     @service
-    aws: AwsService;
+    aws: AwsJobRunnerService;
 
     readonly ready: Promise<any>;
     public instanceId: InstanceId;

@@ -1,15 +1,16 @@
 import { configureWorkflow, IWorkflowHost, WorkflowConfig, IWorkflowRegistry } from 'workflow-es';
 import { workflowPersistenceLoader } from '@databases';
+import { service } from '@decorators';
 import { WorkflowService } from './services/workflow.service';
 import { UpdateEnvironmentWorkflow } from './workflows/update-environment.workflow';
-// import { Smoothie } from '../../../app/test-injectable';
-// import { Container } from '@core';
-// import { EntityManager } from 'typeorm';
 import { Order } from './entities/order';
 import { UpdateServiceWorkflow } from './workflows/update-service.workflow';
 import { WrapperWorkflow } from './workflows/wrapper.workflow';
 import { workflowLockLoader, workflowQueueLoader } from '../../core/queues/pipeline-lock';
 import { TYPES, IPersistenceProvider, WorkflowStatus, WorkflowStepBase, ExecutionPointer } from 'workflow-es';
+import { ReportingService } from './services/reporting.service';
+import { wait } from '@utils';
+
 
 
 /**
@@ -23,9 +24,11 @@ import { TYPES, IPersistenceProvider, WorkflowStatus, WorkflowStepBase, Executio
  */
 
 export class PipelineModule {
-    private workflowConfig: WorkflowConfig;
     private host: IWorkflowHost;
     readonly ready: Promise<any>;
+
+    @service
+    reportingService: ReportingService;
 
     constructor() {
         this.ready = this.prepare();
@@ -45,7 +48,7 @@ export class PipelineModule {
         this.host.registerWorkflow(UpdateEnvironmentWorkflow);
         this.host.registerWorkflow(UpdateServiceWorkflow);
         this.host.registerWorkflow(WrapperWorkflow);
-        this.workflowConfig = config;
+        this.reportingService.setWorkflowConfig(config);
     }
 
     async runDemo() {
@@ -79,7 +82,7 @@ export class PipelineModule {
     }
 
     async introspection(workflowId: string) {
-        const {statusName, steps, pointers} = await this.getWorkflowProgress(workflowId);
+        const {statusName, steps, pointers} = await this.reportingService.getWorkflowProgress(workflowId);
         console.log("\n\n\n------- wf introspection", `status=${statusName}`);
         console.log(steps.map(step => `step(${step.id}): ${step.body.name}`));
         console.log(`execution pointers steps (${pointers.length}) :`);
@@ -89,7 +92,14 @@ export class PipelineModule {
         };
     }
 
-    async getWorkflowProgress(workflowId: string): Promise<{status: number, statusName: string, steps: WorkflowStepBase[], pointers: ExecutionPointer[]}> {
+    async report(workflowUuid: string) {
+        await this.ready;
+        await wait();
+
+        return this.reportingService.buildAndSendReport(workflowUuid);
+    }
+
+    /*async getWorkflowProgress(workflowId: string): Promise<{status: number, statusName: string, steps: WorkflowStepBase[], pointers: ExecutionPointer[]}> {
         await this.ready;
 
         const container = await this.workflowConfig.getContainer();
@@ -116,7 +126,7 @@ export class PipelineModule {
         }
 
         return "unknown";
-    }
+    }*/
 
     private overloadWorkflowContainer(config: WorkflowConfig) {
         // careful : here we use inversify v5.x while workflow-es uses v4.x

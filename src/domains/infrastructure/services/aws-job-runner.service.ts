@@ -1,3 +1,5 @@
+// TODO : move to shared/providers
+
 import * as EC2 from 'aws-sdk/clients/ec2';
 import { DescribeInstancesResult, InstanceId, Reservation, TerminateInstancesRequest } from 'aws-sdk/clients/ec2';
 import { FakeDelay } from '@fake';
@@ -14,7 +16,7 @@ class InstanceAllocationFailedError extends Error {
 
 }
 
-export class AwsService {
+export class AwsJobRunnerService {
     private ec2 = new EC2({apiVersion: '2016-11-15'});
 
     async allocateJobRunner(): Promise<AwsJobRunner> {

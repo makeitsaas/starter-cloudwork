@@ -4,6 +4,7 @@ import { AwsSqsOrders } from './lib/aws/aws-sqs-orders';
 import { Message } from 'aws-sdk/clients/sqs';
 import { FakeDelay } from '@fake';
 import { ModeLoader } from '../src/core/mode/cli-mode-loader';
+import { wait } from '@utils';
 
 const app = new Main();
 const sqsClient = new AwsSqsOrders();
@@ -26,7 +27,7 @@ const workerHandler = () => {
         console.log('message', message.Attributes && message.Attributes.SentTimestamp);
         console.log('fake delay');
         return Promise.all([
-            FakeDelay.wait(5000),
+            wait(3000),
             sqsClient.deleteMessage(message),
             app.handleYMLOrder(message.Body || '')
         ]);

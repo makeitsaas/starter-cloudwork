@@ -35,6 +35,10 @@ export class Order {
     @PrimaryGeneratedColumn()
     id: number;
 
+    // todo : add index and type CHAR 36
+    @Column("text")
+    orderUuid: string;
+
     @Column("text")
     specs: string;
 

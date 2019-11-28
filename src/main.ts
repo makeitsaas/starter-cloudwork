@@ -6,7 +6,7 @@ import "reflect-metadata";
 import { Environment, Order, Service, ServiceDeployment } from '@entities';
 import { AnsibleService, Playbook } from '@ansible';
 import { Container } from '@core';
-import { em, _EM_ } from '@decorators';
+import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
 import { PipelineModule } from './domains/pipeline/pipeline.module';
 import { ModeLoader } from './core/mode/cli-mode-loader';
@@ -15,6 +15,9 @@ ModeLoader();
 
 export class Main {
     readonly ready: Promise<any>;
+
+    @service
+    pipelineModule: PipelineModule;
 
     @em(_EM_.deployment)
     private em: EntityManager;
@@ -30,8 +33,7 @@ export class Main {
         console.log('yml order:', ymlOrder);
         const o = new Order(ymlOrder);
         return o.saveDeep().then(o => {
-            const pipelineModule = new PipelineModule();
-            return pipelineModule
+            return this.pipelineModule
                 .processOrder(o)
         });
     }
@@ -65,8 +67,11 @@ export class Main {
     async introspection() {
         const workflowId = "5ddfca1d2a3f9827730e9440";
 
+        const report = await this.pipelineModule.report(workflowId);
+        const wfIntrospection = await this.pipelineModule.introspection(workflowId);
+
         return {
-            pipeline: await (new PipelineModule()).introspection(workflowId)
+            pipeline: wfIntrospection
         }
     }
 

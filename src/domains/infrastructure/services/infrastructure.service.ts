@@ -6,7 +6,7 @@ import { EntityManager } from 'typeorm';
 import { em, _EM_, service } from '@decorators';
 import { LambdaServer } from '@entities';
 import { FakeDelay } from '@fake';
-import { AwsService } from './aws.service';
+import { AwsJobRunnerService } from './aws-job-runner.service';
 
 export interface CDNBucketInfo {
     provider: 'aws';
@@ -25,7 +25,7 @@ export class InfrastructureService {
     private em: EntityManager;
 
     @service
-    awsService: AwsService;
+    awsService: AwsJobRunnerService;
 
     async testAWSConnection() {
         console.log('test');

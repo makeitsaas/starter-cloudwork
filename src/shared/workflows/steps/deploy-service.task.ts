@@ -1,4 +1,4 @@
-import { TaskCheckResult } from '@custom-modules/utils/task-check-result';
+import { TaskCheckResult } from '@utils';
 import { ServiceOperator } from '@operators';
 import { FakeDelay } from '@fake';
 import { ExampleMethodDecorator } from '../decorators/example-method-decorator';

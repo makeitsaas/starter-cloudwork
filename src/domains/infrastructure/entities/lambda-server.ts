@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, EntityManager, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { _EM_, em } from '../../../core/decorators/entity-manager-property';
 import { service } from '../../../core/decorators/service-property';
-import { AwsService } from '../services/aws.service';
+import { AwsJobRunnerService } from '../services/aws-job-runner.service';
 
 @Entity()
 export class LambdaServer {
@@ -39,7 +39,7 @@ export class LambdaServer {
     private em: EntityManager;
 
     @service
-    awsService: AwsService;
+    awsService: AwsJobRunnerService;
 
     hasReachedTimeout(): boolean {
         const timeoutTimestamp = this.createdAt.getTime() + this.timeout * 1000,
