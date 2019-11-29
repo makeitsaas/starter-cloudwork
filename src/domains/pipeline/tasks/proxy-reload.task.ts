@@ -5,6 +5,7 @@ import { Order } from '@entities';
 import { OrderService } from '@services';
 import { AnsibleService } from '@ansible';
 import { DatabaseDeploymentFailed, ProxyReloadFailed } from '../../deployment/errors';
+import { ReportingService } from '../services/reporting.service';
 
 export class ProxyReloadTask extends StepBody {
 
@@ -20,12 +21,16 @@ export class ProxyReloadTask extends StepBody {
     @service
     private ansibleService: AnsibleService;
 
+    @service
+    reportingService: ReportingService;
+
     private context: {
         order: Order
     };
 
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         console.log("ProxyReloadTask");
+        this.reportingService.buildAndSendReport(context.workflow.id);
         return this.loadContext()
             .then(async () => {
                 const playbook = await this.ansibleService.preparePlaybook('proxy-reload', this.context.order.environment);

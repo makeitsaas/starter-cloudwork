@@ -4,6 +4,7 @@ import { EntityManager } from 'typeorm';
 import { Environment, Order, ServiceDeployment, ServiceSpecification } from '@entities';
 import { InfrastructureService, OrderService } from '@services';
 import { ServiceOperator } from '../../deployment/value-objects/service-operator';
+import { ReportingService } from '../services/reporting.service';
 
 export class ServiceDeployTask extends StepBody {
 
@@ -20,6 +21,9 @@ export class ServiceDeployTask extends StepBody {
     @service
     infrastructureService: InfrastructureService;
 
+    @service
+    reportingService: ReportingService;
+
     private context: {
         order: Order
         serviceSpecification: ServiceSpecification
@@ -29,6 +33,8 @@ export class ServiceDeployTask extends StepBody {
     public run(context: StepExecutionContext): Promise<ExecutionResult> {
         this.serviceUuid = context.item;
         this.checkInputs();
+
+        this.reportingService.buildAndSendReport(context.workflow.id);
 
         return this.loadContext()
             .then(() => this.context.serviceOperator.updatePath())  // maybe somewhere else
