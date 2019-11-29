@@ -68,7 +68,7 @@ export class Main {
 
     async introspection() {
         // TODO : remove hardcoded id
-        const workflowId = "5de04a7a18720413a0ecdc66";
+        const workflowId = "5de17c06fa788a1eef987525";
 
         const report = await this.pipelineModule.report(workflowId);
         const wfIntrospection = await this.pipelineModule.introspection(workflowId);

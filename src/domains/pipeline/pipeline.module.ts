@@ -84,7 +84,7 @@ export class PipelineModule {
     async introspection(workflowId: string) {
         const {statusName, steps, pointers} = await this.reportingService.getWorkflowProgress(workflowId);
         console.log("\n\n\n------- wf introspection", `status=${statusName}`);
-        console.log(steps.map(step => `step(${step.id}): ${step.body.name}`));
+        console.log(steps.map(step => `step(${step.id}): ${step.name}`));
         console.log(`execution pointers steps (${pointers.length}) :`);
         console.log(pointers.map((p, i) => `pointer n°${i} => step(${p.stepId})${p.active ? ' **active**' : ''}`));
         return {

@@ -7,10 +7,19 @@ import {
     IPersistenceProvider,
     IWorkflowRegistry,
     TYPES,
-    WorkflowConfig, WorkflowStatus,
-    WorkflowStepBase
+    WorkflowConfig,
+    WorkflowStatus,
+    PointerStatus
 } from 'workflow-es';
 import { OrderService } from './order.service';
+import { WorkflowStepBase } from 'workflow-es/src/models/workflow-step';
+
+interface StepReport extends WorkflowStepBase{
+}
+
+interface PointerReport extends ExecutionPointer {
+    statusName: string;
+}
 
 export class ReportingService {
 
@@ -49,7 +58,7 @@ export class ReportingService {
 
     async getWorkflowOrderUuid(workflowUuid: string): Promise<string> {
         const workflow = await this.getWorkflowInstance(workflowUuid);
-        if(workflow.data.orderUuid) {
+        if (workflow.data.orderUuid) {
             return workflow.data.orderUuid;
         } else {
             const orderId = workflow.data.orderId;
@@ -67,7 +76,7 @@ export class ReportingService {
         return this.orderService.getOrderByUuid(orderUuid).then(order => order.userUuid);
     }
 
-    async getWorkflowProgress(workflowId: string): Promise<{status: number, statusName: string, steps: WorkflowStepBase[], pointers: ExecutionPointer[]}> {
+    async getWorkflowProgress(workflowId: string): Promise<{ status: number, statusName: string, steps: StepReport[], pointers: PointerReport[] }> {
         const container = await this.workflowConfig.getContainer();
         const registry = container.get<IWorkflowRegistry>(TYPES.IWorkflowRegistry);
 
@@ -77,13 +86,30 @@ export class ReportingService {
         return {
             status: wf.status,
             statusName: this.getWorkflowStatusKey(wf.status),
-            steps: wfDefinition.steps,
-            pointers: wf.executionPointers
+            steps: wfDefinition.steps.map(step => ({
+                ...step,
+                name: step.name || step.body.name       // if task has not a specific name, then use its class name
+            })),
+            pointers: wf.executionPointers.map(pointer => ({
+                ...pointer,
+                statusName: this.getPointerStatusKey(pointer.status)
+            }))
         }
     }
 
     private getWorkflowStatusKey(value: number): string {
         const statuses: { [key: string]: number } = {...WorkflowStatus};
+        for (let key in statuses) {
+            if (statuses[key] === value) {
+                return key
+            }
+        }
+
+        return "unknown";
+    }
+
+    private getPointerStatusKey(value: number): string {
+        const statuses: { [key: string]: number } = {...PointerStatus};
         for (let key in statuses) {
             if (statuses[key] === value) {
                 return key
