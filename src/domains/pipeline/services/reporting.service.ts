@@ -12,9 +12,16 @@ import {
     PointerStatus
 } from 'workflow-es';
 import { OrderService } from './order.service';
-import { WorkflowStepBase } from 'workflow-es/src/models/workflow-step';
+import { StepOutcome } from 'workflow-es/src/models/step-outcome';
 
-interface StepReport extends WorkflowStepBase{
+interface StepReport {
+    id: number;
+    name: string;
+    outcomes: Array<StepOutcome>;
+    children: Array<number>;
+    errorBehavior: number;
+    retryInterval: number;
+    compensationStepId: number;
 }
 
 interface PointerReport extends ExecutionPointer {
