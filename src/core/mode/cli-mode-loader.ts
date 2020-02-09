@@ -1,5 +1,4 @@
 import { CommanderStatic } from 'commander';
-import { InvalidMode } from '../errors';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 import * as AWS from 'aws-sdk';
@@ -22,6 +21,9 @@ const MODES_LIST = [
 interface IModeConfig {
     production: boolean
     executePlaybooks: boolean
+}
+
+export class InvalidMode extends Error {
 }
 
 export let ModeConfig: IModeConfig;

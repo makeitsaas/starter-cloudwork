@@ -2,22 +2,10 @@ import {
     AnsibleExecutionClient, AnsibleInventoryInterface,
     AnsibleVarsInterface
 } from '@custom-modules/ansible-execution-client';
-import { AbstractBaseVault, Environment, EnvironmentVault, ServiceDeployment, ServiceDeploymentVault } from '@entities';
+import { Environment, ServiceDeployment } from '@entities';
 import { CliHelper, ConfigReader, SinglePlaybookConfig } from '@utils';
-import { VaultService } from '@services';
-import { service } from '@decorators';
 import { ModeConfig } from '../src/core/mode/cli-mode-loader';
 import { LambdaServer } from '@entities';
-
-export interface EnvironmentCommonVariablesInterface {
-    environment_id: string;
-    environment_domain_front: string;
-    environment_domain_api: string;
-    vhosts: {
-        domains: string[]
-        services: any[]
-    }[];
-}
 
 export interface IPlaybookInputObjects {
     environment: Environment
@@ -43,8 +31,6 @@ export class Playbook {
     /**
      * Convenience properties
      */
-    private vault: EnvironmentVault;
-    private deploymentVault: ServiceDeploymentVault;
     private environment: Environment;
     readonly deployment?: ServiceDeployment;
     readonly lambdaServer?: LambdaServer;
@@ -52,8 +38,8 @@ export class Playbook {
     /**
      * DI properties
      */
-    @service
-    private vaultService: VaultService;
+    // @service
+    // private vaultService: VaultService;
 
     /**
      * Constructor-set properties
@@ -139,14 +125,9 @@ export class Playbook {
 
         for (let i in required) {
             let key = required[i];
-            let vaultValue = await this.getVaultVariable(key);
-            if (vaultValue) {
-                this.vars[key] = vaultValue;
-            } else if (!this.vars[key] && this.interactive) {
-                let interactiveValue = await CliHelper.askInteractively(key);
-                await this.saveInteractiveValue(key, interactiveValue);
-                this.vars[key] = interactiveValue;
-            }
+            let interactiveValue = await CliHelper.askInteractively(key);
+            await this.saveInteractiveValue(key, interactiveValue);
+            this.vars[key] = interactiveValue;
         }
 
         return this.vars;
@@ -155,29 +136,8 @@ export class Playbook {
     private async loadInventory(): Promise<AnsibleInventoryInterface> {
         this.inventory = {};
 
-        if (this.deployment && this.deployment.service) {
-            const computingAllocation = await this.deployment.computingAllocation;
-            const port = await (computingAllocation && computingAllocation.allocatedPort);
-            if (port) {
-                this.inventory.computing = (await port.server).ip;
-            }
-
-            const databaseAllocation = await this.deployment.databaseAllocation;
-            if (databaseAllocation) {
-                let server = await databaseAllocation.server;
-                if (server) {
-                    this.inventory.database = server.ip;
-                }
-            }
-        }
-
         if (this.lambdaServer) {
             this.inventory['lambda-server'] = this.lambdaServer.ip;
-        }
-
-        const proxy = await this.environment.proxy;
-        if (proxy) {
-            this.inventory.proxy = proxy.ip;
         }
 
         return {};
@@ -187,89 +147,12 @@ export class Playbook {
         return await this.environment.generateDiscoveryConfig();
     }
 
-    private async getCommonVariables(): Promise<EnvironmentCommonVariablesInterface> {
-        const deployments = await this.environment.deployments;
-        const servicesRouting = await Promise.all(deployments.map(async deployment => {
-            if (deployment.isAPIDeployment()) {
-                const allocation = await deployment.computingAllocation;
-                const computePort = await (allocation && allocation.allocatedPort);
-                if (!computePort)
-                    throw new Error(`No compute allocation for deployment ${deployment.id}`);
-                const computeServer = await computePort.server;
-                return {
-                    behavior: 'api',
-                    path: deployment.path,
-                    host: computeServer.ip === this.inventory.proxy ? 'localhost' : computeServer.ip,
-                    port: computePort.port,
-                    secure: false,
-                    outputBasePath: null,
-                    repositoryVersion: deployment.repositoryVersion,
-                };
-            } else if (deployment.isSPADeployment()) {
-                const cdnBucketInfo = await deployment.getCDNBucketInfo();
-                return {
-                    behavior: 'web',
-                    path: deployment.path,
-                    host: cdnBucketInfo.host,
-                    port: cdnBucketInfo.port,
-                    secure: cdnBucketInfo.secure,
-                    outputBasePath: '/' + cdnBucketInfo.bucketName + cdnBucketInfo.bucketPath,
-                    repositoryVersion: deployment.repositoryVersion,
-                };
-            } else {
-                return {}
-            }
-
-        }));
-
-        const vhostsAPI = {
-            domains: this.environment.configuration.domains.api,
-            services: servicesRouting.filter(service => service.behavior === 'api')
-        };
-
-        const vhostsWeb = {
-            domains: this.environment.configuration.domains.front,    // automatic prefix for the moment
-            services: servicesRouting.filter(service => service.behavior === 'web')
-        };
-
-        let vhosts = [vhostsAPI];
-
-        if(vhostsWeb.services.length) {
-            vhosts.push(vhostsWeb);
-        }
-
-        return {
-            environment_id: this.environment.uuid,
-            environment_domain_front: this.environment.configuration.domains.front[0] || '',
-            environment_domain_api: this.environment.configuration.domains.api[0] || '',
-            vhosts
-        }
+    private async getCommonVariables(): Promise<any> {
+        return {}
     }
 
     private async getDeploymentVariables(): Promise<any> {
-        const db = this.deployment && await this.deployment.databaseAllocation;
-        const dbServer = db && await db.server;
-        const computing = this.deployment && await this.deployment.computingAllocation;
-        const computingPort = computing && await computing.allocatedPort;
-
-        if (this.deployment && this.deployment.isAPIDeployment()) {
-            return {
-                repo_url: this.deployment.service.repositoryUrl,
-                db_hostname: dbServer && dbServer.ip,
-                service_port: computingPort && computingPort.port,
-                redis_hostname: dbServer && dbServer.ip,
-                repo_directory: `d${this.deployment.id}`,
-            };
-        } else if (this.deployment && this.deployment.isSPADeployment()) {
-            const cdnBucketInfo = await this.deployment.getCDNBucketInfo();
-            return this.deployment && {
-                repo_url: this.deployment.service.repositoryUrl,
-                cdn_bucket_uri: cdnBucketInfo.bucketURI
-                // cdn_path: this.deployment,
-            };
-        } else {
-            return {};
-        }
+        return {};
     }
 
     private getRequiredVariablesNames(): string[] {
@@ -279,33 +162,10 @@ export class Playbook {
     }
 
     private async saveInteractiveValue(key: string, value: string) {
-        const vault = await this.getVault(key);
-        vault.addValue(key, value);
-        await vault.save();
-    }
-
-    private async getVaultVariable(key: string): Promise<string> {
-        const vault = await this.getVault(key);
-
-        return vault.getValue(key);
-    }
-
-    private async getVault(key: string): Promise<AbstractBaseVault> {
-        const type = ConfigReader.playbooks.getVariableVaultType(key);
-        if (type === 'deployment') {
-            if (!this.deployment) {
-                throw new Error('Missing deployment');
-            }
-            if (!this.deploymentVault) {
-                this.deploymentVault = await this.vaultService.getDeploymentVault(`${this.deployment.id}`)
-            }
-            return this.deploymentVault;
-        } else {
-            if (!this.vault) {
-                this.vault = await this.vaultService.getEnvironmentVault(`${this.environment.uuid}`)
-            }
-            return this.vault;
-        }
+        console.log('save interactively', key, value);
+        // const vault = await this.getVault(key);
+        // vault.addValue(key, value);
+        // await vault.save();
     }
 
     private async onInitError(e: Error) {

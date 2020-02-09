@@ -34,14 +34,8 @@
       "@databases": [
         "../src/core/databases"
       ],
-      "@services": [
-        "../src/core/alias/services"
-      ],
       "@errors": [
         "../src/core/alias/errors"
-      ],
-      "@operators": [
-        "../src/core/alias/operators"
       ],
       "@ansible": [
         "../ansible"
