@@ -2,6 +2,7 @@ import * as program from 'commander';
 import { Main } from '../src/main';
 import { ModeLoader } from '../src/core/mode/cli-mode-loader';
 import { CliTestHandler } from './lib/cli/cli-test-handler';
+import { CliCreateClusterHandler } from './lib/cli/cli-create-cluster-handler';
 
 program
     .version('0.1.0')
@@ -28,7 +29,7 @@ app.ready.then(() => {
     if (program.test || program.testMore) {
         return CliTestHandler(program, app).then(() => app.exit());
     } else {
-        return CliTestHandler(program, app).then(() => app.exit());
+        return CliCreateClusterHandler(program, app).then(() => app.exit());
     }
 }).catch(err => {
     console.log('----- error catch end');
