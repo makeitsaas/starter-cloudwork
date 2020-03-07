@@ -10,6 +10,8 @@ export const dbMainLoader = createConnection({
     entities: [
         __dirname + "/../../domains/example/entities/*.js",
         __dirname + "/../../domains/example/entities/*.ts",
+        __dirname + "/../../domains/clusters/entities/*.js",
+        __dirname + "/../../domains/clusters/entities/*.ts",
     ],
     synchronize: true,
     logging: false

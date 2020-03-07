@@ -6,7 +6,7 @@ export const _EM_: {[key in ('deployment'|'infrastructure')]: 'main'} = {
     // vault: 'vault'
 };
 
-export function em(type: 'main') {
+export function em(type: 'main' = 'main') {
     return function (target: Object, propertyName: string, index?: number) {
         Container.ready.then(() => {
             Object.defineProperty(target, propertyName, {
