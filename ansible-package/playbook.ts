@@ -30,7 +30,7 @@ export class Playbook {
         const varsFileContent = this.ansibleFileBuilder.buildVarsFile(this.vars);
         this.directoryHelper.writeFile(this.getVarsRelativePath(), varsFileContent);
 
-        this.directoryHelper.copyFile(`${process.cwd()}/playbooks/hello-world.yml`, 'dynamic-playbook.yml');
+        this.directoryHelper.copyFile(`${process.cwd()}/${this.playbookPath}`, 'dynamic-playbook.yml');
     }
 
     execute(): Promise<any> {
@@ -41,7 +41,7 @@ export class Playbook {
         const executor = new PlaybookExecutor(this.directoryHelper.getContextDirectory(), logger);
 
         return executor.exec().then((results: any) => {
-            console.log('results', results);
+            // console.log('results', results);
             return results;
         });
     }

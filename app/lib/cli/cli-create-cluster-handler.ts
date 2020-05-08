@@ -1,6 +1,6 @@
 import { Main } from '../../../src/main';
 import { ClusterModule } from '../../../src/domains/clusters/cluster.module';
-import { Playbook } from '@ansible';
+import { parseStepLineJSON, Playbook, readStep } from '@ansible';
 
 /*
     TODO quick :
@@ -43,11 +43,16 @@ const createManager = async () => {
         const managerIp = await managerEC2Instance.getPublicIp();
         console.log('manager ip :', managerIp);
         const playbook = new Playbook(
-            'playbook/hello-world.yml',
+            'playbooks/swarm-init.yml',
             {message: "Hello Server !"},
             {dynamic_hosts: [managerIp]});
         await playbook.setupDirectory();
-        await playbook.execute();
+        const results = await playbook.execute();
+        console.log('resuts to read', results);
+        const swarmStep = readStep(results, "Exec swarm init");
+        const swarmStepInfo = parseStepLineJSON(swarmStep.lines[0]);
+        const tokens = swarmStepInfo.swarm_facts.JoinTokens;
+        console.log('you can join as a worker using token', tokens.Worker);
     } else {
         throw new Error("createManager failed (no node)")
     }

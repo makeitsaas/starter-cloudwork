@@ -1,0 +1,22 @@
+---
+- hosts: dynamic_hosts
+  remote_user: ubuntu
+  tasks:
+    - set_fact: vars_file="default"
+      when: vars_file is undefined
+    - name: include variables
+      include_vars: vars/{{vars_file}}.yml
+# To move when handling sub-playbooks copy
+# don't do because have do handle dpkg/lock retry => might be too long
+#    - name: Prerequisites - Install required system packages
+#      become: true
+#      apt: name={{ item }} state=latest update_cache=yes
+#      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+#    - name: Prerequisites - Install Docker Module for Python
+#      pip:
+#        name: docker
+# End "To move"
+    - name: Exec swarm init
+      docker_swarm:
+        state: present
+

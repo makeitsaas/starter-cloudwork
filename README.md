@@ -6,6 +6,8 @@ Todos :
 * Packager ansible-package
 * Clarifier la config (database) et gestion des modules
 
+                 (context: repositories)
+workflow => task => action => services => adapters => libs (ansible, aws-sdk)
 
 Three ways to do things :
 - cli 
@@ -71,3 +73,10 @@ app.ready.then(() => {
     // do everything you want
 });
 ```
+
+## Tips
+
+To install docker using ansible
+
+Tutorial : https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-docker-on-ubuntu-18-04
+Playbook : https://github.com/do-community/ansible-playbooks/blob/master/docker_ubuntu1804/playbook.yml

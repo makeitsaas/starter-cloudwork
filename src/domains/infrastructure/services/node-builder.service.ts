@@ -10,7 +10,7 @@ export class NodeBuilderService {
     async allocateNodeInstance(): Promise<AwsInstance> {
         const ec2 = new EC2({apiVersion: '2016-11-15'});
         const instanceParams = {
-            ImageId: 'ami-033e388afef4f8d4d',
+            ImageId: 'ami-0e0d205d2c0ebd28f',
             InstanceType: 't2.micro',
             KeyName: 'adu-dev',
             SecurityGroupIds: ['sg-2108c549', 'sg-c50d28ad', 'sg-ff311497'],
