@@ -103,6 +103,11 @@ AbstractAnsibleCommand.prototype.asSudo = function () {
     return this;
 };
 
+AbstractAnsibleCommand.prototype.sshExtraArgs = function (extraArgs) {
+    this.config.sshExtraArgs = extraArgs;
+    return this;
+};
+
 AbstractAnsibleCommand.prototype.addParam = function (commandParams, param, flag) {
     if (this.config[param]) {
         return this.addParamValue(commandParams, this.config[param], flag)
@@ -142,6 +147,7 @@ AbstractAnsibleCommand.prototype.commonCompileParams = function (commandParams) 
     commandParams = this.addParam(commandParams, "inventory", "i");
     commandParams = this.addParam(commandParams, "limit", "l");
     commandParams = this.addParam(commandParams, "su", "U");
+    commandParams = this.addParam(commandParams, "sshExtraArgs", "-ssh-extra-args");
     commandParams = this.addPathParam(commandParams, "privateKey", "-private-key");
     commandParams = this.addVerbose(commandParams);
     commandParams = this.addSudo(commandParams);

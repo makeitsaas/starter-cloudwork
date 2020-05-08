@@ -35,7 +35,7 @@ export class Playbook {
 
     execute(): Promise<any> {
         console.log('cd', this.directoryHelper.getContextDirectory());
-        console.log('ansible-playbook -i inventories/hosts dynamic-playbook.yml -v');
+        console.log('ansible-playbook -i inventories/hosts dynamic-playbook.yml -v --ssh-extra-args="-o StrictHostKeyChecking=no"');
 
         const logger = this.directoryHelper.getLogger();
         const executor = new PlaybookExecutor(this.directoryHelper.getContextDirectory(), logger);

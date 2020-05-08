@@ -20,11 +20,8 @@ export class ManageClusterService {
         const nodeInstance = await this.nodeBuilderService.allocateNodeInstance();
         node.instance = Promise.resolve(nodeInstance);
 
-        console.log('cluster', cluster);
-        console.log("node", await this.em.save(node));
-
+        await this.em.save(node);
         await nodeInstance.onReady();
-        console.log(nodeInstance);
         console.log('we add cluster, at least 1 manager, and eventually workers');
 
         return cluster;

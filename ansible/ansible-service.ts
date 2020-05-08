@@ -2,7 +2,7 @@ import {
     Environment,
     ServiceDeployment
 } from '@entities';
-import { IPlaybookInputObjects, Playbook } from '@ansible';
+import { IPlaybookInputObjects, Playbook } from '.';
 // import { ConfigReader } from '@utils';
 // import { service } from '@decorators';
 // import { InfrastructureService } from '@services';

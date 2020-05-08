@@ -1,6 +1,6 @@
 import { Main } from '../../../src/main';
 import { ClusterModule } from '../../../src/domains/clusters/cluster.module';
-import { Playbook } from '../../../ansible-package/playbook';
+import { Playbook } from '@ansible';
 
 /*
     TODO quick :

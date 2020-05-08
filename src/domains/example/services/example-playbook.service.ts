@@ -1,10 +1,11 @@
+// DEPRECATED
 import {
     Environment,
     ServiceDeployment,
 } from '@entities';
 import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
-import { AnsibleService, Playbook } from '@ansible';
+import { AnsibleService, Playbook } from '../../../../ansible';
 
 export class ExamplePlaybook {
     ready: Promise<any>;

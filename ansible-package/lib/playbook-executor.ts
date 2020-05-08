@@ -32,6 +32,7 @@ export class PlaybookExecutor {
             //.inventory('config/inventories/dev')
             .privateKey(AnsibleConfig.getKeyPath())
             .user('ubuntu')
+            .sshExtraArgs('"-o StrictHostKeyChecking=no"')
             .verbose('v');
         // .verbose('vvvv');
 
