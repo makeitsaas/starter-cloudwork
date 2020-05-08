@@ -12,6 +12,7 @@ import {
 import { ClusterNode } from '../../clusters/entities/cluster-node.entity';
 
 export class MissingInstancePublicIpError extends Error {}
+export class MissingInstancePrivateIpError extends Error {}
 
 @Entity()
 export class AwsInstance {
@@ -57,6 +58,15 @@ export class AwsInstance {
             return description.PublicIpAddress;
         } else {
             throw new MissingInstancePublicIpError();
+        }
+    }
+
+    async getPrivateIp(): Promise<string> {
+        const description: Instance = await this.aws.describeEC2Instance(this.instanceId);
+        if(description.PrivateIpAddress) {
+            return description.PrivateIpAddress;
+        } else {
+            throw new MissingInstancePrivateIpError();
         }
     }
 }

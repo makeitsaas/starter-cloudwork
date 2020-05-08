@@ -1,6 +1,7 @@
 import { Main } from '../../../src/main';
 import { ClusterModule } from '../../../src/domains/clusters/cluster.module';
 import { parseStepLineJSON, Playbook, readStep } from '@ansible';
+import { Cluster } from '../../../src/domains/clusters/entities/cluster.entity';
 
 /*
     TODO quick :
@@ -17,10 +18,16 @@ import { parseStepLineJSON, Playbook, readStep } from '@ansible';
 
 const clusterModule = new ClusterModule();
 
+interface JoinTokensInterface {
+    Manager: string
+    Worker: string
+}
+
 export const CliCreateClusterHandler = async (program: any, app: Main): Promise<any> => {
     console.log('*** (create cluster entry)');
-    await createManager();
-    await createWorker();
+    const cluster = await clusterModule.createCluster();
+    const joinTokens = await createManager(cluster);
+    await createWorker(cluster, joinTokens);
     console.log('*** push react image as docker stack');
     console.log('*** (wait and check if ok => mark entry status)');
     // todos
@@ -33,31 +40,61 @@ export const CliCreateClusterHandler = async (program: any, app: Main): Promise<
     app.exit();
 };
 
-const createManager = async () => {
+const createManager = async (cluster: Cluster) => {
     console.log('*** create manager (start instance, start docker-swarm, get token key, store this key');
-    const cluster = await clusterModule.createCluster();
-    const nodes = await cluster.nodes;
-    if(nodes.length) {
-        const manager = nodes[0];
-        const managerEC2Instance = await manager.instance;
-        const managerIp = await managerEC2Instance.getPublicIp();
+    const managerIp = await cluster.getManagerIp(); // dirty hack for the moment, the node is created but not used
+    if (managerIp) {
         console.log('manager ip :', managerIp);
-        const playbook = new Playbook(
-            'playbooks/swarm-init.yml',
-            {message: "Hello Server !"},
-            {dynamic_hosts: [managerIp]});
-        await playbook.setupDirectory();
-        const results = await playbook.execute();
+        const results = await runSwarmInit(managerIp);
         console.log('resuts to read', results);
         const swarmStep = readStep(results, "Exec swarm init");
         const swarmStepInfo = parseStepLineJSON(swarmStep.lines[0]);
-        const tokens = swarmStepInfo.swarm_facts.JoinTokens;
-        console.log('you can join as a worker using token', tokens.Worker);
+        const joinTokens: JoinTokensInterface = swarmStepInfo.swarm_facts.JoinTokens;
+        console.log("have to get ip from ", swarmStepInfo.swarm_facts);
+        console.log('you can join as a worker using token', joinTokens.Worker);
+        return joinTokens;
     } else {
         throw new Error("createManager failed (no node)")
     }
 };
 
-const createWorker = async () => {
-    console.log('*** create worker (start instance, start docker-swarm, recover master key, link to master');
+const createWorker = async (cluster: Cluster, joinTokens: JoinTokensInterface) => {
+    console.log("\n\n*** create worker (start instance, start docker-swarm, recover master key, link to master");
+    const manager = await cluster.getManagerNode();
+    if(manager) {
+        const workerNode = await clusterModule.addNodeToCluster(cluster);
+        const workerInstance = await workerNode.instance;
+        const workerPublicIp = await workerInstance.getPublicIp();
+        const workerPrivateIp = await workerInstance.getPrivateIp();
+        const managerPrivateIp = await (await manager.instance).getPrivateIp();
+        const result = await runSwarmJoin(workerPublicIp, workerPrivateIp, managerPrivateIp, joinTokens.Worker);
+        console.log(result);
+
+        return result;
+    } else {
+        throw new Error("Cannot createWorker: no managerIp");
+    }
+};
+
+
+/**
+ * Utils
+ */
+
+const runSwarmInit = async (nodePublicIp: string) => {
+    const playbook = new Playbook(
+        'playbooks/swarm-init.yml',
+        {message: "Hello Server !"},
+        {dynamic_hosts: [nodePublicIp]});
+    await playbook.setupDirectory();
+    return await playbook.execute();
+};
+
+const runSwarmJoin = async (workerPublicIp: string, workerPrivateIp: string, managerPrivateIp: string, joinToken: string) => {
+    const playbook = new Playbook(
+        'playbooks/swarm-join.yml',
+        {joinToken, managerPrivateIp, workerPrivateIp},
+        {dynamic_hosts: [workerPublicIp]});
+    await playbook.setupDirectory();
+    return await playbook.execute();
 };

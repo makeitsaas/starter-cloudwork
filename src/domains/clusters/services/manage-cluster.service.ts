@@ -13,17 +13,23 @@ export class ManageClusterService {
 
     async createCluster(options: any = {}): Promise<Cluster> {
         const cluster = await this.em.save(new Cluster());
+
+        await this.addNodeToCluster(cluster);
+        console.log('we add cluster, at least 1 manager, and eventually workers');
+
+        return cluster;
+    }
+
+    async addNodeToCluster(cluster: Cluster): Promise<ClusterNode> {
         const node = new ClusterNode();
         node.cluster = Promise.resolve(cluster);
 
         // requires permission mis_swarm_node_launcher
         const nodeInstance = await this.nodeBuilderService.allocateNodeInstance();
         node.instance = Promise.resolve(nodeInstance);
-
         await this.em.save(node);
         await nodeInstance.onReady();
-        console.log('we add cluster, at least 1 manager, and eventually workers');
 
-        return cluster;
+        return node;
     }
 }

@@ -25,4 +25,18 @@ export class Cluster {
 
     @UpdateDateColumn({type: 'timestamp'})
     updatedAt: Date;
+
+    async getManagerNode(): Promise<ClusterNode|void> {
+        const nodes = await this.nodes;
+        return nodes[0];
+    }
+
+    async getManagerIp(): Promise<string|void> {
+        const nodes = await this.nodes;
+        if(nodes.length) {
+            const manager = nodes[0];
+            const managerEC2Instance = await manager.instance;
+            return await managerEC2Instance.getPublicIp();
+        }
+    }
 }

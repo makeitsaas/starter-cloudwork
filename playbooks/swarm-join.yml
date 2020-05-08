@@ -1,0 +1,15 @@
+---
+- hosts: dynamic_hosts
+  remote_user: ubuntu
+  tasks:
+    - set_fact: vars_file="default"
+      when: vars_file is undefined
+    - name: include variables
+      include_vars: vars/{{vars_file}}.yml
+    - name: Exec swarm join
+      docker_swarm:
+        state: join
+        advertise_addr: "{{ workerPrivateIp }}:2377"
+        join_token: "{{ joinToken }}"
+        remote_addrs: ["{{ managerPrivateIp }}:2377"]
+
