@@ -6,8 +6,10 @@ Todos :
 * Packager ansible-package
 * Clarifier la config (database) et gestion des modules
 
+```
                  (context: repositories)
 workflow => task => action => services => adapters => libs (ansible, aws-sdk)
+```
 
 Three ways to do things :
 - cli 
@@ -42,10 +44,10 @@ npm run cli
 npm run cli -- --someParameter=value
 
 # todo : one example to show a consumer worker
-npm run worker-consumer
+npm run worker-consumer [DEPRECATED - TO BE UPDATED]
 
 # one example to show an "action" worker
-npm run worker-action
+npm run worker-action [DEPRECATED - TO BE UPDATED]
 ```
 
 

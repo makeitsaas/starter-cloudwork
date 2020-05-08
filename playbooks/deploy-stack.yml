@@ -1,0 +1,23 @@
+---
+- hosts: dynamic_hosts
+  remote_user: ubuntu
+  tasks:
+    - set_fact: vars_file="default"
+      when: vars_file is undefined
+    - set_fact: repository_directory="/home/ubuntu/samples-repository"
+    - name: include variables
+      include_vars: vars/{{vars_file}}.yml
+    - name: Clone Samples repository
+      git:
+        repo: "https://github.com/makeitsaas/samples"
+        dest: "{{ repository_directory }}"
+    - name: Prerequisites - pip install jsondiff
+      pip:
+        name: jsondiff
+    - name: deploy stack
+      docker_stack:
+        state: present
+        name: react-basic
+        compose:
+          - "{{ repository_directory }}/docker-compose/react-basic.yml"
+

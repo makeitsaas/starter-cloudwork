@@ -24,11 +24,10 @@ interface JoinTokensInterface {
 }
 
 export const CliCreateClusterHandler = async (program: any, app: Main): Promise<any> => {
-    console.log('*** (create cluster entry)');
-    const cluster = await clusterModule.createCluster();
+    const cluster = await createNewCluster();
     const joinTokens = await createManager(cluster);
     await createWorker(cluster, joinTokens);
-    console.log('*** push react image as docker stack');
+    await deployStack(cluster);
     console.log('*** (wait and check if ok => mark entry status)');
     // todos
     // create instance from ami-033e388afef4f8d4d
@@ -38,6 +37,11 @@ export const CliCreateClusterHandler = async (program: any, app: Main): Promise<
     // security group for inbound http
     // # docker stack deploy -c docker-compose.yml my-basic-react
     app.exit();
+};
+
+const createNewCluster = async (): Promise<Cluster> => {
+    console.log('*** (create cluster entry)');
+    return await clusterModule.createCluster();
 };
 
 const createManager = async (cluster: Cluster) => {
@@ -76,16 +80,26 @@ const createWorker = async (cluster: Cluster, joinTokens: JoinTokensInterface) =
     }
 };
 
+const deployStack = async (cluster: Cluster) => {
+    console.log('*** push react image as docker stack');
+    const managerPublicIp = await cluster.getManagerIp();
+    if(managerPublicIp) {
+        const result = await runDeployStack(managerPublicIp);
+    } else {
+        throw new Error("Cannot deployStack: no managerIp");
+    }
+};
+
 
 /**
  * Utils
  */
 
-const runSwarmInit = async (nodePublicIp: string) => {
+const runSwarmInit = async (managerPublicIp: string) => {
     const playbook = new Playbook(
         'playbooks/swarm-init.yml',
         {message: "Hello Server !"},
-        {dynamic_hosts: [nodePublicIp]});
+        {dynamic_hosts: [managerPublicIp]});
     await playbook.setupDirectory();
     return await playbook.execute();
 };
@@ -95,6 +109,15 @@ const runSwarmJoin = async (workerPublicIp: string, workerPrivateIp: string, man
         'playbooks/swarm-join.yml',
         {joinToken, managerPrivateIp, workerPrivateIp},
         {dynamic_hosts: [workerPublicIp]});
+    await playbook.setupDirectory();
+    return await playbook.execute();
+};
+
+const runDeployStack = async (managerPublicIp: string) => {
+    const playbook = new Playbook(
+        'playbooks/deploy-stack.yml',
+        {message: "Hello Server !"},
+        {dynamic_hosts: [managerPublicIp]});
     await playbook.setupDirectory();
     return await playbook.execute();
 };
