@@ -32,7 +32,8 @@ app.ready.then(() => {
         return CliCreateClusterHandler(program, app).then(() => app.exit());
     }
 }).catch(err => {
-    console.log('----- error catch end');
+    console.log('----- error catch start');
     console.log(err);
-    throw err;
+    console.log('----- error catch end (exit application)');
+    app.exit();
 });

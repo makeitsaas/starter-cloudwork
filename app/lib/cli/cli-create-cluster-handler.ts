@@ -1,6 +1,6 @@
 import { Main } from '../../../src/main';
-import { Playbook } from '../../../ansible-package/playbook';
 import { ClusterModule } from '../../../src/domains/clusters/cluster.module';
+import { Playbook } from '../../../ansible-package/playbook';
 
 /*
     TODO quick :
@@ -15,9 +15,10 @@ import { ClusterModule } from '../../../src/domains/clusters/cluster.module';
       Au-delà des domaines métier, les drivers/packages tech pour "mettre en place du contexte" => englobe la complexité externe
  */
 
+const clusterModule = new ClusterModule();
+
 export const CliCreateClusterHandler = async (program: any, app: Main): Promise<any> => {
     console.log('*** (create cluster entry)');
-    await doSomethingWithDatabase();
     await createManager();
     await createWorker();
     console.log('*** push react image as docker stack');
@@ -32,20 +33,24 @@ export const CliCreateClusterHandler = async (program: any, app: Main): Promise<
     app.exit();
 };
 
-const doSomethingWithDatabase = async () => {
-    const module = new ClusterModule();
-
-    return module.doSomethingSimple();
-};
-
 const createManager = async () => {
     console.log('*** create manager (start instance, start docker-swarm, get token key, store this key');
-    const playbook = new Playbook(
-        'playbook/hello-world.yml',
-        {message: "Hello Server !"},
-        {dynamic_hosts: ['3.121.138.238']});
-    await playbook.setupDirectory();
-    await playbook.execute();
+    const cluster = await clusterModule.createCluster();
+    const nodes = await cluster.nodes;
+    if(nodes.length) {
+        const manager = nodes[0];
+        const managerEC2Instance = await manager.instance;
+        const managerIp = await managerEC2Instance.getPublicIp();
+        console.log('manager ip :', managerIp);
+        const playbook = new Playbook(
+            'playbook/hello-world.yml',
+            {message: "Hello Server !"},
+            {dynamic_hosts: [managerIp]});
+        await playbook.setupDirectory();
+        await playbook.execute();
+    } else {
+        throw new Error("createManager failed (no node)")
+    }
 };
 
 const createWorker = async () => {

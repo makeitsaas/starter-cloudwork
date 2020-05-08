@@ -1,5 +1,12 @@
 # Example distributed application
 
+Todos :
+
+* Supprimer ansible/
+* Packager ansible-package
+* Clarifier la config (database) et gestion des modules
+
+
 Three ways to do things :
 - cli 
 - launch a worker that simply consumes a queue
@@ -46,4 +53,21 @@ npm run worker-action
 dotenv.config();
 ModeLoader();
 AWS.config.update({region: 'eu-central-1'});
+```
+
+## DI
+
+Use decorators for injection (`@decorators`)
+
+* `em` : entity manager
+* `services`
+* ...
+
+PREREQUISITE : app shall be ready
+
+```
+const app = new Main();
+app.ready.then(() => {
+    // do everything you want
+});
 ```
