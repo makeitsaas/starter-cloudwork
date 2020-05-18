@@ -6,7 +6,7 @@ import {
     ExecutionResult,
     configureWorkflow
 } from "workflow-es";
-import { FakeDelay } from '../src/shared/fake/fake-delay';
+import { FakeDelay } from '@custom-modules/fake/fake-delay';
 
 class SayHello extends StepBody {
     run(context: StepExecutionContext): Promise<ExecutionResult> {
