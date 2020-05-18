@@ -1,8 +1,8 @@
 import * as program from 'commander';
-import { Main } from '../src/main';
-import { ModeLoader } from '../src/core/mode/cli-mode-loader';
-import { CliTestHandler } from './lib/cli/cli-test-handler';
-import { CliCreateClusterHandler } from './lib/cli/cli-create-cluster-handler';
+import { Main } from '../../src/main';
+import { ModeLoader } from '../../src/core/mode/cli-mode-loader';
+import { CliTestHandler } from './lib/cli-test-handler';
+import { CliCreateClusterHandler } from './lib/cli-create-cluster-handler';
 
 program
     .version('0.1.0')
