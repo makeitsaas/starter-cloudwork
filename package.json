@@ -13,6 +13,7 @@
     "cli:demo": "ts-node -r tsconfig-paths/register apps/demo/run.ts ",
     "worker:consumer": "ts-node -r tsconfig-paths/register apps/worker-sqs/run.ts ",
     "worker:action": "ts-node -r tsconfig-paths/register apps/example/run.ts ",
+    "api": "ts-node -r tsconfig-paths/register apps/api/run.ts ",
     "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s . -o ./dist",
     "prod": "node dist/apps/example/run.js"
   },
@@ -22,6 +23,7 @@
     "aws-sdk": "^2.672.0",
     "commander": "^2.20.3",
     "dotenv": "^6.2.0",
+    "express": "^4.17.1",
     "fs": "0.0.1-security",
     "inquirer": "^6.5.2",
     "inversify": "^5.0.1",
@@ -43,6 +45,7 @@
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
+    "@types/express": "^4.17.6",
     "@types/inquirer": "^6.5.0",
     "@types/ioredis": "^4.16.1",
     "@types/js-yaml": "^3.12.3",
