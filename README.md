@@ -82,3 +82,12 @@ To install docker using ansible
 
 Tutorial : https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-docker-on-ubuntu-18-04
 Playbook : https://github.com/do-community/ansible-playbooks/blob/master/docker_ubuntu1804/playbook.yml
+
+
+
+* Other workflow packages
+
+One day maybe look at other workflow package
+* In typescript: [@node-ts/bus-workflow](https://www.npmjs.com/package/@node-ts/bus-workflow) or something else
+* In other language
+* Would this be convenient using CI tool like Jenkins, AWS CodePipeline, or something else ? 
