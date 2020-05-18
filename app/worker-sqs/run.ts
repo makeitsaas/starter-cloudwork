@@ -1,10 +1,10 @@
 // something that will poll orders from sqs queue
-import { Main } from '../src/main';
-import { AwsSqsOrders } from './lib/aws/aws-sqs-orders';
+import { Main } from '../../src/main';
+import { AwsSqsOrders } from './lib/aws-sqs-orders';
 import { Message } from 'aws-sdk/clients/sqs';
-import { ModeLoader } from '../src/core/mode/cli-mode-loader';
+import { ModeLoader } from '../../src/core/mode/cli-mode-loader';
 import { wait } from '@utils';
-import { AwsSqsOrderInterface } from './lib/aws/aws-sqs-order-interface';
+import { AwsSqsOrderInterface } from './lib/aws-sqs-order-interface';
 
 const app = new Main();
 const sqsClient = new AwsSqsOrders();

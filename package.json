@@ -11,8 +11,8 @@
     "tsc": "tsc",
     "tsn": "ts-node -r tsconfig-paths/register src/main.ts ",
     "cli:demo": "ts-node -r tsconfig-paths/register app/demo/run.ts ",
-    "worker-consumer": "ts-node -r tsconfig-paths/register app/worker-consumer.ts ",
-    "worker-action": "ts-node -r tsconfig-paths/register app/worker-action.ts ",
+    "worker-consumer": "ts-node -r tsconfig-paths/register app/worker-sqs/run.ts ",
+    "worker-action": "ts-node -r tsconfig-paths/register app/example/run.ts ",
     "build": "tsc --project tsconfig.json && tscpaths -p tsconfig.json -s ./app -o ./dist",
     "prod": "node dist/app.js"
   },

@@ -1,6 +1,6 @@
 // something that will be able to handle workflow queues
-import { Main } from '../src/main';
-import { ExampleModule } from '../src/domains/example/example.module';
+import { Main } from '../../src/main';
+import { ExampleModule } from '../../src/domains/example/example.module';
 
 const app = new Main();
 

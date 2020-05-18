@@ -2,7 +2,7 @@ import * as AWS from "aws-sdk";
 import * as DynamoDB from "aws-sdk/clients/dynamodb";
 import { DYNAMO_DB_COLUMNS, DYNAMODB_TABLE_NAME } from '@custom-modules/providers/aws/config/dynamo-order';
 import parsers from "./parsers";
-import { AwsSqsOrderInterface } from '../../../../../../app/lib/aws/aws-sqs-order-interface';
+import { AwsSqsOrderInterface } from '../../../../../../app/worker-sqs/lib/aws-sqs-order-interface';
 
 AWS.config.update({
     region: "eu-central-1"
