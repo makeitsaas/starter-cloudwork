@@ -51,5 +51,5 @@ export const ModeLoader = (program?: CommanderStatic) => {
     const configFileName = `${process.env.MODE}.mode.yml`,
         configDirPath = `config/mode`;
     ModeConfig = yaml.safeLoad(fs.readFileSync(`${configDirPath}/${configFileName}`, 'utf8'));
-    console.log('ModeConfig', ModeConfig);
+    console.log('ModeConfig', ModeConfig, "\n\n");
 };

@@ -15,12 +15,12 @@ export const CliHelper = {
                 return answers[inputName];
             });
     },
-    async askList(choices: (string|{name:string,value:any})[]): Promise<string> {
+    async askList(title: string, choices: (string|{name:string,value:any})[]): Promise<string> {
         const inputName = 'playbook';
         const question: CheckboxQuestionOptions = {
             type: 'list',
             name: inputName,
-            message: 'Choose your playbook',
+            message: title,
             choices
         };
 

@@ -11,6 +11,7 @@
     "tsc": "tsc",
     "tsn": "ts-node -r tsconfig-paths/register src/main.ts ",
     "cli:demo": "ts-node -r tsconfig-paths/register apps/demo/run.ts ",
+    "test:network": "ts-node -r tsconfig-paths/register apps/test/run.ts ",
     "worker:consumer": "ts-node -r tsconfig-paths/register apps/worker-sqs/run.ts ",
     "worker:action": "ts-node -r tsconfig-paths/register apps/example/run.ts ",
     "api": "ts-node -r tsconfig-paths/register apps/api/run.ts ",
