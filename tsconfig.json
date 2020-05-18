@@ -38,7 +38,7 @@
         "../src/core/alias/errors"
       ],
       "@ansible": [
-        "../ansible-package"
+        "../custom_modules/ansible"
       ],
       "@core": [
         "../src/core/index"
