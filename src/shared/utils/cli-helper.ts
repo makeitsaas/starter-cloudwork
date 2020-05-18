@@ -1,5 +1,5 @@
 import * as inquirer from 'inquirer';
-import { Question } from 'inquirer';
+import { CheckboxQuestionOptions, Question } from 'inquirer';
 
 export const CliHelper = {
     async askInteractively(message: string): Promise<string> {
@@ -17,7 +17,7 @@ export const CliHelper = {
     },
     async askList(choices: (string|{name:string,value:any})[]): Promise<string> {
         const inputName = 'playbook';
-        const question: Question = {
+        const question: CheckboxQuestionOptions = {
             type: 'list',
             name: inputName,
             message: 'Choose your playbook',

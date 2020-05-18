@@ -5,7 +5,7 @@ import {
 } from '@entities';
 import { em, _EM_, service } from '@decorators';
 import { EntityManager } from 'typeorm';
-import { AnsibleService, Playbook } from '../../../../ansible';
+import { Playbook } from '@ansible';
 
 export class ExamplePlaybook {
     ready: Promise<any>;
@@ -15,8 +15,8 @@ export class ExamplePlaybook {
     @em(_EM_.deployment)
     private em: EntityManager;
 
-    @service
-    private ansibleService: AnsibleService;
+    // @service
+    // private ansibleService: AnsibleService;
 
     constructor(
     ) {
@@ -31,8 +31,11 @@ export class ExamplePlaybook {
      */
 
     private async doSomething(): Promise<Playbook | void> {
-        const playbook = await this.ansibleService.preparePlaybook('playbook-name', this.environment, this.deployment);
-        await playbook.execute();
-        return playbook;
+        const playbook = new Playbook(
+            'playbooks/hello-world.yml',
+            {},
+            {dynamic_hosts: []});
+        await playbook.setupDirectory();
+        return await playbook.execute();
     }
 }
