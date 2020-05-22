@@ -1,4 +1,4 @@
-import { CommanderStatic } from 'commander';
+import * as program from 'commander';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 import * as AWS from 'aws-sdk';
@@ -28,7 +28,7 @@ export class InvalidMode extends Error {
 
 export let ModeConfig: IModeConfig;
 
-export const ModeLoader = (program?: CommanderStatic) => {
+export const loadMode = () => {
     if(ModeConfig) {
         // already done
         return;
@@ -36,7 +36,7 @@ export const ModeLoader = (program?: CommanderStatic) => {
 
     AWS.config.update({region: 'eu-central-1'});
 
-    if (program && program.mode) {
+    if (program.mode) { // case mode has been declared using cli
         process.env.MODE = program.mode;
     }
 
@@ -51,5 +51,5 @@ export const ModeLoader = (program?: CommanderStatic) => {
     const configFileName = `${process.env.MODE}.mode.yml`,
         configDirPath = `config/mode`;
     ModeConfig = yaml.safeLoad(fs.readFileSync(`${configDirPath}/${configFileName}`, 'utf8'));
-    console.log('ModeConfig', ModeConfig, "\n\n");
+    console.log('ModeConfig', ModeConfig);
 };

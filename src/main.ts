@@ -1,12 +1,5 @@
-import { config } from 'dotenv';
-
-config();   // run this before importing other modules
-
-import "reflect-metadata";
+import '@configure-once';
 import { Container } from '@core';
-import { ModeLoader } from './core/mode/cli-mode-loader';
-
-ModeLoader();
 
 export class Main {
     readonly ready: Promise<any>;

@@ -1,4 +1,4 @@
-import { dbMainLoader } from '@databases';
+import { dbMainLoader } from '../../../providers/database';
 import { Connection } from 'typeorm';
 
 // For the moment, container is a singleton (not managed by inversify). Aim is to use inversify\ContainerModule and manage top-container for the app

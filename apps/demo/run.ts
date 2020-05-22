@@ -1,6 +1,6 @@
+import '@configure-once';
 import * as program from 'commander';
 import { Main } from '../../src/main';
-import { ModeLoader } from '../../src/core/mode/cli-mode-loader';
 import { CliTestHandler } from './lib/cli-test-handler';
 import { CliCreateClusterHandler } from './lib/cli-create-cluster-handler';
 
@@ -21,7 +21,6 @@ program
     .option('--drop', 'Associated with environment id, will drop deployment')
     .parse(process.argv);
 
-ModeLoader(program);
 
 const app = new Main();
 

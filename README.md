@@ -53,10 +53,10 @@ npm run worker-action [DEPRECATED - TO BE UPDATED]
 
 ## Context loading
 
+Run this at the beginning (in `apps/**/run.ts`) 
+
 ```
-dotenv.config();
-ModeLoader();
-AWS.config.update({region: 'eu-central-1'});
+import '@configure-once';
 ```
 
 ## DI

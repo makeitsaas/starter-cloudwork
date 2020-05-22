@@ -8,12 +8,8 @@ export const dbMainLoader = createConnection({
     password: process.env.DEPLOY_DB_PASSWORD || "password",
     database: process.env.DEPLOY_DB_DATABASE || "mydatabase",
     entities: [
-        __dirname + "/../../domains/example/entities/*.js",
-        __dirname + "/../../domains/example/entities/*.ts",
-        __dirname + "/../../domains/clusters/entities/*.js",
-        __dirname + "/../../domains/clusters/entities/*.ts",
-        __dirname + "/../../domains/infrastructure/entities/*.js",
-        __dirname + "/../../domains/infrastructure/entities/*.ts",
+        __dirname + "/../../src/domains/**/entities/*.js",
+        __dirname + "/../../src/domains/**/entities/*.ts",
     ],
     synchronize: true,
     logging: false

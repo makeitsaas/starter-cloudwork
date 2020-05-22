@@ -1,3 +1,6 @@
+import { loadConfig } from '../../config/config-loader';
+loadConfig();
+
 // something that will be able to handle workflow queues
 import { Main } from '../../src/main';
 import { ExampleModule } from '../../src/domains/example/example.module';

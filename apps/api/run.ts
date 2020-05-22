@@ -1,3 +1,4 @@
+import '@configure-once';
 import { Main } from '../../src/main';
 import { createServer } from './lib/createServer';
 import { ClusterModule } from '../../src/domains/clusters/cluster.module';
