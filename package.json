@@ -25,7 +25,7 @@
     "commander": "^2.20.3",
     "cors": "^2.8.5",
     "dotenv": "^6.2.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "fs": "0.0.1-security",
     "google-id-token-verifier": "^0.2.3",
     "inquirer": "^6.5.2",
